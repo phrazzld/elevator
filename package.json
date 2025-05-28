@@ -1,0 +1,45 @@
+{
+  "name": "prompt-elevator",
+  "version": "0.1.0",
+  "description": "A lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash",
+  "main": "dist/cli.js",
+  "bin": {
+    "prompt-elevator": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
+  },
+  "keywords": [
+    "cli",
+    "prompt",
+    "ai",
+    "gemini",
+    "google",
+    "prompt-engineering",
+    "developer-tools"
+  ],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.10.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/prompt-elevator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/prompt-elevator/issues"
+  },
+  "homepage": "https://github.com/yourusername/prompt-elevator#readme",
+  "devDependencies": {
+    "@types/node": "^22.15.24",
+    "typescript": "^5.8.3"
+  }
+}
