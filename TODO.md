@@ -11,7 +11,7 @@
 - [x] Configure Prettier for formatting (non-negotiable, zero-config approach)
 - [x] Set up Vitest as testing framework
 - [x] Create `.gitignore` with Node.js and IDE patterns
-- [ ] Create `.env.example` with `GEMINI_API_KEY` placeholder
+- [x] Create `.env.example` with `GEMINI_API_KEY` placeholder
 
 ### Mandatory Automation
 
