@@ -15,11 +15,11 @@
 
 ### Mandatory Automation
 
-- [ ] Set up pre-commit hooks with lint, format, and type check
-- [ ] Configure GitHub Actions CI pipeline (lint → typecheck → test → build)
-- [ ] Add npm audit for dependency vulnerability scanning in CI
-- [ ] Set up test coverage enforcement (85% minimum threshold)
-- [ ] Configure Conventional Commits validation in pre-commit hooks
+- [x] Set up pre-commit hooks with lint, format, and type check
+- [x] Configure GitHub Actions CI pipeline (lint → typecheck → test → build)
+- [x] Add npm audit for dependency vulnerability scanning in CI
+- [x] Set up test coverage enforcement (85% minimum threshold)
+- [x] Configure Conventional Commits validation in pre-commit hooks
 
 ## Core Domain Logic (Pure Functions)
 
