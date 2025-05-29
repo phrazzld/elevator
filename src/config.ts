@@ -79,3 +79,277 @@ export interface AppConfig {
   /** Logging configuration */
   readonly logging: LoggingConfig;
 }
+
+/**
+ * Custom error class for configuration validation failures.
+ * Provides explicit, actionable error messages for environment variable issues.
+ */
+export class ConfigurationError extends Error {
+  constructor(
+    message: string,
+    public readonly variable?: string,
+  ) {
+    super(message);
+    this.name = "ConfigurationError";
+  }
+}
+
+/**
+ * Validates that a required environment variable exists and is not empty.
+ *
+ * @param name - The environment variable name
+ * @param value - The environment variable value
+ * @throws {ConfigurationError} When the variable is missing or empty
+ */
+function validateRequired(name: string, value: string | undefined): string {
+  if (!value || value.trim() === "") {
+    throw new ConfigurationError(
+      `Environment variable ${name} is required but not set. ` +
+        `Please set ${name} in your environment or .env file.`,
+      name,
+    );
+  }
+  return value.trim();
+}
+
+/**
+ * Validates that a Gemini API key is in the expected format.
+ *
+ * @param apiKey - The API key to validate
+ * @throws {ConfigurationError} When the API key format is invalid
+ */
+function validateApiKey(apiKey: string): string {
+  // Basic format validation - Gemini API keys typically start with specific prefixes
+  if (apiKey.length < 10) {
+    throw new ConfigurationError(
+      "GEMINI_API_KEY appears to be too short. Please check your API key. " +
+        "Get a valid API key from: https://aistudio.google.com/app/apikey",
+      "GEMINI_API_KEY",
+    );
+  }
+
+  // Check for placeholder values
+  if (
+    apiKey === "your_api_key_here" ||
+    apiKey === "YOUR_API_KEY" ||
+    apiKey === "placeholder"
+  ) {
+    throw new ConfigurationError(
+      "GEMINI_API_KEY appears to be a placeholder value. " +
+        "Please set a valid API key from: https://aistudio.google.com/app/apikey",
+      "GEMINI_API_KEY",
+    );
+  }
+
+  return apiKey;
+}
+
+/**
+ * Validates and parses a numeric environment variable with range checking.
+ *
+ * @param name - The environment variable name
+ * @param value - The environment variable value
+ * @param min - Minimum allowed value
+ * @param max - Maximum allowed value
+ * @param defaultValue - Default value if not provided
+ * @throws {ConfigurationError} When the value is invalid or out of range
+ */
+function validateNumber(
+  name: string,
+  value: string | undefined,
+  min: number,
+  max: number,
+  defaultValue: number,
+): number {
+  if (!value || value.trim() === "") {
+    return defaultValue;
+  }
+
+  const parsed = parseFloat(value.trim());
+  if (isNaN(parsed)) {
+    throw new ConfigurationError(
+      `Environment variable ${name} must be a valid number, got: "${value}". ` +
+        `Expected a number between ${min} and ${max}.`,
+      name,
+    );
+  }
+
+  if (parsed < min || parsed > max) {
+    throw new ConfigurationError(
+      `Environment variable ${name} must be between ${min} and ${max}, got: ${parsed}.`,
+      name,
+    );
+  }
+
+  return parsed;
+}
+
+/**
+ * Validates and parses an integer environment variable with range checking.
+ *
+ * @param name - The environment variable name
+ * @param value - The environment variable value
+ * @param min - Minimum allowed value
+ * @param max - Maximum allowed value
+ * @param defaultValue - Default value if not provided
+ * @throws {ConfigurationError} When the value is invalid or out of range
+ */
+function validateInteger(
+  name: string,
+  value: string | undefined,
+  min: number,
+  max: number,
+  defaultValue: number,
+): number {
+  if (!value || value.trim() === "") {
+    return defaultValue;
+  }
+
+  const parsed = parseInt(value.trim(), 10);
+  if (isNaN(parsed) || !Number.isInteger(parsed)) {
+    throw new ConfigurationError(
+      `Environment variable ${name} must be a valid integer, got: "${value}". ` +
+        `Expected an integer between ${min} and ${max}.`,
+      name,
+    );
+  }
+
+  if (parsed < min || parsed > max) {
+    throw new ConfigurationError(
+      `Environment variable ${name} must be between ${min} and ${max}, got: ${parsed}.`,
+      name,
+    );
+  }
+
+  return parsed;
+}
+
+/**
+ * Validates that a value is one of the allowed enum values.
+ *
+ * @param name - The environment variable name
+ * @param value - The environment variable value
+ * @param allowedValues - Array of allowed values
+ * @param defaultValue - Default value if not provided
+ * @throws {ConfigurationError} When the value is not in the allowed list
+ */
+function validateEnum<T extends string>(
+  name: string,
+  value: string | undefined,
+  allowedValues: readonly T[],
+  defaultValue: T,
+): T {
+  if (!value || value.trim() === "") {
+    return defaultValue;
+  }
+
+  const trimmed = value.trim() as T;
+  if (!allowedValues.includes(trimmed)) {
+    throw new ConfigurationError(
+      `Environment variable ${name} must be one of: ${allowedValues.join(", ")}. ` +
+        `Got: "${value}".`,
+      name,
+    );
+  }
+
+  return trimmed;
+}
+
+/**
+ * Validates all environment variables and returns a structured configuration object.
+ * This function performs comprehensive validation with explicit error messages.
+ *
+ * @throws {ConfigurationError} When any required environment variable is missing or invalid
+ */
+export function validateEnvironmentVariables(): AppConfig {
+  try {
+    // Validate required API key
+    const rawApiKey = validateRequired(
+      "GEMINI_API_KEY",
+      process.env["GEMINI_API_KEY"],
+    );
+    const apiKey = validateApiKey(rawApiKey);
+
+    // Validate optional API configuration
+    const modelId = validateEnum(
+      "GEMINI_MODEL",
+      process.env["GEMINI_MODEL"],
+      [
+        "gemini-2.0-flash-exp",
+        "gemini-1.5-flash",
+        "gemini-1.5-flash-8b",
+        "gemini-1.5-pro",
+      ] as const,
+      "gemini-2.0-flash-exp",
+    );
+
+    const temperature = validateNumber(
+      "GEMINI_TEMPERATURE",
+      process.env["GEMINI_TEMPERATURE"],
+      0.0,
+      2.0,
+      0.7,
+    );
+
+    const timeoutMs = validateInteger(
+      "GEMINI_TIMEOUT_MS",
+      process.env["GEMINI_TIMEOUT_MS"],
+      1000,
+      300000,
+      30000,
+    );
+
+    const maxRetries = validateInteger(
+      "GEMINI_MAX_RETRIES",
+      process.env["GEMINI_MAX_RETRIES"],
+      0,
+      10,
+      3,
+    );
+
+    // Validate optional output configuration
+    const raw = process.env["OUTPUT_RAW"] === "true";
+    const streaming = process.env["OUTPUT_STREAMING"] !== "false"; // Default to true
+    const showProgress = process.env["OUTPUT_SHOW_PROGRESS"] !== "false"; // Default to true
+
+    // Validate optional logging configuration
+    const logLevel = validateEnum(
+      "LOG_LEVEL",
+      process.env["LOG_LEVEL"],
+      ["debug", "info", "warn", "error"] as const,
+      "info",
+    );
+
+    const serviceName = process.env["SERVICE_NAME"] || "prompt-elevator";
+    const jsonFormat = process.env["LOG_JSON_FORMAT"] !== "false"; // Default to true
+
+    return {
+      api: {
+        apiKey,
+        modelId,
+        temperature,
+        timeoutMs,
+        maxRetries,
+      },
+      output: {
+        raw,
+        streaming,
+        showProgress,
+      },
+      logging: {
+        level: logLevel,
+        serviceName,
+        jsonFormat,
+      },
+    };
+  } catch (error) {
+    if (error instanceof ConfigurationError) {
+      // Re-throw configuration errors as-is with their explicit messages
+      throw error;
+    }
+    // Wrap unexpected errors
+    throw new ConfigurationError(
+      `Unexpected error during configuration validation: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
