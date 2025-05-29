@@ -6,7 +6,7 @@
 - [x] Initialize Node.js project with TypeScript support
 - [x] Configure `package.json` with bin field for global CLI installation
 - [x] Set up strict TypeScript configuration (`tsconfig.json`) with `"strict": true`
-- [ ] Configure ESLint with TypeScript rules (recommended + recommended-requiring-type-checking)
+- [x] Configure ESLint with TypeScript rules (recommended + recommended-requiring-type-checking)
 - [ ] Configure Prettier for formatting (non-negotiable, zero-config approach)
 - [ ] Set up Vitest as testing framework
 - [ ] Create `.gitignore` with Node.js and IDE patterns

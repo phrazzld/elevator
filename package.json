@@ -11,6 +11,7 @@
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
     "test": "vitest",
     "test:coverage": "vitest --coverage"
   },
@@ -40,6 +41,10 @@
   "homepage": "https://github.com/yourusername/prompt-elevator#readme",
   "devDependencies": {
     "@types/node": "^22.15.24",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
+    "@typescript-eslint/parser": "^8.33.0",
+    "eslint": "^9.27.0",
+    "eslint-config-prettier": "^10.1.5",
     "typescript": "^5.8.3"
   }
 }
