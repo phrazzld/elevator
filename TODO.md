@@ -10,7 +10,7 @@
 - [x] Configure ESLint with TypeScript rules (recommended + recommended-requiring-type-checking)
 - [x] Configure Prettier for formatting (non-negotiable, zero-config approach)
 - [x] Set up Vitest as testing framework
-- [ ] Create `.gitignore` with Node.js and IDE patterns
+- [x] Create `.gitignore` with Node.js and IDE patterns
 - [ ] Create `.env.example` with `GEMINI_API_KEY` placeholder
 
 ### Mandatory Automation
