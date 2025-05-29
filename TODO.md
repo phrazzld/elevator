@@ -9,7 +9,7 @@
 - [x] Set up strict TypeScript configuration (`tsconfig.json`) with `"strict": true`
 - [x] Configure ESLint with TypeScript rules (recommended + recommended-requiring-type-checking)
 - [x] Configure Prettier for formatting (non-negotiable, zero-config approach)
-- [ ] Set up Vitest as testing framework
+- [x] Set up Vitest as testing framework
 - [ ] Create `.gitignore` with Node.js and IDE patterns
 - [ ] Create `.env.example` with `GEMINI_API_KEY` placeholder
 
