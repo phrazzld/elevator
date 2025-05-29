@@ -378,3 +378,22 @@ export function createAppConfig(
 export function validateEnvironmentVariables(): AppConfig {
   return createAppConfig(process.env);
 }
+
+/**
+ * Default application configuration object.
+ *
+ * This immutable configuration object is created from environment variables
+ * at module load time. It provides a convenient way to access validated
+ * configuration throughout the application.
+ *
+ * @throws {ConfigurationError} When required environment variables are missing or invalid
+ *
+ * @example
+ * ```typescript
+ * import { config } from './config';
+ *
+ * console.log(`Using model: ${config.api.modelId}`);
+ * console.log(`Log level: ${config.logging.level}`);
+ * ```
+ */
+export const config: Readonly<AppConfig> = createAppConfig(process.env);

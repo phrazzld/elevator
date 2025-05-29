@@ -29,7 +29,7 @@
 - [x] Implement environment variable validation with explicit error messages
 - [x] Create configuration factory function (pure, testable)
 - [x] Add default values for model ID and temperature
-- [ ] Export typed, immutable configuration object
+- [x] Export typed, immutable configuration object
 
 ### Prompt Processing Core (`src/core/promptProcessor.ts`)
 
