@@ -3,16 +3,18 @@
 ## Project Foundation & Automation
 
 ### Core Project Setup
+
 - [x] Initialize Node.js project with TypeScript support
 - [x] Configure `package.json` with bin field for global CLI installation
 - [x] Set up strict TypeScript configuration (`tsconfig.json`) with `"strict": true`
 - [x] Configure ESLint with TypeScript rules (recommended + recommended-requiring-type-checking)
-- [ ] Configure Prettier for formatting (non-negotiable, zero-config approach)
+- [x] Configure Prettier for formatting (non-negotiable, zero-config approach)
 - [ ] Set up Vitest as testing framework
 - [ ] Create `.gitignore` with Node.js and IDE patterns
 - [ ] Create `.env.example` with `GEMINI_API_KEY` placeholder
 
 ### Mandatory Automation
+
 - [ ] Set up pre-commit hooks with lint, format, and type check
 - [ ] Configure GitHub Actions CI pipeline (lint → typecheck → test → build)
 - [ ] Add npm audit for dependency vulnerability scanning in CI
@@ -22,6 +24,7 @@
 ## Core Domain Logic (Pure Functions)
 
 ### Configuration Module (`src/config.ts`)
+
 - [ ] Define strict configuration interface with readonly properties
 - [ ] Implement environment variable validation with explicit error messages
 - [ ] Create configuration factory function (pure, testable)
@@ -29,6 +32,7 @@
 - [ ] Export typed, immutable configuration object
 
 ### Prompt Processing Core (`src/core/promptProcessor.ts`)
+
 - [ ] Define prompt processing interface (input/output contracts)
 - [ ] Implement prompt validation logic (pure function)
 - [ ] Create prompt enhancement logic as pure function
@@ -38,6 +42,7 @@
 ## Infrastructure Adapters
 
 ### Gemini API Client (`src/adapters/geminiClient.ts`)
+
 - [ ] Create Gemini API interface (defined by core, not Google SDK)
 - [ ] Implement Google Generative AI client adapter
 - [ ] Add retry logic with exponential backoff (max 3 attempts)
@@ -46,6 +51,7 @@
 - [ ] Create comprehensive error mapping to domain errors
 
 ### Output Formatter (`src/adapters/formatter.ts`)
+
 - [ ] Create formatter interface (defined by core)
 - [ ] Implement console output formatter with chalk
 - [ ] Add progress indicator for "thinking" state
@@ -55,6 +61,7 @@
 ## CLI Interface & REPL
 
 ### CLI Entry Point (`src/cli.ts`)
+
 - [ ] Set up commander for argument parsing
 - [ ] Define CLI flags: --model, --temp, --stream, --raw
 - [ ] Map CLI flags to environment variable fallbacks
@@ -62,6 +69,7 @@
 - [ ] Implement dependency injection setup (wire adapters to core)
 
 ### REPL Implementation (`src/repl/repl.ts`)
+
 - [ ] Create REPL interface and implementation
 - [ ] Set up readline for interactive input
 - [ ] Handle user input processing through core domain logic
@@ -72,12 +80,14 @@
 ## Error Handling & Security
 
 ### Domain Error Types (`src/core/errors.ts`)
+
 - [ ] Define custom error classes for different failure scenarios
 - [ ] Create network error, validation error, and API error types
 - [ ] Implement error serialization for logging
 - [ ] Add proper error messages for user-facing scenarios
 
 ### Security Implementation
+
 - [ ] Validate API key presence on startup with actionable error message
 - [ ] Ensure API key is only read from environment variables
 - [ ] Add input sanitization before API calls
@@ -86,6 +96,7 @@
 ## Logging & Observability
 
 ### Structured Logging (`src/infrastructure/logger.ts`)
+
 - [ ] Set up pino for structured JSON logging
 - [ ] Configure log levels via environment variables
 - [ ] Add correlation ID generation and propagation
@@ -95,6 +106,7 @@
 ## Testing Strategy
 
 ### Unit Tests
+
 - [ ] Set up Vitest configuration with coverage reporting
 - [ ] Write comprehensive tests for core domain logic (100% coverage target)
 - [ ] Test configuration module with various environment scenarios
@@ -102,12 +114,14 @@
 - [ ] Test error handling and error type creation
 
 ### Integration Tests
+
 - [ ] Create integration tests for Gemini adapter with mock API responses
 - [ ] Test CLI argument parsing and flag combinations
 - [ ] Test REPL loop with simulated user input
 - [ ] Test end-to-end workflow with mocked external dependencies only
 
 ### Test Infrastructure
+
 - [ ] Create test data builders for consistent test setup
 - [ ] Set up test fixtures for API responses
 - [ ] Configure test coverage enforcement in CI
@@ -116,12 +130,14 @@
 ## Build & Distribution
 
 ### Build Configuration
+
 - [ ] Configure TypeScript compilation for production
 - [ ] Set up build script with proper error handling
 - [ ] Add clean script for build artifacts
 - [ ] Configure source maps for debugging
 
 ### NPM Package Preparation
+
 - [ ] Configure package.json for npm publishing
 - [ ] Set up bin field for global CLI installation
 - [ ] Define files to include in published package
@@ -131,12 +147,14 @@
 ## Documentation (Essential Only)
 
 ### User Documentation
+
 - [ ] Create comprehensive README.md with installation and usage
 - [ ] Document all CLI flags and environment variables
 - [ ] Add troubleshooting section with common issues
 - [ ] Include API key setup instructions
 
 ### Developer Documentation
+
 - [ ] Document architecture decisions and core design principles
 - [ ] Add contribution guidelines referencing development philosophy
 - [ ] Create API documentation for core interfaces

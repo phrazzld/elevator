@@ -6,4 +6,4 @@
  * richer, more technical articulations using Google Gemini 2.5 Flash
  */
 
-console.log('prompt-elevator CLI - Coming soon!');
+console.log("prompt-elevator CLI - Coming soon!");
