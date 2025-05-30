@@ -33,10 +33,10 @@
 
 ### Prompt Processing Core (`src/core/promptProcessor.ts`)
 
-- [ ] Define prompt processing interface (input/output contracts)
+- [x] Define prompt processing interface (input/output contracts)
 - [ ] Implement prompt validation logic (pure function)
 - [ ] Create prompt enhancement logic as pure function
-- [ ] Define error types for validation failures
+- [x] Define error types for validation failures
 - [ ] Add comprehensive unit tests for all pure functions
 
 ## Infrastructure Adapters
