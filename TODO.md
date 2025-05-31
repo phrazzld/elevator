@@ -43,7 +43,7 @@
 
 ### Gemini API Client (`src/adapters/geminiClient.ts`)
 
-- [ ] Create Gemini API interface (defined by core, not Google SDK)
+- [x] Create Gemini API interface (defined by core, not Google SDK)
 - [ ] Implement Google Generative AI client adapter
 - [ ] Add retry logic with exponential backoff (max 3 attempts)
 - [ ] Handle rate limiting and safety blocks appropriately
