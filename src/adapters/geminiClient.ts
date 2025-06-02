@@ -23,14 +23,123 @@ import {
   type APIStreamChunk,
   type APIRequestOptions,
   createAPIError,
+  isRetryableError,
+  getRetryDelay,
 } from "../core/apiClient";
 import {
   type EnhancedPrompt,
   type Result,
   success,
   failure,
+  isErr,
+  isOk,
 } from "../core/promptProcessor";
 import { type ApiConfig } from "../config";
+
+/**
+ * Calculates retry delay using exponential backoff with jitter.
+ */
+function calculateRetryDelay(
+  error: APIError,
+  attempt: number,
+  baseDelay = 1000,
+): number {
+  // Use retryAfter from error if available (rate limiting)
+  const delay = getRetryDelay(error, baseDelay);
+
+  // Exponential backoff: delay * (2^attempt)
+  const exponentialDelay = delay * Math.pow(2, attempt);
+
+  // Add jitter: ±25% random variation to prevent thundering herd
+  const jitter = exponentialDelay * 0.25 * (Math.random() - 0.5);
+
+  return Math.max(exponentialDelay + jitter, 0);
+}
+
+/**
+ * Sleep for the specified number of milliseconds.
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => globalThis.setTimeout(resolve, ms));
+}
+
+/**
+ * Implements retry logic with exponential backoff for API operations.
+ */
+async function withRetry<T>(
+  operation: () => Promise<Result<T, APIError>>,
+  maxRetries: number,
+): Promise<Result<T, APIError>> {
+  let lastError: APIError | null = null;
+  const startTime = Date.now();
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await operation();
+
+      // If successful, return immediately
+      if (result.success) {
+        return result;
+      }
+
+      // Extract error from failed result
+      if (isErr(result)) {
+        lastError = result.error;
+      }
+
+      // If this is the last attempt or error is not retryable, return error
+      if (
+        attempt === maxRetries ||
+        (lastError && !isRetryableError(lastError))
+      ) {
+        if (lastError) {
+          // Add retry metadata to final error
+          const retryMetadata = {
+            attempts: attempt + 1,
+            totalDuration: Date.now() - startTime,
+            lastAttemptError: lastError,
+          };
+
+          return failure({
+            ...lastError,
+            details: {
+              ...lastError.details,
+              originalError: {
+                ...lastError.details?.originalError,
+                retryMetadata,
+              },
+            },
+          });
+        }
+      }
+
+      // Calculate delay and wait before next attempt
+      if (lastError) {
+        const delay = calculateRetryDelay(lastError, attempt);
+        await sleep(delay);
+      }
+    } catch (error) {
+      // Convert unexpected errors to APIError
+      lastError = createAPIError(
+        "UNKNOWN_ERROR",
+        error instanceof Error ? error.message : "Unexpected error",
+        {
+          retryable: false,
+          originalError: { message: String(error) },
+        },
+      );
+
+      // Don't retry unexpected errors
+      break;
+    }
+  }
+
+  // This should not be reached, but handle gracefully
+  return failure(
+    lastError ??
+      createAPIError("UNKNOWN_ERROR", "Retry logic failed unexpectedly"),
+  );
+}
 
 /**
  * Maps Google SDK finish reasons to our domain types.
@@ -155,9 +264,9 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
   }
 
   /**
-   * Generate content from an enhanced prompt.
+   * Core content generation logic without retry.
    */
-  async generateContent(
+  private async generateContentCore(
     prompt: EnhancedPrompt,
     options?: APIRequestOptions,
   ): Promise<Result<APIResponse, APIError>> {
@@ -241,14 +350,30 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
   }
 
   /**
-   * Generate streaming content from an enhanced prompt.
+   * Generate content from an enhanced prompt with retry logic.
    */
-  async *generateStreamingContent(
+  async generateContent(
     prompt: EnhancedPrompt,
     options?: APIRequestOptions,
-  ): AsyncIterable<Result<APIStreamChunk, APIError>> {
-    const startTime = Date.now();
+  ): Promise<Result<APIResponse, APIError>> {
+    return withRetry(
+      () => this.generateContentCore(prompt, options),
+      this.config.maxRetries,
+    );
+  }
 
+  /**
+   * Creates streaming connection with retry logic.
+   */
+  private async createStreamingConnection(
+    prompt: EnhancedPrompt,
+    options?: APIRequestOptions,
+  ): Promise<
+    Result<
+      { stream: AsyncIterable<unknown>; response: Promise<unknown> },
+      APIError
+    >
+  > {
     try {
       // Build generation config
       const generationConfig: GenerationConfig = {
@@ -277,10 +402,46 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
       }
       const streamResult = await this.model.generateContentStream(request);
 
+      return success(streamResult);
+    } catch (error) {
+      return failure(mapError(error));
+    }
+  }
+
+  /**
+   * Generate streaming content from an enhanced prompt.
+   */
+  async *generateStreamingContent(
+    prompt: EnhancedPrompt,
+    options?: APIRequestOptions,
+  ): AsyncIterable<Result<APIStreamChunk, APIError>> {
+    const startTime = Date.now();
+
+    // Retry the initial connection setup
+    const connectionResult = await withRetry(
+      () => this.createStreamingConnection(prompt, options),
+      this.config.maxRetries,
+    );
+
+    if (isErr(connectionResult)) {
+      yield failure(connectionResult.error);
+      return;
+    }
+
+    if (isOk(connectionResult)) {
+      const streamResult = connectionResult.value;
+
       try {
         // Stream chunks as they arrive
         for await (const chunk of streamResult.stream) {
-          const candidate = chunk.candidates?.[0];
+          const candidateChunk = chunk as {
+            candidates?: Array<{
+              content?: { parts?: Array<{ text?: string }> };
+              finishReason?: string;
+              safetyRatings?: unknown[];
+            }>;
+          };
+          const candidate = candidateChunk.candidates?.[0];
 
           if (!candidate) continue;
 
@@ -299,7 +460,13 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
             // If this is the last chunk, try to get usage metadata
             if (isLast) {
               try {
-                const response = await streamResult.response;
+                const response = (await streamResult.response) as {
+                  usageMetadata?: {
+                    promptTokenCount?: number;
+                    candidatesTokenCount?: number;
+                    totalTokenCount?: number;
+                  };
+                };
                 if (response.usageMetadata) {
                   streamChunk = {
                     ...streamChunk,
@@ -333,7 +500,7 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
                 "Content was blocked by safety filters",
                 {
                   retryable: false,
-                  originalError: { safetyRatings: candidate?.safetyRatings },
+                  originalError: { safetyRatings: candidate.safetyRatings },
                 },
               ),
             );
@@ -344,15 +511,15 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
         // If error occurs during streaming, yield it
         yield failure(mapError(streamError));
       }
-    } catch (error) {
-      yield failure(mapError(error));
     }
   }
 
   /**
-   * Check if the API client is properly configured and accessible.
+   * Core health check logic without retry.
    */
-  async healthCheck(): Promise<Result<{ status: "healthy" }, APIError>> {
+  private async healthCheckCore(): Promise<
+    Result<{ status: "healthy" }, APIError>
+  > {
     try {
       // Simple ping with minimal content
       const result = await this.model.generateContent({
@@ -372,6 +539,13 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
     } catch (error) {
       return failure(mapError(error));
     }
+  }
+
+  /**
+   * Check if the API client is properly configured and accessible.
+   */
+  async healthCheck(): Promise<Result<{ status: "healthy" }, APIError>> {
+    return withRetry(() => this.healthCheckCore(), this.config.maxRetries);
   }
 
   /**

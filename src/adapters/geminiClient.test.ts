@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { GoogleGeminiAdapter } from "./geminiClient";
 import {
   isOk,
@@ -7,7 +7,11 @@ import {
   type Result,
 } from "../core/promptProcessor";
 import { type ApiConfig } from "../config";
-import { type APIStreamChunk, type APIError } from "../core/apiClient";
+import {
+  type APIStreamChunk,
+  type APIError,
+  type APIResponse,
+} from "../core/apiClient";
 
 // Create mock functions
 const mockGenerateContent = vi.fn();
@@ -118,18 +122,29 @@ describe("GoogleGeminiAdapter", () => {
     });
 
     it("should handle rate limiting", async () => {
+      vi.useFakeTimers();
+
       const rateLimitError = new Error("Resource exhausted");
       rateLimitError.message = "429 Too Many Requests";
       mockGenerateContent.mockRejectedValue(rateLimitError);
 
       const prompt = createMockEnhancedPrompt();
-      const result = await adapter.generateContent(prompt);
+      const resultPromise = adapter.generateContent(prompt);
+
+      // Advance timers for all retries
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+
+      const result = await resultPromise;
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
         expect(result.error.code).toBe("RATE_LIMITED");
         expect(result.error.details?.retryable).toBe(true);
       }
+
+      vi.useRealTimers();
     });
 
     it("should handle content filtering", async () => {
@@ -168,18 +183,29 @@ describe("GoogleGeminiAdapter", () => {
     });
 
     it("should handle network errors", async () => {
+      vi.useFakeTimers();
+
       const networkError = new Error("Network error");
       networkError.message = "Failed to fetch";
       mockGenerateContent.mockRejectedValue(networkError);
 
       const prompt = createMockEnhancedPrompt();
-      const result = await adapter.generateContent(prompt);
+      const resultPromise = adapter.generateContent(prompt);
+
+      // Advance timers for all retries
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+
+      const result = await resultPromise;
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
         expect(result.error.code).toBe("NETWORK_ERROR");
         expect(result.error.details?.retryable).toBe(true);
       }
+
+      vi.useRealTimers();
     });
 
     it("should handle model not found errors", async () => {
@@ -383,14 +409,25 @@ describe("GoogleGeminiAdapter", () => {
     });
 
     it("should return error when API is not accessible", async () => {
+      vi.useFakeTimers();
+
       mockGenerateContent.mockRejectedValue(new Error("Connection refused"));
 
-      const result = await adapter.healthCheck();
+      const resultPromise = adapter.healthCheck();
+
+      // Advance timers for all retries
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+
+      const result = await resultPromise;
 
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
         expect(result.error.type).toBe("api");
       }
+
+      vi.useRealTimers();
     });
   });
 
@@ -450,18 +487,301 @@ describe("GoogleGeminiAdapter", () => {
 
     errorTestCases.forEach(({ input, expectedCode, retryable }) => {
       it(`should map "${input}" to ${expectedCode}`, async () => {
+        if (retryable) {
+          vi.useFakeTimers();
+        }
+
         const error = new Error(input);
         mockGenerateContent.mockRejectedValue(error);
 
         const prompt = createMockEnhancedPrompt();
-        const result = await adapter.generateContent(prompt);
+
+        let result: Result<APIResponse, APIError>;
+        if (retryable) {
+          const resultPromise = adapter.generateContent(prompt);
+          // Advance timers for all retries
+          await vi.advanceTimersToNextTimerAsync();
+          await vi.advanceTimersToNextTimerAsync();
+          await vi.advanceTimersToNextTimerAsync();
+          result = await resultPromise;
+        } else {
+          result = await adapter.generateContent(prompt);
+        }
 
         expect(isErr(result)).toBe(true);
         if (isErr(result)) {
           expect(result.error.code).toBe(expectedCode);
           expect(result.error.details?.retryable).toBe(retryable);
         }
+
+        if (retryable) {
+          vi.useRealTimers();
+        }
       });
+    });
+  });
+
+  describe("retry logic", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("should retry retryable errors up to maxRetries", async () => {
+      const networkError = new Error("Failed to fetch");
+      networkError.message = "Network error";
+
+      // First 2 calls fail, 3rd succeeds
+      mockGenerateContent
+        .mockRejectedValueOnce(networkError)
+        .mockRejectedValueOnce(networkError)
+        .mockResolvedValueOnce({
+          response: {
+            text: () => "Success after retries",
+            candidates: [{ finishReason: "STOP", safetyRatings: [] }],
+            usageMetadata: {
+              promptTokenCount: 5,
+              candidatesTokenCount: 10,
+              totalTokenCount: 15,
+            },
+          },
+        });
+
+      const prompt = createMockEnhancedPrompt();
+      const resultPromise = adapter.generateContent(prompt);
+
+      // Advance timers for each retry
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+
+      const result = await resultPromise;
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.content).toBe("Success after retries");
+      }
+      expect(mockGenerateContent).toHaveBeenCalledTimes(3);
+    });
+
+    it("should not retry non-retryable errors", async () => {
+      const authError = new Error("API key not valid");
+      authError.message = "API key not valid. Please pass a valid API key.";
+      mockGenerateContent.mockRejectedValue(authError);
+
+      const prompt = createMockEnhancedPrompt();
+      const result = await adapter.generateContent(prompt);
+
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe("AUTHENTICATION_FAILED");
+      }
+      // Should only be called once (no retries)
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    });
+
+    it("should fail when max retries exceeded", async () => {
+      const networkError = new Error("Network error");
+      networkError.message = "Failed to fetch";
+      mockGenerateContent.mockRejectedValue(networkError);
+
+      const prompt = createMockEnhancedPrompt();
+      const resultPromise = adapter.generateContent(prompt);
+
+      // Advance timers for all retries
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+
+      const result = await resultPromise;
+
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe("NETWORK_ERROR");
+      }
+      // Should be called maxRetries + 1 times (initial + 3 retries)
+      expect(mockGenerateContent).toHaveBeenCalledTimes(4);
+    });
+
+    it("should respect retryAfter from rate limiting errors", async () => {
+      const rateLimitError = new Error("429 Too Many Requests");
+      rateLimitError.message = "Resource exhausted";
+
+      mockGenerateContent
+        .mockRejectedValueOnce(rateLimitError)
+        .mockResolvedValueOnce({
+          response: {
+            text: () => "Success after rate limit",
+            candidates: [{ finishReason: "STOP", safetyRatings: [] }],
+            usageMetadata: {
+              promptTokenCount: 5,
+              candidatesTokenCount: 10,
+              totalTokenCount: 15,
+            },
+          },
+        });
+
+      const prompt = createMockEnhancedPrompt();
+      const resultPromise = adapter.generateContent(prompt);
+
+      // Advance timer for retry
+      await vi.advanceTimersToNextTimerAsync();
+
+      const result = await resultPromise;
+
+      expect(isOk(result)).toBe(true);
+      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    });
+
+    it("should add retry metadata to error when max retries exceeded", async () => {
+      const serverError = new Error("500 Internal Server Error");
+      serverError.message = "Server error";
+      mockGenerateContent.mockRejectedValue(serverError);
+
+      const prompt = createMockEnhancedPrompt();
+      const resultPromise = adapter.generateContent(prompt);
+
+      // Advance timers for all retries
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+
+      const result = await resultPromise;
+
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe("SERVER_ERROR");
+        // Should include retry information in error details
+        expect(result.error.details?.originalError).toBeDefined();
+      }
+    });
+  });
+
+  describe("retry logic with streaming", () => {
+    it("should retry initial connection failures for streaming", async () => {
+      const networkError = new Error("Connection failed");
+      networkError.message = "Network error";
+
+      const mockStream = {
+        stream: (async function* () {
+          await Promise.resolve();
+          yield {
+            candidates: [
+              {
+                content: { parts: [{ text: "Streaming success" }] },
+                finishReason: "STOP",
+              },
+            ],
+          };
+        })(),
+        response: Promise.resolve({
+          usageMetadata: {
+            promptTokenCount: 5,
+            candidatesTokenCount: 10,
+            totalTokenCount: 15,
+          },
+        }),
+      };
+
+      // First call fails, second succeeds
+      mockGenerateContentStream
+        .mockRejectedValueOnce(networkError)
+        .mockResolvedValueOnce(mockStream);
+
+      const prompt = createMockEnhancedPrompt();
+      const results = [];
+
+      for await (const result of adapter.generateStreamingContent(prompt)) {
+        if (isOk(result)) {
+          results.push(result.value);
+        }
+      }
+
+      expect(results).toHaveLength(1);
+      expect(results[0]?.content).toBe("Streaming success");
+      expect(mockGenerateContentStream).toHaveBeenCalledTimes(2);
+    });
+
+    it("should not retry once streaming has started", async () => {
+      const mockStream = {
+        stream: (async function* () {
+          await Promise.resolve();
+          yield {
+            candidates: [
+              {
+                content: { parts: [{ text: "First chunk" }] },
+                finishReason: null,
+              },
+            ],
+          };
+          // Simulate error during streaming
+          throw new Error("Stream interrupted");
+        })(),
+        response: Promise.resolve({}),
+      };
+
+      mockGenerateContentStream.mockResolvedValueOnce(mockStream);
+
+      const prompt = createMockEnhancedPrompt();
+      const results: Result<APIStreamChunk, APIError>[] = [];
+
+      for await (const result of adapter.generateStreamingContent(prompt)) {
+        results.push(result);
+      }
+
+      // Should get first chunk successfully, then error
+      expect(results).toHaveLength(2);
+      const firstResult = results[0];
+      const secondResult = results[1];
+      expect(firstResult && isOk(firstResult)).toBe(true);
+      expect(secondResult && isErr(secondResult)).toBe(true);
+
+      // Should only call generateContentStream once (no retry during streaming)
+      expect(mockGenerateContentStream).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("retry logic with health check", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("should retry health check failures", async () => {
+      const networkError = new Error("Connection refused");
+      networkError.message = "Network error";
+
+      mockGenerateContent
+        .mockRejectedValueOnce(networkError)
+        .mockResolvedValueOnce({
+          response: {
+            text: () => "pong",
+            candidates: [{ finishReason: "STOP", safetyRatings: [] }],
+            usageMetadata: {
+              promptTokenCount: 1,
+              candidatesTokenCount: 1,
+              totalTokenCount: 2,
+            },
+          },
+        });
+
+      const resultPromise = adapter.healthCheck();
+
+      // Advance timer for retry
+      await vi.advanceTimersToNextTimerAsync();
+
+      const result = await resultPromise;
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.status).toBe("healthy");
+      }
+      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
     });
   });
 });
