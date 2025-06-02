@@ -80,6 +80,31 @@ function sleep(ms: number): Promise<void> {
 }
 
 /**
+ * Wraps a promise with timeout logic.
+ * Rejects with TimeoutError if the promise doesn't resolve within the timeout.
+ */
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  operation: string,
+): Promise<T> {
+  let timer: ReturnType<typeof globalThis.setTimeout>;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = globalThis.setTimeout(() => {
+      const error = new Error(`${operation} timed out after ${timeoutMs}ms`);
+      error.name = "TimeoutError";
+      reject(error);
+    }, timeoutMs);
+  });
+
+  return Promise.race([
+    promise.finally(() => globalThis.clearTimeout(timer)),
+    timeoutPromise,
+  ]);
+}
+
+/**
  * Implements retry logic with exponential backoff for API operations.
  */
 async function withRetry<T>(
@@ -261,6 +286,19 @@ function mapError(error: unknown): APIError {
     });
   }
 
+  // Timeout errors
+  if (
+    message.includes("timeout") ||
+    message.includes("timed out") ||
+    message.includes("deadline exceeded") ||
+    error.name === "TimeoutError"
+  ) {
+    return createAPIError("TIMEOUT", "Request timed out", {
+      retryable: true,
+      originalError: { message: error.message },
+    });
+  }
+
   // Network errors
   if (
     message.includes("fetch") ||
@@ -359,7 +397,13 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
       if (safetySettings) {
         request.safetySettings = safetySettings;
       }
-      const result = await this.model.generateContent(request);
+      // Apply timeout to the API call
+      const timeoutMs = options?.timeout ?? this.config.timeoutMs;
+      const result = await withTimeout(
+        this.model.generateContent(request),
+        timeoutMs,
+        "Content generation",
+      );
 
       const response = result.response;
 
@@ -503,7 +547,13 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
       if (safetySettings) {
         request.safetySettings = safetySettings;
       }
-      const streamResult = await this.model.generateContentStream(request);
+      // Apply timeout to the streaming API call
+      const timeoutMs = options?.timeout ?? this.config.timeoutMs;
+      const streamResult = await withTimeout(
+        this.model.generateContentStream(request),
+        timeoutMs,
+        "Streaming content generation",
+      );
 
       return success(streamResult);
     } catch (error) {
@@ -671,10 +721,14 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
   > {
     try {
       // Simple ping with minimal content
-      const result = await this.model.generateContent({
-        contents: [{ role: "user", parts: [{ text: "ping" }] }],
-        generationConfig: { maxOutputTokens: 10, temperature: 0 },
-      });
+      const result = await withTimeout(
+        this.model.generateContent({
+          contents: [{ role: "user", parts: [{ text: "ping" }] }],
+          generationConfig: { maxOutputTokens: 10, temperature: 0 },
+        }),
+        this.config.timeoutMs,
+        "Health check",
+      );
 
       if (result.response.text()) {
         return success({ status: "healthy" });

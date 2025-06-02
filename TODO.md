@@ -47,7 +47,7 @@
 - [x] Implement Google Generative AI client adapter
 - [x] Add retry logic with exponential backoff (max 3 attempts)
 - [x] Handle rate limiting and safety blocks appropriately
-- [ ] Add timeout handling for API calls
+- [x] Add timeout handling for API calls
 - [ ] Create comprehensive error mapping to domain errors
 
 ### Output Formatter (`src/adapters/formatter.ts`)
