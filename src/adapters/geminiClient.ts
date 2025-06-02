@@ -244,102 +244,276 @@ function extractRetryDelay(error: unknown): number | undefined {
 }
 
 /**
- * Maps Google SDK errors to our domain API errors.
+ * Extract HTTP status code from error if available.
+ */
+function extractStatusCode(error: Error): number | undefined {
+  const message = error.message;
+
+  // Look for HTTP status codes in various formats
+  const statusPatterns = [
+    /status:?\s*(\d{3})/i,
+    /http\s*(\d{3})/i,
+    /(\d{3})\s*error/i,
+    /error\s*(\d{3})/i,
+  ];
+
+  for (const pattern of statusPatterns) {
+    const match = message.match(pattern);
+    if (match && match[1]) {
+      const status = parseInt(match[1], 10);
+      if (status >= 100 && status < 600) {
+        return status;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Extract error details from various error properties.
+ */
+function extractErrorDetails(error: Error): Record<string, unknown> {
+  const details: Record<string, unknown> = {
+    message: error.message,
+    name: error.name,
+  };
+
+  // Include stack trace for debugging (non-sensitive)
+  if ("stack" in error && error.stack) {
+    details["stack"] = error.stack;
+  }
+
+  // Extract additional properties that might be present
+  const errorObj = error as unknown as Record<string, unknown>;
+
+  // Common error properties from various APIs
+  const relevantProps = [
+    "code",
+    "status",
+    "statusCode",
+    "errno",
+    "syscall",
+    "hostname",
+    "port",
+    "details",
+    "metadata",
+    "cause",
+  ];
+
+  for (const prop of relevantProps) {
+    if (prop in errorObj && errorObj[prop] !== undefined) {
+      details[prop] = errorObj[prop];
+    }
+  }
+
+  return details;
+}
+
+/**
+ * Helper to build error details with conditional statusCode inclusion.
+ */
+function buildErrorDetails(
+  errorDetails: Record<string, unknown>,
+  statusCode?: number,
+  retryable?: boolean,
+  retryAfter?: number,
+): APIError["details"] {
+  const details: Record<string, unknown> = {
+    originalError: errorDetails,
+  };
+
+  if (retryable !== undefined) {
+    details["retryable"] = retryable;
+  }
+
+  if (statusCode !== undefined) {
+    details["statusCode"] = statusCode;
+  }
+
+  if (retryAfter !== undefined) {
+    details["retryAfter"] = retryAfter;
+  }
+
+  return details as APIError["details"];
+}
+
+/**
+ * Maps Google SDK errors to our domain API errors with comprehensive coverage.
  */
 function mapError(error: unknown): APIError {
   if (!(error instanceof Error)) {
-    return createAPIError("UNKNOWN_ERROR", "An unknown error occurred");
+    return createAPIError("UNKNOWN_ERROR", "An unknown error occurred", {
+      retryable: false,
+      originalError: {
+        type: typeof error,
+        value: String(error),
+      },
+    });
   }
 
   const message = error.message.toLowerCase();
+  const statusCode = extractStatusCode(error);
+  const errorDetails = extractErrorDetails(error);
 
-  // Authentication errors
-  if (message.includes("api key") || message.includes("authentication")) {
-    return createAPIError("AUTHENTICATION_FAILED", "Authentication failed", {
-      retryable: false,
-      originalError: { message: error.message },
-    });
+  // Authentication and authorization errors (4xx client errors)
+  if (
+    message.includes("api key") ||
+    message.includes("authentication") ||
+    message.includes("unauthorized") ||
+    message.includes("forbidden") ||
+    message.includes("invalid key") ||
+    message.includes("auth") ||
+    statusCode === 401 ||
+    statusCode === 403
+  ) {
+    return createAPIError(
+      "AUTHENTICATION_FAILED",
+      "Authentication failed",
+      buildErrorDetails(errorDetails, statusCode, false),
+    );
   }
 
-  // Rate limiting - enhanced detection and retry delay extraction
+  // Rate limiting errors - comprehensive detection
   if (
-    message.includes("429") ||
+    statusCode === 429 ||
     message.includes("rate limit") ||
     message.includes("resource exhausted") ||
-    message.includes("too many requests")
+    message.includes("too many requests") ||
+    message.includes("requests per") ||
+    message.includes("throttle") ||
+    message.includes("429")
   ) {
     const retryDelay = extractRetryDelay(error);
-    return createAPIError("RATE_LIMITED", "Rate limit exceeded", {
-      retryable: true,
-      retryAfter: retryDelay ?? 60000, // Default to 1 minute if not specified
-      originalError: { message: error.message },
-    });
+    return createAPIError(
+      "RATE_LIMITED",
+      "Rate limit exceeded",
+      buildErrorDetails(errorDetails, statusCode, true, retryDelay ?? 60000),
+    );
   }
 
   // Quota errors - distinguish from rate limiting
-  if (message.includes("quota") && !message.includes("rate")) {
+  if (
+    (message.includes("quota") && !message.includes("rate")) ||
+    message.includes("billing") ||
+    message.includes("usage limit") ||
+    message.includes("allowance") ||
+    message.includes("credit")
+  ) {
     const retryDelay = extractRetryDelay(error);
-    return createAPIError("QUOTA_EXCEEDED", "API quota exceeded", {
-      retryable: true,
-      ...(retryDelay !== undefined && { retryAfter: retryDelay }),
-      originalError: { message: error.message },
-    });
+    return createAPIError(
+      "QUOTA_EXCEEDED",
+      "API quota exceeded",
+      buildErrorDetails(errorDetails, statusCode, true, retryDelay),
+    );
   }
 
-  // Timeout errors
+  // Timeout errors - comprehensive patterns
   if (
     message.includes("timeout") ||
     message.includes("timed out") ||
     message.includes("deadline exceeded") ||
-    error.name === "TimeoutError"
+    message.includes("request timeout") ||
+    message.includes("connection timeout") ||
+    message.includes("read timeout") ||
+    message.includes("write timeout") ||
+    error.name === "TimeoutError" ||
+    error.name === "AbortError" ||
+    statusCode === 408 ||
+    statusCode === 504
   ) {
-    return createAPIError("TIMEOUT", "Request timed out", {
-      retryable: true,
-      originalError: { message: error.message },
-    });
+    return createAPIError(
+      "TIMEOUT",
+      "Request timed out",
+      buildErrorDetails(errorDetails, statusCode, true),
+    );
   }
 
-  // Network errors
+  // Network and connection errors
   if (
     message.includes("fetch") ||
     message.includes("network") ||
-    message.includes("connection")
+    message.includes("connection") ||
+    message.includes("dns") ||
+    message.includes("resolve") ||
+    message.includes("unreachable") ||
+    message.includes("reset") ||
+    message.includes("refused") ||
+    message.includes("enotfound") ||
+    message.includes("econnreset") ||
+    message.includes("econnrefused") ||
+    error.name === "NetworkError" ||
+    error.name === "FetchError"
   ) {
-    return createAPIError("NETWORK_ERROR", "Network error occurred", {
-      retryable: true,
-      originalError: { message: error.message },
-    });
+    return createAPIError(
+      "NETWORK_ERROR",
+      "Network error occurred",
+      buildErrorDetails(errorDetails, statusCode, true),
+    );
   }
 
-  // Model not found
-  if (message.includes("not found") && message.includes("model")) {
-    return createAPIError("MODEL_NOT_FOUND", "Specified model not found", {
-      retryable: false,
-      originalError: { message: error.message },
-    });
+  // Model and resource not found errors
+  if (
+    (message.includes("not found") &&
+      (message.includes("model") || message.includes("resource"))) ||
+    message.includes("model does not exist") ||
+    message.includes("unknown model") ||
+    message.includes("invalid model") ||
+    statusCode === 404
+  ) {
+    return createAPIError(
+      "MODEL_NOT_FOUND",
+      "Specified model not found",
+      buildErrorDetails(errorDetails, statusCode, false),
+    );
   }
 
-  // Invalid request
-  if (message.includes("invalid")) {
-    return createAPIError("INVALID_REQUEST", "Invalid request", {
-      retryable: false,
-      originalError: { message: error.message },
-    });
+  // Invalid request errors (client-side issues)
+  if (
+    message.includes("invalid") ||
+    message.includes("malformed") ||
+    message.includes("bad request") ||
+    message.includes("missing") ||
+    message.includes("required") ||
+    message.includes("validation") ||
+    message.includes("parse") ||
+    message.includes("format") ||
+    statusCode === 400 ||
+    statusCode === 422
+  ) {
+    return createAPIError(
+      "INVALID_REQUEST",
+      "Invalid request",
+      buildErrorDetails(errorDetails, statusCode, false),
+    );
   }
 
-  // Server errors
-  if (message.includes("500") || message.includes("server error")) {
-    return createAPIError("SERVER_ERROR", "Server error occurred", {
-      retryable: true,
-      originalError: { message: error.message },
-    });
+  // Server errors (5xx errors)
+  if (
+    message.includes("server error") ||
+    message.includes("internal server") ||
+    message.includes("service unavailable") ||
+    message.includes("maintenance") ||
+    message.includes("overloaded") ||
+    message.includes("capacity") ||
+    statusCode === 500 ||
+    statusCode === 502 ||
+    statusCode === 503 ||
+    (statusCode && statusCode >= 500 && statusCode < 600)
+  ) {
+    return createAPIError(
+      "SERVER_ERROR",
+      "Server error occurred",
+      buildErrorDetails(errorDetails, statusCode, true),
+    );
   }
 
-  // Default
-  return createAPIError("UNKNOWN_ERROR", error.message, {
-    retryable: false,
-    originalError: { message: error.message, stack: error.stack },
-  });
+  // Default case - preserve original error message but ensure proper structure
+  return createAPIError(
+    "UNKNOWN_ERROR",
+    error.message || "An unknown error occurred",
+    buildErrorDetails(errorDetails, statusCode, false),
+  );
 }
 
 /**
