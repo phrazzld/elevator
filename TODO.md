@@ -46,7 +46,7 @@
 - [x] Create Gemini API interface (defined by core, not Google SDK)
 - [x] Implement Google Generative AI client adapter
 - [x] Add retry logic with exponential backoff (max 3 attempts)
-- [ ] Handle rate limiting and safety blocks appropriately
+- [x] Handle rate limiting and safety blocks appropriately
 - [ ] Add timeout handling for API calls
 - [ ] Create comprehensive error mapping to domain errors
 

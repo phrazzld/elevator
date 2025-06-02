@@ -37,6 +37,22 @@ import {
 import { type ApiConfig } from "../config";
 
 /**
+ * Type for safety rating from Gemini API
+ */
+interface SafetyRating {
+  category?: string;
+  probability?: string;
+}
+
+/**
+ * Type for triggered safety category
+ */
+interface TriggeredCategory {
+  category: string;
+  probability: string;
+}
+
+/**
  * Calculates retry delay using exponential backoff with jitter.
  */
 function calculateRetryDelay(
@@ -162,6 +178,47 @@ function mapFinishReason(
 }
 
 /**
+ * Extracts retry delay from error response if available.
+ * Looks for common patterns in error messages and response data.
+ */
+function extractRetryDelay(error: unknown): number | undefined {
+  if (!(error instanceof Error)) return undefined;
+
+  // Check for explicit retry-after in error message (e.g., "retry after 60 seconds")
+  const retryAfterMatch = error.message.match(
+    /retry[\s-]?after[\s:]?(\d+)\s*(second|minute|hour)/i,
+  );
+  if (retryAfterMatch && retryAfterMatch[1] && retryAfterMatch[2]) {
+    const value = parseInt(retryAfterMatch[1], 10);
+    const unit = retryAfterMatch[2].toLowerCase();
+
+    switch (unit) {
+      case "second":
+        return value * 1000;
+      case "minute":
+        return value * 60 * 1000;
+      case "hour":
+        return value * 60 * 60 * 1000;
+    }
+  }
+
+  // Check for rate limit reset time patterns
+  const resetMatch = error.message.match(/reset[s]?\s+(?:at|in)\s+(\d+)/i);
+  if (resetMatch && resetMatch[1]) {
+    const resetTime = parseInt(resetMatch[1], 10);
+    // If it looks like a timestamp (large number), calculate delay
+    if (resetTime > 1000000000) {
+      const now = Date.now();
+      const resetTimestamp =
+        resetTime > 10000000000 ? resetTime : resetTime * 1000;
+      return Math.max(0, resetTimestamp - now);
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Maps Google SDK errors to our domain API errors.
  */
 function mapError(error: unknown): APIError {
@@ -179,23 +236,27 @@ function mapError(error: unknown): APIError {
     });
   }
 
-  // Rate limiting
+  // Rate limiting - enhanced detection and retry delay extraction
   if (
     message.includes("429") ||
-    message.includes("rate") ||
-    message.includes("resource exhausted")
+    message.includes("rate limit") ||
+    message.includes("resource exhausted") ||
+    message.includes("too many requests")
   ) {
+    const retryDelay = extractRetryDelay(error);
     return createAPIError("RATE_LIMITED", "Rate limit exceeded", {
       retryable: true,
-      retryAfter: 60000, // Default to 1 minute
+      retryAfter: retryDelay ?? 60000, // Default to 1 minute if not specified
       originalError: { message: error.message },
     });
   }
 
-  // Quota errors
-  if (message.includes("quota")) {
+  // Quota errors - distinguish from rate limiting
+  if (message.includes("quota") && !message.includes("rate")) {
+    const retryDelay = extractRetryDelay(error);
     return createAPIError("QUOTA_EXCEEDED", "API quota exceeded", {
       retryable: true,
+      ...(retryDelay !== undefined && { retryAfter: retryDelay }),
       originalError: { message: error.message },
     });
   }
@@ -305,13 +366,55 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
       // Check for safety blocks
       const candidate = response.candidates?.[0];
       if ((candidate?.finishReason as string) === "SAFETY") {
+        // Extract detailed safety information
+        const safetyRatings = (candidate?.safetyRatings ||
+          []) as SafetyRating[];
+        const triggeredCategories: TriggeredCategory[] = safetyRatings
+          .filter(
+            (rating) =>
+              rating.probability === "HIGH" || rating.probability === "MEDIUM",
+          )
+          .map((rating) => ({
+            category:
+              rating.category?.replace("HARM_CATEGORY_", "").toLowerCase() ||
+              "unknown",
+            probability: rating.probability?.toLowerCase() || "unknown",
+          }));
+
+        const categoriesText =
+          triggeredCategories.length > 0
+            ? triggeredCategories
+                .map((cat) => `${cat.category} (${cat.probability})`)
+                .join(", ")
+            : "unspecified safety concerns";
+
         return failure(
           createAPIError(
             "CONTENT_FILTERED",
-            "Content was blocked by safety filters",
+            `Content was blocked by safety filters: ${categoriesText}`,
             {
               retryable: false,
-              originalError: { safetyRatings: candidate?.safetyRatings },
+              originalError: {
+                safetyRatings: candidate?.safetyRatings,
+                triggeredCategories,
+              },
+            },
+          ),
+        );
+      }
+
+      // Check for recitation blocks (copyright/plagiarism)
+      if ((candidate?.finishReason as string) === "RECITATION") {
+        return failure(
+          createAPIError(
+            "CONTENT_FILTERED",
+            "Content was blocked due to recitation (potential copyright or plagiarism concerns)",
+            {
+              retryable: false,
+              originalError: {
+                finishReason: candidate?.finishReason,
+                citationMetadata: candidate?.citationMetadata,
+              },
             },
           ),
         );
@@ -439,6 +542,7 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
               content?: { parts?: Array<{ text?: string }> };
               finishReason?: string;
               safetyRatings?: unknown[];
+              citationMetadata?: unknown;
             }>;
           };
           const candidate = candidateChunk.candidates?.[0];
@@ -494,13 +598,58 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
 
           // Check for safety blocks
           if ((candidate.finishReason as string) === "SAFETY") {
+            // Extract detailed safety information
+            const safetyRatings = (candidate.safetyRatings ||
+              []) as SafetyRating[];
+            const triggeredCategories: TriggeredCategory[] = safetyRatings
+              .filter(
+                (rating) =>
+                  rating.probability === "HIGH" ||
+                  rating.probability === "MEDIUM",
+              )
+              .map((rating) => ({
+                category:
+                  rating.category
+                    ?.replace("HARM_CATEGORY_", "")
+                    .toLowerCase() || "unknown",
+                probability: rating.probability?.toLowerCase() || "unknown",
+              }));
+
+            const categoriesText =
+              triggeredCategories.length > 0
+                ? triggeredCategories
+                    .map((cat) => `${cat.category} (${cat.probability})`)
+                    .join(", ")
+                : "unspecified safety concerns";
+
             yield failure(
               createAPIError(
                 "CONTENT_FILTERED",
-                "Content was blocked by safety filters",
+                `Content was blocked by safety filters: ${categoriesText}`,
                 {
                   retryable: false,
-                  originalError: { safetyRatings: candidate.safetyRatings },
+                  originalError: {
+                    safetyRatings: candidate.safetyRatings,
+                    triggeredCategories,
+                  },
+                },
+              ),
+            );
+            return;
+          }
+
+          // Check for recitation blocks in streaming
+          if ((candidate.finishReason as string) === "RECITATION") {
+            yield failure(
+              createAPIError(
+                "CONTENT_FILTERED",
+                "Content was blocked due to recitation (potential copyright or plagiarism concerns)",
+                {
+                  retryable: false,
+                  originalError: {
+                    finishReason: candidate.finishReason,
+                    citationMetadata: candidate.citationMetadata,
+                  },
                 },
               ),
             );
