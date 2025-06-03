@@ -52,7 +52,7 @@
 
 ### Output Formatter (`src/adapters/formatter.ts`)
 
-- [ ] Create formatter interface (defined by core)
+- [x] Create formatter interface (defined by core)
 - [ ] Implement console output formatter with chalk
 - [ ] Add progress indicator for "thinking" state
 - [ ] Support raw output mode (no formatting)
