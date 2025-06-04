@@ -376,20 +376,32 @@ export class ConsoleFormatter implements OutputFormatter {
 
   /**
    * Format content optimized for streaming output.
+   *
+   * When streaming mode is enabled (default), progress indicators are temporarily
+   * paused during chunk output to prevent visual conflicts. When streaming mode
+   * is disabled, chunks are formatted without interrupting progress indicators.
    */
   async formatStreamChunk(
     contentChunk: string,
     options?: FormatOptions,
   ): Promise<Result<FormattedContent, FormatterError>> {
     try {
-      // For streaming, we need to clear any active spinners temporarily
-      this.pauseAllSpinners();
+      // Determine if we should pause spinners based on streaming option
+      // Default to true for backward compatibility
+      const shouldPauseSpinners = options?.streaming !== false;
+
+      if (shouldPauseSpinners) {
+        // For streaming, we need to clear any active spinners temporarily
+        this.pauseAllSpinners();
+      }
 
       // Format the chunk (minimal processing for performance)
       const result = await this.formatContent(contentChunk, options);
 
-      // Resume spinners after output
-      this.resumeAllSpinners();
+      if (shouldPauseSpinners) {
+        // Resume spinners after output
+        this.resumeAllSpinners();
+      }
 
       return result;
     } catch {

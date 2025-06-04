@@ -56,7 +56,7 @@
 - [x] Implement console output formatter with chalk
 - [x] Add progress indicator for "thinking" state
 - [x] Support raw output mode (no formatting)
-- [ ] Handle streaming vs non-streaming output rendering
+- [x] Handle streaming vs non-streaming output rendering
 
 ## CLI Interface & REPL
 

@@ -54,6 +54,22 @@ import {
   type FormatOptions,
 } from "../core/formatter";
 import { isOk, isErr } from "../core/promptProcessor";
+import ora from "ora";
+
+// Type for our mocked ora instance
+interface MockOraInstance {
+  start: ReturnType<typeof vi.fn>;
+  stop: ReturnType<typeof vi.fn>;
+  succeed: ReturnType<typeof vi.fn>;
+  fail: ReturnType<typeof vi.fn>;
+  warn: ReturnType<typeof vi.fn>;
+  info: ReturnType<typeof vi.fn>;
+  text: string;
+  isSpinning: boolean;
+}
+
+// Helper to get mocked ora
+const getMockedOra = () => vi.mocked(ora);
 
 describe("ConsoleFormatter", () => {
   let formatter: OutputFormatter;
@@ -631,6 +647,304 @@ describe("ConsoleFormatter", () => {
         if (isOk(result)) {
           expect(result.value.text).toBe(testContent); // Exact preservation
           expect(result.value.metadata.mode).toBe("raw");
+        }
+      });
+    });
+  });
+
+  describe("Streaming vs non-streaming output", () => {
+    describe("formatStreamChunk with streaming mode", () => {
+      it("should pause and resume spinners when streaming=true", async () => {
+        // Create an active progress indicator
+        const progressResult = await formatter.createProgress("Processing...");
+        expect(isOk(progressResult)).toBe(true);
+
+        // Mock ora instance to track spinner state
+        const oraMock = getMockedOra();
+        const spinnerInstance = oraMock.mock.results[0]
+          ?.value as MockOraInstance;
+        expect(spinnerInstance).toBeDefined();
+
+        // Format a chunk with streaming=true
+        const options: FormatOptions = { streaming: true };
+        const result = await formatter.formatStreamChunk("chunk", options);
+
+        expect(isOk(result)).toBe(true);
+        // Verify spinner was paused and resumed
+        expect(spinnerInstance.stop).toHaveBeenCalled();
+        expect(spinnerInstance.start).toHaveBeenCalled();
+
+        if (isOk(progressResult)) {
+          await formatter.completeProgress(progressResult.value);
+        }
+      });
+
+      it("should pause and resume spinners by default (backward compatibility)", async () => {
+        // Create an active progress indicator
+        const progressResult = await formatter.createProgress("Processing...");
+        expect(isOk(progressResult)).toBe(true);
+
+        const oraMock = getMockedOra();
+        const spinnerInstance = oraMock.mock.results[0]
+          ?.value as MockOraInstance;
+
+        // Format a chunk without options (should default to streaming behavior)
+        const result = await formatter.formatStreamChunk("chunk");
+
+        expect(isOk(result)).toBe(true);
+        expect(spinnerInstance.stop).toHaveBeenCalled();
+        expect(spinnerInstance.start).toHaveBeenCalled();
+
+        if (isOk(progressResult)) {
+          await formatter.completeProgress(progressResult.value);
+        }
+      });
+
+      it("should handle multiple active spinners during streaming", async () => {
+        // Create multiple progress indicators
+        const progress1 = await formatter.createProgress("Task 1");
+        const progress2 = await formatter.createProgress("Task 2");
+
+        expect(isOk(progress1)).toBe(true);
+        expect(isOk(progress2)).toBe(true);
+
+        const oraMock = getMockedOra();
+        const spinner1 = oraMock.mock.results[0]?.value as MockOraInstance;
+        const spinner2 = oraMock.mock.results[1]?.value as MockOraInstance;
+
+        // Format chunk with streaming
+        const options: FormatOptions = { streaming: true };
+        await formatter.formatStreamChunk("data", options);
+
+        // Both spinners should be paused and resumed
+        expect(spinner1.stop).toHaveBeenCalled();
+        expect(spinner1.start).toHaveBeenCalled();
+        expect(spinner2.stop).toHaveBeenCalled();
+        expect(spinner2.start).toHaveBeenCalled();
+
+        if (isOk(progress1) && isOk(progress2)) {
+          await formatter.completeProgress(progress1.value);
+          await formatter.completeProgress(progress2.value);
+        }
+      });
+
+      it("should not interfere with spinners in raw mode", async () => {
+        const progressOptions: FormatOptions = { mode: "raw" };
+        const progressResult = await formatter.createProgress(
+          "Processing...",
+          progressOptions,
+        );
+        expect(isOk(progressResult)).toBe(true);
+
+        // Format chunk in raw streaming mode
+        const options: FormatOptions = { mode: "raw", streaming: true };
+        const result = await formatter.formatStreamChunk("chunk", options);
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.metadata.mode).toBe("raw");
+        }
+
+        // No spinner operations should occur (no spinner in raw mode)
+        const oraMock = getMockedOra();
+        expect(oraMock).not.toHaveBeenCalled();
+      });
+
+      it("should preserve chunk content exactly in streaming mode", async () => {
+        const options: FormatOptions = { streaming: true };
+        const partialChunk = "This is a partial line without newline";
+
+        const result = await formatter.formatStreamChunk(partialChunk, options);
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe(partialChunk);
+        }
+      });
+    });
+
+    describe("formatStreamChunk with non-streaming mode", () => {
+      it("should not pause spinners when streaming=false", async () => {
+        // Create an active progress indicator
+        const progressResult = await formatter.createProgress("Processing...");
+        expect(isOk(progressResult)).toBe(true);
+
+        const oraMock = getMockedOra();
+        const spinnerInstance = oraMock.mock.results[0]
+          ?.value as MockOraInstance;
+        const stopCallsBefore = spinnerInstance.stop.mock.calls.length;
+        const startCallsBefore = spinnerInstance.start.mock.calls.length;
+
+        // Format a chunk with streaming=false
+        const options: FormatOptions = { streaming: false };
+        const result = await formatter.formatStreamChunk("chunk", options);
+
+        expect(isOk(result)).toBe(true);
+        // Verify spinner was NOT paused (no additional calls)
+        expect(spinnerInstance.stop).toHaveBeenCalledTimes(stopCallsBefore);
+        expect(spinnerInstance.start).toHaveBeenCalledTimes(startCallsBefore);
+
+        if (isOk(progressResult)) {
+          await formatter.completeProgress(progressResult.value);
+        }
+      });
+
+      it("should format content normally when streaming=false", async () => {
+        const options: FormatOptions = { streaming: false };
+        const content = "Complete content block";
+
+        const result = await formatter.formatStreamChunk(content, options);
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe(content);
+          expect(result.value.metadata.contentType).toBe("content");
+        }
+      });
+    });
+
+    describe("formatContent with streaming considerations", () => {
+      it("should not pause spinners for formatContent regardless of streaming option", async () => {
+        const progressResult = await formatter.createProgress("Processing...");
+        expect(isOk(progressResult)).toBe(true);
+
+        const oraMock = getMockedOra();
+        const spinnerInstance = oraMock.mock.results[0]
+          ?.value as MockOraInstance;
+        vi.clearAllMocks(); // Clear previous calls
+
+        // formatContent should not pause spinners even with streaming=true
+        const options: FormatOptions = { streaming: true };
+        const result = await formatter.formatContent("content", options);
+
+        expect(isOk(result)).toBe(true);
+        expect(spinnerInstance.stop).not.toHaveBeenCalled();
+
+        if (isOk(progressResult)) {
+          await formatter.completeProgress(progressResult.value);
+        }
+      });
+
+      it("should include streaming flag in metadata", async () => {
+        const streamingOptions: FormatOptions = { streaming: true };
+        const result = await formatter.formatContent(
+          "content",
+          streamingOptions,
+        );
+
+        expect(isOk(result)).toBe(true);
+        // For now, streaming doesn't affect metadata, but could in future
+      });
+    });
+
+    describe("Mode interactions", () => {
+      it("should handle streaming + raw mode", async () => {
+        const options: FormatOptions = { mode: "raw", streaming: true };
+        const result = await formatter.formatStreamChunk(
+          "raw streaming chunk",
+          options,
+        );
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe("raw streaming chunk");
+          expect(result.value.metadata.mode).toBe("raw");
+          expect(result.value.metadata.styled).toBe(false);
+        }
+      });
+
+      it("should handle non-streaming + raw mode", async () => {
+        const options: FormatOptions = { mode: "raw", streaming: false };
+        const result = await formatter.formatStreamChunk(
+          "raw non-streaming chunk",
+          options,
+        );
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe("raw non-streaming chunk");
+          expect(result.value.metadata.mode).toBe("raw");
+        }
+      });
+
+      it("should handle streaming + custom styling", async () => {
+        const options: FormatOptions = {
+          streaming: true,
+          enableStyling: true,
+          style: { accent: "blue" },
+        };
+        const result = await formatter.formatStreamChunk(
+          "styled chunk",
+          options,
+        );
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.metadata.styled).toBe(true);
+        }
+      });
+
+      it("should handle rapid successive streaming chunks", async () => {
+        const options: FormatOptions = { streaming: true };
+        const chunks = ["chunk1", "chunk2", "chunk3"];
+        const results = [];
+
+        for (const chunk of chunks) {
+          const result = await formatter.formatStreamChunk(chunk, options);
+          expect(isOk(result)).toBe(true);
+          results.push(result);
+        }
+
+        expect(results).toHaveLength(3);
+      });
+
+      it("should handle empty chunks in streaming mode", async () => {
+        const options: FormatOptions = { streaming: true };
+        const result = await formatter.formatStreamChunk("", options);
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe("");
+        }
+      });
+
+      it("should handle very large chunks in streaming mode", async () => {
+        const options: FormatOptions = { streaming: true };
+        const largeChunk = "x".repeat(100000);
+        const result = await formatter.formatStreamChunk(largeChunk, options);
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe(largeChunk);
+        }
+      });
+    });
+
+    describe("Error handling in streaming modes", () => {
+      it("should handle errors gracefully in streaming mode", async () => {
+        // Force an error by passing null
+        const options: FormatOptions = { streaming: true };
+        const result = await formatter.formatStreamChunk(
+          null as unknown as string,
+          options,
+        );
+
+        expect(isErr(result)).toBe(true);
+        if (isErr(result)) {
+          expect(result.error.code).toBe("INVALID_CONTENT");
+        }
+      });
+
+      it("should handle errors gracefully in non-streaming mode", async () => {
+        const options: FormatOptions = { streaming: false };
+        const result = await formatter.formatStreamChunk(
+          null as unknown as string,
+          options,
+        );
+
+        expect(isErr(result)).toBe(true);
+        if (isErr(result)) {
+          expect(result.error.code).toBe("INVALID_CONTENT");
         }
       });
     });

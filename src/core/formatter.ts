@@ -22,7 +22,11 @@ export interface FormatOptions {
    */
   readonly mode?: "formatted" | "raw";
 
-  /** Whether output should be optimized for streaming */
+  /**
+   * Whether output should be optimized for streaming:
+   * - `true` or `undefined`: Pause progress indicators during chunk output (default)
+   * - `false`: Format without interrupting progress indicators
+   */
   readonly streaming?: boolean;
 
   /** Custom styling preferences */
@@ -90,6 +94,10 @@ export interface OutputFormatter {
   /**
    * Format content for display output.
    *
+   * Use this method when you have complete content available at once.
+   * Unlike `formatStreamChunk()`, this method does not pause progress indicators
+   * regardless of the `streaming` option, as it's intended for non-streaming scenarios.
+   *
    * @param content The content to format
    * @param options Optional formatting configuration
    * @returns Promise resolving to formatted content or error
@@ -147,6 +155,15 @@ export interface OutputFormatter {
 
   /**
    * Format content optimized for streaming output.
+   *
+   * Use this method when receiving content in chunks (e.g., from streaming APIs).
+   * The behavior differs based on the `streaming` option:
+   * - When `streaming` is `true` or `undefined` (default): Progress indicators are
+   *   temporarily paused during chunk output to prevent visual conflicts
+   * - When `streaming` is `false`: Chunks are formatted without interrupting
+   *   progress indicators
+   *
+   * For complete content that's already available, use `formatContent()` instead.
    *
    * @param contentChunk Partial content chunk from streaming
    * @param options Optional formatting configuration
