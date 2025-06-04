@@ -97,11 +97,11 @@
 
 ### Structured Logging (`src/infrastructure/logger.ts`)
 
-- [ ] Set up pino for structured JSON logging
-- [ ] Configure log levels via environment variables
-- [ ] Add correlation ID generation and propagation
-- [ ] Include mandatory context fields (timestamp, level, service_name, correlation_id)
-- [ ] Implement contextual logger injection
+- [x] Set up pino for structured JSON logging
+- [x] Configure log levels via environment variables
+- [x] Add correlation ID generation and propagation
+- [x] Include mandatory context fields (timestamp, level, service_name, correlation_id)
+- [x] Implement contextual logger injection
 
 ## Testing Strategy
 

@@ -140,6 +140,22 @@ async function main(): Promise<void> {
     // Create and wire all application services
     const services = createValidatedServiceContainer(config);
 
+    // Create root logger for CLI operations
+    const logger = services.loggerFactory.createRootLogger({
+      component: "cli",
+      operation: "startup",
+    });
+
+    logger.info("Application startup initiated", {
+      config: {
+        model: config.api.modelId,
+        temperature: config.api.temperature,
+        streaming: config.output.streaming,
+        rawMode: config.output.raw,
+        logLevel: config.logging.level,
+      },
+    });
+
     console.log("✅ Configuration and security validation complete");
     console.log(`   Model: ${config.api.modelId}`);
     console.log(`   Temperature: ${config.api.temperature}`);
@@ -149,6 +165,12 @@ async function main(): Promise<void> {
     console.log("   ✓ Prompt processing pipeline");
     console.log("   ✓ Gemini API client");
     console.log("   ✓ Console formatter");
+    console.log("   ✓ Structured logging");
+
+    logger.info("Services initialized successfully", {
+      correlationId: logger.getCorrelationId(),
+    });
+
     console.log("\n🚀 Starting interactive REPL...");
     console.log();
 
@@ -158,6 +180,7 @@ async function main(): Promise<void> {
         mode: config.output.raw ? "raw" : "formatted",
         streaming: config.output.streaming,
       },
+      loggerFactory: services.loggerFactory,
     };
 
     const repl = new InteractiveREPL(services, replOptions);

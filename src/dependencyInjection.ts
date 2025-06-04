@@ -22,8 +22,10 @@ import {
 // Infrastructure adapters
 import { GoogleGeminiAdapter } from "./adapters/geminiClient";
 import { ConsoleFormatter } from "./adapters/consoleFormatter";
+import { createPinoLoggerFactory } from "./infrastructure/pinoLogger";
 import { type GeminiAPIClient } from "./core/apiClient";
 import { type OutputFormatter } from "./core/formatter";
+import { type LoggerFactory } from "./core/logger";
 
 /**
  * Container holding all application services with their dependencies properly wired.
@@ -45,6 +47,9 @@ export interface ServiceContainer {
 
   /** Prompt enhancer */
   readonly enhancer: PromptEnhancer;
+
+  /** Logger factory for creating contextual loggers */
+  readonly loggerFactory: LoggerFactory;
 }
 
 /**
@@ -68,6 +73,7 @@ export function createServiceContainer(config: AppConfig): ServiceContainer {
   // Create infrastructure adapters (depend on configuration)
   const apiClient = new GoogleGeminiAdapter(config.api);
   const formatter = new ConsoleFormatter();
+  const loggerFactory = createPinoLoggerFactory(config.logging);
 
   // Create orchestrating services (depend on core services)
   const promptProcessingService = new DefaultPromptProcessingService(
@@ -81,6 +87,7 @@ export function createServiceContainer(config: AppConfig): ServiceContainer {
     formatter,
     validator,
     enhancer,
+    loggerFactory,
   };
 }
 
@@ -112,6 +119,9 @@ export function createValidatedServiceContainer(
     }
     if (!container.formatter) {
       throw new Error("Failed to create output formatter");
+    }
+    if (!container.loggerFactory) {
+      throw new Error("Failed to create logger factory");
     }
 
     return container;

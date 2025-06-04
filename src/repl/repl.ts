@@ -16,6 +16,7 @@ import {
 } from "../core/promptProcessor";
 import { type FormatOptions } from "../core/formatter";
 import { sanitizeUserInput, validateInputSafety } from "../core/security";
+import { type LoggerFactory, type Logger } from "../core/logger";
 
 /**
  * Configuration options for the REPL.
@@ -35,6 +36,9 @@ export interface REPLOptions {
 
   /** Enable debug mode with additional logging */
   readonly debug?: boolean;
+
+  /** Logger factory for creating contextual loggers */
+  readonly loggerFactory?: LoggerFactory;
 }
 
 /**
@@ -82,11 +86,19 @@ export interface REPL {
 export class InteractiveREPL implements REPL {
   private readline: readline.Interface | undefined;
   private isRunning = false;
+  private logger: Logger;
 
   constructor(
     private readonly services: ServiceContainer,
     private readonly options: REPLOptions = {},
-  ) {}
+  ) {
+    // Create logger for REPL operations
+    const loggerFactory = options.loggerFactory || services.loggerFactory;
+    this.logger = loggerFactory.createRootLogger({
+      component: "repl",
+      operation: "session",
+    });
+  }
 
   /**
    * Starts the interactive REPL loop.
@@ -95,6 +107,10 @@ export class InteractiveREPL implements REPL {
     if (this.isRunning) {
       throw new Error("REPL is already running");
     }
+
+    this.logger.info("Starting REPL session", {
+      sessionId: this.logger.getCorrelationId(),
+    });
 
     this.isRunning = true;
     this.setupReadline();
@@ -285,12 +301,34 @@ export class InteractiveREPL implements REPL {
    * Handles regular prompts by processing them through the pipeline.
    */
   private async handlePrompt(content: string): Promise<void> {
+    // Create a new logger with fresh correlation ID for this user interaction
+    const loggerFactory =
+      this.options.loggerFactory || this.services.loggerFactory;
+    const requestLogger = loggerFactory.createRootLogger({
+      component: "repl",
+      operation: "prompt_processing",
+      sessionId: this.logger.getCorrelationId(),
+    });
+
     try {
+      requestLogger.info("Processing user prompt", {
+        promptLength: content.length,
+        hasContent: content.trim().length > 0,
+      });
+
       // Sanitize user input to prevent injection attacks
       const sanitizedContent = sanitizeUserInput(content);
 
       // Validate input safety to prevent credential leakage
       if (!validateInputSafety(sanitizedContent)) {
+        requestLogger.warn(
+          "User input contains potentially sensitive information",
+          {
+            inputLength: content.length,
+            sanitizedLength: sanitizedContent.length,
+          },
+        );
+
         await this.displayError(
           "Input contains potentially sensitive information (API keys, tokens, etc.). " +
             "Please remove any credentials from your prompt and try again.",
@@ -298,21 +336,44 @@ export class InteractiveREPL implements REPL {
         return;
       }
 
+      requestLogger.debug("User input validated and sanitized", {
+        originalLength: content.length,
+        sanitizedLength: sanitizedContent.length,
+      });
+
       // Create raw prompt with sanitized content
       const rawPrompt = createRawPrompt(sanitizedContent);
 
       // Process through the pipeline
+      requestLogger.debug("Sending prompt to processing service");
       const result =
         await this.services.promptProcessingService.processPrompt(rawPrompt);
 
       if (isOk(result)) {
+        requestLogger.info("Prompt processed successfully", {
+          enhancedContentLength: result.value.content.length,
+          processingTimeMs: Date.now() - Date.now(), // TODO: Add proper timing
+        });
+
         await this.displayEnhancedPrompt(result.value);
       } else {
-        await this.displayError(
-          `Prompt processing failed: ${(result as { error: { message: string } }).error.message}`,
-        );
+        const errorMessage = (result as { error: { message: string } }).error
+          .message;
+        requestLogger.error("Prompt processing failed", undefined, {
+          errorMessage,
+        });
+
+        await this.displayError(`Prompt processing failed: ${errorMessage}`);
       }
     } catch (error) {
+      requestLogger.error(
+        "Unexpected error during prompt processing",
+        error as Error,
+        {
+          errorType: error instanceof Error ? error.name : "unknown",
+        },
+      );
+
       await this.displayError(
         `Unexpected error: ${error instanceof Error ? error.message : String(error)}`,
       );
