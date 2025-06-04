@@ -81,10 +81,10 @@
 
 ### Domain Error Types (`src/core/errors.ts`)
 
-- [ ] Define custom error classes for different failure scenarios
-- [ ] Create network error, validation error, and API error types
-- [ ] Implement error serialization for logging
-- [ ] Add proper error messages for user-facing scenarios
+- [x] Define custom error classes for different failure scenarios
+- [x] Create network error, validation error, and API error types
+- [x] Implement error serialization for logging
+- [x] Add proper error messages for user-facing scenarios
 
 ### Security Implementation
 
