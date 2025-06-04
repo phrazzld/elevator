@@ -12,6 +12,7 @@ import {
   ConfigurationError,
   type AppConfig,
 } from "./config.js";
+import { createValidatedServiceContainer } from "./dependencyInjection.js";
 
 /**
  * CLI argument interface matching configuration options
@@ -108,12 +109,22 @@ function main(): void {
     // Create configuration using existing pure function
     const config: AppConfig = createAppConfig(mergedEnv);
 
-    console.log("Configuration loaded successfully:");
-    console.log(`Model: ${config.api.modelId}`);
-    console.log(`Temperature: ${config.api.temperature}`);
-    console.log(`Streaming: ${config.output.streaming}`);
-    console.log(`Raw mode: ${config.output.raw}`);
-    console.log("\n🚀 REPL implementation coming next!");
+    // Create and wire all application services
+    createValidatedServiceContainer(config);
+
+    console.log("✅ Configuration loaded successfully");
+    console.log(`   Model: ${config.api.modelId}`);
+    console.log(`   Temperature: ${config.api.temperature}`);
+    console.log(`   Streaming: ${config.output.streaming}`);
+    console.log(`   Raw mode: ${config.output.raw}`);
+    console.log("\n🔧 Services initialized:");
+    console.log("   ✓ Prompt processing pipeline");
+    console.log("   ✓ Gemini API client");
+    console.log("   ✓ Console formatter");
+    console.log("\n🚀 Ready for REPL implementation!");
+
+    // TODO: Replace this with actual REPL when implemented
+    console.log("\n💡 Next: Implement REPL to accept user prompts");
   } catch (error) {
     if (error instanceof ConfigurationError) {
       console.error(`Configuration Error: ${error.message}`);
