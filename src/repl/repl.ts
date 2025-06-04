@@ -15,6 +15,7 @@ import {
   type EnhancedPrompt,
 } from "../core/promptProcessor";
 import { type FormatOptions } from "../core/formatter";
+import { sanitizeUserInput, validateInputSafety } from "../core/security";
 
 /**
  * Configuration options for the REPL.
@@ -285,8 +286,20 @@ export class InteractiveREPL implements REPL {
    */
   private async handlePrompt(content: string): Promise<void> {
     try {
-      // Create raw prompt
-      const rawPrompt = createRawPrompt(content);
+      // Sanitize user input to prevent injection attacks
+      const sanitizedContent = sanitizeUserInput(content);
+
+      // Validate input safety to prevent credential leakage
+      if (!validateInputSafety(sanitizedContent)) {
+        await this.displayError(
+          "Input contains potentially sensitive information (API keys, tokens, etc.). " +
+            "Please remove any credentials from your prompt and try again.",
+        );
+        return;
+      }
+
+      // Create raw prompt with sanitized content
+      const rawPrompt = createRawPrompt(sanitizedContent);
 
       // Process through the pipeline
       const result =

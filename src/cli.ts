@@ -14,6 +14,8 @@ import {
 } from "./config.js";
 import { createValidatedServiceContainer } from "./dependencyInjection.js";
 import { InteractiveREPL, type REPLOptions } from "./repl/repl.js";
+import { validateStartupSecurity } from "./core/security.js";
+import { toUserFriendlyError } from "./core/errors.js";
 
 /**
  * CLI argument interface matching configuration options
@@ -110,10 +112,35 @@ async function main(): Promise<void> {
     // Create configuration using existing pure function
     const config: AppConfig = createAppConfig(mergedEnv);
 
+    // Validate security (including API key functionality)
+    console.log("🔐 Validating API key and security settings...");
+    const securityResult = await validateStartupSecurity(config);
+
+    if (securityResult.success === false) {
+      const userFriendlyError = toUserFriendlyError(securityResult.error);
+      console.error(
+        `\n❌ ${userFriendlyError.title}: ${userFriendlyError.message}`,
+      );
+
+      if (
+        userFriendlyError.suggestions &&
+        userFriendlyError.suggestions.length > 0
+      ) {
+        console.error("\n💡 Suggestions:");
+        userFriendlyError.suggestions.forEach((suggestion) => {
+          console.error(`   • ${suggestion}`);
+        });
+      }
+
+      process.exit(1);
+    }
+
+    console.log("✅ API key validated successfully");
+
     // Create and wire all application services
     const services = createValidatedServiceContainer(config);
 
-    console.log("✅ Configuration loaded successfully");
+    console.log("✅ Configuration and security validation complete");
     console.log(`   Model: ${config.api.modelId}`);
     console.log(`   Temperature: ${config.api.temperature}`);
     console.log(`   Streaming: ${config.output.streaming}`);
