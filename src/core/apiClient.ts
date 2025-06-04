@@ -29,6 +29,14 @@ export interface APIRequestOptions {
 
   /** Additional safety settings */
   readonly safetySettings?: Record<string, unknown>;
+
+  /** Optional lifecycle hooks for infrastructure integration */
+  readonly lifecycle?: {
+    /** Called when request starts processing */
+    readonly onStart?: () => void | Promise<void>;
+    /** Called when request completes (success or error) */
+    readonly onComplete?: () => void | Promise<void>;
+  };
 }
 
 /**

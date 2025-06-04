@@ -259,6 +259,140 @@ describe("GoogleGeminiAdapter", () => {
     });
   });
 
+  describe("generateContent with lifecycle hooks", () => {
+    it("should call onStart and onComplete on success", async () => {
+      const mockResponse = {
+        response: {
+          text: () => "Generated response",
+          candidates: [{ finishReason: "STOP", safetyRatings: [] }],
+          usageMetadata: {
+            promptTokenCount: 10,
+            candidatesTokenCount: 20,
+            totalTokenCount: 30,
+          },
+        },
+      };
+
+      mockGenerateContent.mockResolvedValue(mockResponse);
+
+      const onStart = vi.fn();
+      const onComplete = vi.fn();
+
+      const prompt = createMockEnhancedPrompt();
+      const options = {
+        lifecycle: { onStart, onComplete },
+      };
+
+      const result = await adapter.generateContent(prompt, options);
+
+      expect(isOk(result)).toBe(true);
+      expect(onStart).toHaveBeenCalledTimes(1);
+      expect(onComplete).toHaveBeenCalledTimes(1);
+      expect(onStart).toHaveBeenCalledBefore(mockGenerateContent);
+    });
+
+    it("should call onComplete even on error", async () => {
+      mockGenerateContent.mockRejectedValue(new Error("API error"));
+
+      const onStart = vi.fn();
+      const onComplete = vi.fn();
+
+      const prompt = createMockEnhancedPrompt();
+      const options = {
+        lifecycle: { onStart, onComplete },
+      };
+
+      const result = await adapter.generateContent(prompt, options);
+
+      expect(isErr(result)).toBe(true);
+      expect(onStart).toHaveBeenCalledTimes(1);
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    });
+
+    it("should handle async lifecycle hooks", async () => {
+      const mockResponse = {
+        response: {
+          text: () => "Generated response",
+          candidates: [{ finishReason: "STOP", safetyRatings: [] }],
+          usageMetadata: {
+            promptTokenCount: 10,
+            candidatesTokenCount: 20,
+            totalTokenCount: 30,
+          },
+        },
+      };
+
+      mockGenerateContent.mockResolvedValue(mockResponse);
+
+      const onStartComplete = vi.fn();
+      const onCompleteComplete = vi.fn();
+
+      const onStart = vi.fn().mockImplementation(async () => {
+        // Use Promise.resolve() to make it async without setTimeout
+        await Promise.resolve();
+        onStartComplete();
+      });
+      const onComplete = vi.fn().mockImplementation(async () => {
+        // Use Promise.resolve() to make it async without setTimeout
+        await Promise.resolve();
+        onCompleteComplete();
+      });
+
+      const prompt = createMockEnhancedPrompt();
+      const options = {
+        lifecycle: { onStart, onComplete },
+      };
+
+      const result = await adapter.generateContent(prompt, options);
+
+      expect(isOk(result)).toBe(true);
+      expect(onStartComplete).toHaveBeenCalled();
+      expect(onCompleteComplete).toHaveBeenCalled();
+    });
+
+    it("should not fail if lifecycle hook throws error", async () => {
+      const mockResponse = {
+        response: {
+          text: () => "Generated response",
+          candidates: [{ finishReason: "STOP", safetyRatings: [] }],
+          usageMetadata: {
+            promptTokenCount: 10,
+            candidatesTokenCount: 20,
+            totalTokenCount: 30,
+          },
+        },
+      };
+
+      mockGenerateContent.mockResolvedValue(mockResponse);
+
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      const onStart = vi.fn().mockImplementation(() => {
+        throw new Error("Hook error");
+      });
+      const onComplete = vi.fn();
+
+      const prompt = createMockEnhancedPrompt();
+      const options = {
+        lifecycle: { onStart, onComplete },
+      };
+
+      const result = await adapter.generateContent(prompt, options);
+
+      expect(isOk(result)).toBe(true);
+      expect(onStart).toHaveBeenCalled();
+      expect(onComplete).toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Error in lifecycle hook onStart:",
+        expect.any(Error),
+      );
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
   describe("generateStreamingContent", () => {
     it("should successfully stream content", async () => {
       const mockStream = {
@@ -381,6 +515,157 @@ describe("GoogleGeminiAdapter", () => {
       if (secondResult && isErr(secondResult)) {
         expect(secondResult.error.code).toBe("UNKNOWN_ERROR");
       }
+    });
+  });
+
+  describe("generateStreamingContent with lifecycle hooks", () => {
+    it("should call onStart and onComplete on success", async () => {
+      const mockStream = {
+        stream: (async function* () {
+          await Promise.resolve();
+          yield {
+            candidates: [
+              {
+                content: { parts: [{ text: "Streaming text" }] },
+                finishReason: "STOP",
+              },
+            ],
+          };
+        })(),
+        response: Promise.resolve({
+          usageMetadata: {
+            promptTokenCount: 5,
+            candidatesTokenCount: 10,
+            totalTokenCount: 15,
+          },
+        }),
+      };
+
+      mockGenerateContentStream.mockResolvedValue(mockStream);
+
+      const onStart = vi.fn();
+      const onComplete = vi.fn();
+
+      const prompt = createMockEnhancedPrompt();
+      const options = {
+        lifecycle: { onStart, onComplete },
+      };
+
+      const results: string[] = [];
+      for await (const result of adapter.generateStreamingContent(
+        prompt,
+        options,
+      )) {
+        if (isOk(result)) {
+          results.push(result.value.content);
+        }
+      }
+
+      expect(results).toHaveLength(1);
+      expect(onStart).toHaveBeenCalledTimes(1);
+      expect(onComplete).toHaveBeenCalledTimes(1);
+      expect(onStart).toHaveBeenCalledBefore(mockGenerateContentStream);
+    });
+
+    it("should call onComplete even on streaming error", async () => {
+      const mockStream = {
+        stream: (async function* () {
+          await Promise.resolve();
+          // Yield an empty result to fix the require-yield lint error
+          yield {
+            candidates: [
+              {
+                content: { parts: [{ text: "Start" }] },
+                finishReason: null,
+              },
+            ],
+          };
+          throw new Error("Stream error");
+        })(),
+        response: Promise.resolve({}),
+      };
+
+      mockGenerateContentStream.mockResolvedValue(mockStream);
+
+      const onStart = vi.fn();
+      const onComplete = vi.fn();
+
+      const prompt = createMockEnhancedPrompt();
+      const options = {
+        lifecycle: { onStart, onComplete },
+      };
+
+      const results: Result<APIStreamChunk, APIError>[] = [];
+      for await (const result of adapter.generateStreamingContent(
+        prompt,
+        options,
+      )) {
+        results.push(result);
+      }
+
+      // Should receive both the successful chunk and the error
+      expect(results).toHaveLength(2);
+
+      // First result should be the successful chunk
+      const firstResult = results[0];
+      expect(firstResult).toBeDefined();
+      expect(isOk(firstResult!)).toBe(true);
+      if (firstResult && isOk(firstResult)) {
+        expect(firstResult.value.content).toBe("Start");
+      }
+
+      // Second result should be the error
+      const secondResult = results[1];
+      expect(secondResult).toBeDefined();
+      expect(isErr(secondResult!)).toBe(true);
+      if (secondResult && isErr(secondResult)) {
+        expect(secondResult.error.message).toContain("Stream error");
+      }
+
+      expect(onStart).toHaveBeenCalledTimes(1);
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    });
+
+    it("should call onComplete on connection setup failure", async () => {
+      vi.useFakeTimers();
+
+      mockGenerateContentStream.mockRejectedValue(
+        new Error("Connection failed"),
+      );
+
+      const onStart = vi.fn();
+      const onComplete = vi.fn();
+
+      const prompt = createMockEnhancedPrompt();
+      const options = {
+        lifecycle: { onStart, onComplete },
+      };
+
+      const resultsPromise = (async () => {
+        const results: Result<APIStreamChunk, APIError>[] = [];
+        for await (const result of adapter.generateStreamingContent(
+          prompt,
+          options,
+        )) {
+          results.push(result);
+        }
+        return results;
+      })();
+
+      // Advance timers for retries
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+      await vi.advanceTimersToNextTimerAsync();
+
+      const results = await resultsPromise;
+
+      expect(results).toHaveLength(1);
+      const firstResult = results[0];
+      expect(firstResult && isErr(firstResult)).toBe(true);
+      expect(onStart).toHaveBeenCalledTimes(1);
+      expect(onComplete).toHaveBeenCalledTimes(1);
+
+      vi.useRealTimers();
     });
   });
 

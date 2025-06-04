@@ -15,7 +15,11 @@ export interface FormatOptions {
   /** Whether to apply colors and styling */
   readonly enableStyling?: boolean;
 
-  /** Output mode preference */
+  /**
+   * Output mode preference:
+   * - "formatted": Apply colors, styling, and interactive elements (default)
+   * - "raw": Plain text output with no colors, styling, or progress indicators
+   */
   readonly mode?: "formatted" | "raw";
 
   /** Whether output should be optimized for streaming */

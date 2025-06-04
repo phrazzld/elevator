@@ -112,6 +112,7 @@ export class ConsoleFormatter implements OutputFormatter {
           createFormatterError(
             "INVALID_CONTENT",
             "Content cannot be null or undefined",
+            { originalContent: String(content), ...(options && { options }) },
           ),
         );
       }
@@ -212,19 +213,31 @@ export class ConsoleFormatter implements OutputFormatter {
     options?: FormatOptions,
   ): Promise<Result<ProgressIndicator, FormatterError>> {
     try {
-      // Don't create spinners in non-TTY environments or raw mode
-      if (!this.isTTY || options?.mode === "raw") {
-        return success({
-          message,
-          stage: "thinking",
-          active: false,
-        });
-      }
-
       // Generate unique ID
       const id = `progress-${++this.indicatorIdCounter}`;
 
-      // Create ora spinner
+      // Don't create spinners in non-TTY environments or raw mode
+      if (!this.isTTY || options?.mode === "raw") {
+        // Create internal indicator without spinner for raw mode
+        const indicator: InternalProgressIndicator = {
+          id,
+          message,
+          stage: "thinking",
+          active: false,
+          spinner: null as unknown as Ora, // No spinner in raw mode
+        };
+
+        // Track indicator even in raw mode for update/complete operations
+        this.activeIndicators.set(id, indicator);
+
+        return success({
+          message: indicator.message,
+          stage: indicator.stage,
+          active: indicator.active,
+        });
+      }
+
+      // Create ora spinner for normal mode
       const spinner = ora({
         text: message,
         spinner: "dots",
@@ -280,13 +293,13 @@ export class ConsoleFormatter implements OutputFormatter {
         );
       }
 
-      // Update the spinner text
-      if (update.message !== undefined) {
+      // Update the spinner text (only if spinner exists - not in raw mode)
+      if (internalIndicator.spinner && update.message !== undefined) {
         internalIndicator.spinner.text = update.message;
       }
 
-      // Update spinner based on stage
-      if (update.stage === "complete") {
+      // Update spinner based on stage (only if spinner exists - not in raw mode)
+      if (internalIndicator.spinner && update.stage === "complete") {
         internalIndicator.spinner.succeed();
       }
 
@@ -342,8 +355,10 @@ export class ConsoleFormatter implements OutputFormatter {
         return success(undefined);
       }
 
-      // Stop the spinner
-      internalIndicator.spinner.stop();
+      // Stop the spinner (only if spinner exists - not in raw mode)
+      if (internalIndicator.spinner) {
+        internalIndicator.spinner.stop();
+      }
 
       // Remove from active indicators
       this.activeIndicators.delete(internalIndicator.id);
@@ -407,7 +422,8 @@ export class ConsoleFormatter implements OutputFormatter {
    */
   private pauseAllSpinners(): void {
     this.activeIndicators.forEach((indicator) => {
-      if (indicator.spinner.isSpinning) {
+      // Only pause spinner if it exists (not in raw mode)
+      if (indicator.spinner && indicator.spinner.isSpinning) {
         indicator.spinner.stop();
       }
     });
@@ -418,7 +434,12 @@ export class ConsoleFormatter implements OutputFormatter {
    */
   private resumeAllSpinners(): void {
     this.activeIndicators.forEach((indicator) => {
-      if (!indicator.spinner.isSpinning && indicator.active) {
+      // Only resume spinner if it exists (not in raw mode)
+      if (
+        indicator.spinner &&
+        !indicator.spinner.isSpinning &&
+        indicator.active
+      ) {
         indicator.spinner.start();
       }
     });
@@ -429,7 +450,10 @@ export class ConsoleFormatter implements OutputFormatter {
    */
   public cleanup(): void {
     this.activeIndicators.forEach((indicator) => {
-      indicator.spinner.stop();
+      // Only stop spinner if it exists (not in raw mode)
+      if (indicator.spinner) {
+        indicator.spinner.stop();
+      }
     });
     this.activeIndicators.clear();
   }

@@ -339,6 +339,24 @@ function buildErrorDetails(
 }
 
 /**
+ * Safely executes a lifecycle hook, catching and logging any errors.
+ * Hook errors should not fail the main operation.
+ */
+async function executeLifecycleHook(
+  hook: (() => void | Promise<void>) | undefined,
+  phase: "onStart" | "onComplete",
+): Promise<void> {
+  if (!hook) return;
+
+  try {
+    await Promise.resolve(hook());
+  } catch (error) {
+    // Log error but don't throw - lifecycle hooks shouldn't break API calls
+    console.error(`Error in lifecycle hook ${phase}:`, error);
+  }
+}
+
+/**
  * Maps Google SDK errors to our domain API errors with comprehensive coverage.
  */
 function mapError(error: unknown): APIError {
@@ -677,10 +695,20 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
     prompt: EnhancedPrompt,
     options?: APIRequestOptions,
   ): Promise<Result<APIResponse, APIError>> {
-    return withRetry(
-      () => this.generateContentCore(prompt, options),
-      this.config.maxRetries,
-    );
+    // Call onStart lifecycle hook before starting
+    await executeLifecycleHook(options?.lifecycle?.onStart, "onStart");
+
+    try {
+      // Execute with retry logic
+      const result = await withRetry(
+        () => this.generateContentCore(prompt, options),
+        this.config.maxRetries,
+      );
+      return result;
+    } finally {
+      // Always call onComplete, even if an error occurred
+      await executeLifecycleHook(options?.lifecycle?.onComplete, "onComplete");
+    }
   }
 
   /**
@@ -744,146 +772,155 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
   ): AsyncIterable<Result<APIStreamChunk, APIError>> {
     const startTime = Date.now();
 
-    // Retry the initial connection setup
-    const connectionResult = await withRetry(
-      () => this.createStreamingConnection(prompt, options),
-      this.config.maxRetries,
-    );
+    // Call onStart lifecycle hook before starting
+    await executeLifecycleHook(options?.lifecycle?.onStart, "onStart");
 
-    if (isErr(connectionResult)) {
-      yield failure(connectionResult.error);
-      return;
-    }
+    try {
+      // Retry the initial connection setup
+      const connectionResult = await withRetry(
+        () => this.createStreamingConnection(prompt, options),
+        this.config.maxRetries,
+      );
 
-    if (isOk(connectionResult)) {
-      const streamResult = connectionResult.value;
+      if (isErr(connectionResult)) {
+        yield failure(connectionResult.error);
+        return;
+      }
 
-      try {
-        // Stream chunks as they arrive
-        for await (const chunk of streamResult.stream) {
-          const candidateChunk = chunk as {
-            candidates?: Array<{
-              content?: { parts?: Array<{ text?: string }> };
-              finishReason?: string;
-              safetyRatings?: unknown[];
-              citationMetadata?: unknown;
-            }>;
-          };
-          const candidate = candidateChunk.candidates?.[0];
+      if (isOk(connectionResult)) {
+        const streamResult = connectionResult.value;
 
-          if (!candidate) continue;
-
-          const text = candidate.content?.parts?.[0]?.text;
-          if (text) {
-            const isLast =
-              (candidate.finishReason as string) === "STOP" ||
-              (candidate.finishReason as string) === "MAX_TOKENS" ||
-              (candidate.finishReason as string) === "SAFETY";
-
-            let streamChunk: APIStreamChunk = {
-              content: text,
-              done: isLast,
+        try {
+          // Stream chunks as they arrive
+          for await (const chunk of streamResult.stream) {
+            const candidateChunk = chunk as {
+              candidates?: Array<{
+                content?: { parts?: Array<{ text?: string }> };
+                finishReason?: string;
+                safetyRatings?: unknown[];
+                citationMetadata?: unknown;
+              }>;
             };
+            const candidate = candidateChunk.candidates?.[0];
 
-            // If this is the last chunk, try to get usage metadata
-            if (isLast) {
-              try {
-                const response = (await streamResult.response) as {
-                  usageMetadata?: {
-                    promptTokenCount?: number;
-                    candidatesTokenCount?: number;
-                    totalTokenCount?: number;
+            if (!candidate) continue;
+
+            const text = candidate.content?.parts?.[0]?.text;
+            if (text) {
+              const isLast =
+                (candidate.finishReason as string) === "STOP" ||
+                (candidate.finishReason as string) === "MAX_TOKENS" ||
+                (candidate.finishReason as string) === "SAFETY";
+
+              let streamChunk: APIStreamChunk = {
+                content: text,
+                done: isLast,
+              };
+
+              // If this is the last chunk, try to get usage metadata
+              if (isLast) {
+                try {
+                  const response = (await streamResult.response) as {
+                    usageMetadata?: {
+                      promptTokenCount?: number;
+                      candidatesTokenCount?: number;
+                      totalTokenCount?: number;
+                    };
                   };
-                };
-                if (response.usageMetadata) {
-                  streamChunk = {
-                    ...streamChunk,
-                    usage: {
-                      promptTokens:
-                        response.usageMetadata.promptTokenCount ?? 0,
-                      completionTokens:
-                        response.usageMetadata.candidatesTokenCount ?? 0,
-                      totalTokens: response.usageMetadata.totalTokenCount ?? 0,
-                    },
-                    metadata: {
-                      timestamp: new Date(),
-                      duration: Date.now() - startTime,
-                      finishReason: mapFinishReason(candidate.finishReason),
-                    },
-                  };
+                  if (response.usageMetadata) {
+                    streamChunk = {
+                      ...streamChunk,
+                      usage: {
+                        promptTokens:
+                          response.usageMetadata.promptTokenCount ?? 0,
+                        completionTokens:
+                          response.usageMetadata.candidatesTokenCount ?? 0,
+                        totalTokens:
+                          response.usageMetadata.totalTokenCount ?? 0,
+                      },
+                      metadata: {
+                        timestamp: new Date(),
+                        duration: Date.now() - startTime,
+                        finishReason: mapFinishReason(candidate.finishReason),
+                      },
+                    };
+                  }
+                } catch {
+                  // Usage metadata might not be available
                 }
-              } catch {
-                // Usage metadata might not be available
               }
+
+              yield success(streamChunk);
             }
 
-            yield success(streamChunk);
-          }
+            // Check for safety blocks
+            if ((candidate.finishReason as string) === "SAFETY") {
+              // Extract detailed safety information
+              const safetyRatings = (candidate.safetyRatings ||
+                []) as SafetyRating[];
+              const triggeredCategories: TriggeredCategory[] = safetyRatings
+                .filter(
+                  (rating) =>
+                    rating.probability === "HIGH" ||
+                    rating.probability === "MEDIUM",
+                )
+                .map((rating) => ({
+                  category:
+                    rating.category
+                      ?.replace("HARM_CATEGORY_", "")
+                      .toLowerCase() || "unknown",
+                  probability: rating.probability?.toLowerCase() || "unknown",
+                }));
 
-          // Check for safety blocks
-          if ((candidate.finishReason as string) === "SAFETY") {
-            // Extract detailed safety information
-            const safetyRatings = (candidate.safetyRatings ||
-              []) as SafetyRating[];
-            const triggeredCategories: TriggeredCategory[] = safetyRatings
-              .filter(
-                (rating) =>
-                  rating.probability === "HIGH" ||
-                  rating.probability === "MEDIUM",
-              )
-              .map((rating) => ({
-                category:
-                  rating.category
-                    ?.replace("HARM_CATEGORY_", "")
-                    .toLowerCase() || "unknown",
-                probability: rating.probability?.toLowerCase() || "unknown",
-              }));
+              const categoriesText =
+                triggeredCategories.length > 0
+                  ? triggeredCategories
+                      .map((cat) => `${cat.category} (${cat.probability})`)
+                      .join(", ")
+                  : "unspecified safety concerns";
 
-            const categoriesText =
-              triggeredCategories.length > 0
-                ? triggeredCategories
-                    .map((cat) => `${cat.category} (${cat.probability})`)
-                    .join(", ")
-                : "unspecified safety concerns";
-
-            yield failure(
-              createAPIError(
-                "CONTENT_FILTERED",
-                `Content was blocked by safety filters: ${categoriesText}`,
-                {
-                  retryable: false,
-                  originalError: {
-                    safetyRatings: candidate.safetyRatings,
-                    triggeredCategories,
+              yield failure(
+                createAPIError(
+                  "CONTENT_FILTERED",
+                  `Content was blocked by safety filters: ${categoriesText}`,
+                  {
+                    retryable: false,
+                    originalError: {
+                      safetyRatings: candidate.safetyRatings,
+                      triggeredCategories,
+                    },
                   },
-                },
-              ),
-            );
-            return;
-          }
+                ),
+              );
+              return;
+            }
 
-          // Check for recitation blocks in streaming
-          if ((candidate.finishReason as string) === "RECITATION") {
-            yield failure(
-              createAPIError(
-                "CONTENT_FILTERED",
-                "Content was blocked due to recitation (potential copyright or plagiarism concerns)",
-                {
-                  retryable: false,
-                  originalError: {
-                    finishReason: candidate.finishReason,
-                    citationMetadata: candidate.citationMetadata,
+            // Check for recitation blocks in streaming
+            if ((candidate.finishReason as string) === "RECITATION") {
+              yield failure(
+                createAPIError(
+                  "CONTENT_FILTERED",
+                  "Content was blocked due to recitation (potential copyright or plagiarism concerns)",
+                  {
+                    retryable: false,
+                    originalError: {
+                      finishReason: candidate.finishReason,
+                      citationMetadata: candidate.citationMetadata,
+                    },
                   },
-                },
-              ),
-            );
-            return;
+                ),
+              );
+              return;
+            }
           }
+        } catch (streamError) {
+          // If error occurs during streaming, yield it
+          yield failure(mapError(streamError));
         }
-      } catch (streamError) {
-        // If error occurs during streaming, yield it
-        yield failure(mapError(streamError));
       }
+    } finally {
+      // Always call onComplete, even if an error occurred
+      await executeLifecycleHook(options?.lifecycle?.onComplete, "onComplete");
     }
   }
 

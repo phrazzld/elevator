@@ -369,4 +369,270 @@ describe("ConsoleFormatter", () => {
       }
     });
   });
+
+  describe("Raw mode formatting", () => {
+    describe("Progress indicators in raw mode", () => {
+      it("should create inactive progress indicator in raw mode", async () => {
+        const options: FormatOptions = { mode: "raw" };
+        const result = await formatter.createProgress("Loading...", options);
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.message).toBe("Loading...");
+          expect(result.value.stage).toBe("thinking");
+          expect(result.value.active).toBe(false); // Should be inactive in raw mode
+        }
+      });
+
+      it("should update progress silently in raw mode", async () => {
+        const options: FormatOptions = { mode: "raw" };
+        const createResult = await formatter.createProgress(
+          "Loading...",
+          options,
+        );
+        expect(isOk(createResult)).toBe(true);
+
+        if (isOk(createResult)) {
+          const indicator = createResult.value;
+          const updateResult = await formatter.updateProgress(indicator, {
+            message: "Processing...",
+            stage: "processing",
+            progress: 50,
+          });
+
+          expect(isOk(updateResult)).toBe(true);
+          if (isOk(updateResult)) {
+            expect(updateResult.value.message).toBe("Processing...");
+            expect(updateResult.value.stage).toBe("processing");
+            expect(updateResult.value.progress).toBe(50);
+            expect(updateResult.value.active).toBe(false); // Still inactive
+          }
+        }
+      });
+
+      it("should complete progress silently in raw mode", async () => {
+        const options: FormatOptions = { mode: "raw" };
+        const createResult = await formatter.createProgress(
+          "Loading...",
+          options,
+        );
+        expect(isOk(createResult)).toBe(true);
+
+        if (isOk(createResult)) {
+          const indicator = createResult.value;
+          const completeResult = await formatter.completeProgress(indicator);
+
+          expect(isOk(completeResult)).toBe(true);
+          // Should complete without errors even though no spinner was created
+        }
+      });
+
+      it("should handle multiple raw mode progress indicators", async () => {
+        const options: FormatOptions = { mode: "raw" };
+        const result1 = await formatter.createProgress("Task 1", options);
+        const result2 = await formatter.createProgress("Task 2", options);
+
+        expect(isOk(result1)).toBe(true);
+        expect(isOk(result2)).toBe(true);
+
+        if (isOk(result1) && isOk(result2)) {
+          expect(result1.value.active).toBe(false);
+          expect(result2.value.active).toBe(false);
+
+          // Should be able to complete both without issues
+          const complete1 = await formatter.completeProgress(result1.value);
+          const complete2 = await formatter.completeProgress(result2.value);
+
+          expect(isOk(complete1)).toBe(true);
+          expect(isOk(complete2)).toBe(true);
+        }
+      });
+    });
+
+    describe("Stream formatting in raw mode", () => {
+      it("should format stream chunks in raw mode", async () => {
+        const options: FormatOptions = { mode: "raw" };
+        const result = await formatter.formatStreamChunk("chunk data", options);
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe("chunk data");
+          expect(result.value.metadata).toEqual({
+            styled: false,
+            mode: "raw",
+            contentType: "content",
+          });
+        }
+      });
+
+      it("should handle multiple stream chunks in raw mode", async () => {
+        const options: FormatOptions = { mode: "raw" };
+        const result1 = await formatter.formatStreamChunk("Hello ", options);
+        const result2 = await formatter.formatStreamChunk("world!", options);
+
+        expect(isOk(result1)).toBe(true);
+        expect(isOk(result2)).toBe(true);
+
+        if (isOk(result1) && isOk(result2)) {
+          expect(result1.value.text).toBe("Hello ");
+          expect(result2.value.text).toBe("world!");
+          expect(result1.value.metadata.mode).toBe("raw");
+          expect(result2.value.metadata.mode).toBe("raw");
+        }
+      });
+
+      it("should not pause/resume spinners in raw mode", async () => {
+        const options: FormatOptions = { mode: "raw" };
+
+        // Create a progress indicator in normal mode first
+        const normalProgress =
+          await formatter.createProgress("Normal progress");
+        expect(isOk(normalProgress)).toBe(true);
+
+        // Format stream chunk in raw mode - should not affect the normal progress
+        const streamResult = await formatter.formatStreamChunk("data", options);
+        expect(isOk(streamResult)).toBe(true);
+
+        if (isOk(normalProgress)) {
+          await formatter.completeProgress(normalProgress.value);
+        }
+      });
+    });
+
+    describe("Raw mode edge cases", () => {
+      it("should ignore styling options in raw mode", async () => {
+        const options: FormatOptions = {
+          mode: "raw",
+          enableStyling: true, // Should be ignored
+          style: {
+            accent: "blue",
+            error: "red",
+          },
+        };
+        const result = await formatter.formatContent("Test content", options);
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe("Test content");
+          expect(result.value.metadata.styled).toBe(false);
+          expect(result.value.metadata.mode).toBe("raw");
+        }
+      });
+
+      it("should handle raw mode with enableStyling=false", async () => {
+        const options: FormatOptions = {
+          mode: "raw",
+          enableStyling: false, // Redundant but should work
+        };
+        const result = await formatter.formatContent("Test content", options);
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe("Test content");
+          expect(result.value.metadata.styled).toBe(false);
+          expect(result.value.metadata.mode).toBe("raw");
+        }
+      });
+
+      it("should handle complex errors in raw mode", async () => {
+        const complexError = new Error("Complex error");
+        complexError.stack =
+          "Error: Complex error\n    at test.js:1:1\n    at main.js:5:5";
+
+        const options: FormatOptions = { mode: "raw" };
+        const result = await formatter.formatError(complexError, options);
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe("Error: Complex error");
+          expect(result.value.text).not.toContain("test.js:1:1"); // No stack trace
+          expect(result.value.metadata.styled).toBe(false);
+          expect(result.value.metadata.mode).toBe("raw");
+          expect(result.value.metadata.contentType).toBe("error");
+        }
+      });
+
+      it("should handle streaming option with raw mode", async () => {
+        const options: FormatOptions = {
+          mode: "raw",
+          streaming: true,
+        };
+        const result = await formatter.formatStreamChunk(
+          "streaming data",
+          options,
+        );
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe("streaming data");
+          expect(result.value.metadata.mode).toBe("raw");
+        }
+      });
+    });
+
+    describe("Raw mode consistency", () => {
+      it("should return consistent metadata across all methods", async () => {
+        const options: FormatOptions = { mode: "raw" };
+
+        const contentResult = await formatter.formatContent("content", options);
+        const errorResult = await formatter.formatError(
+          new Error("error"),
+          options,
+        );
+        const streamResult = await formatter.formatStreamChunk(
+          "stream",
+          options,
+        );
+        const progressResult = await formatter.createProgress(
+          "progress",
+          options,
+        );
+
+        expect(isOk(contentResult)).toBe(true);
+        expect(isOk(errorResult)).toBe(true);
+        expect(isOk(streamResult)).toBe(true);
+        expect(isOk(progressResult)).toBe(true);
+
+        if (isOk(contentResult) && isOk(errorResult) && isOk(streamResult)) {
+          // All should report raw mode
+          expect(contentResult.value.metadata.mode).toBe("raw");
+          expect(errorResult.value.metadata.mode).toBe("raw");
+          expect(streamResult.value.metadata.mode).toBe("raw");
+
+          // All should report no styling
+          expect(contentResult.value.metadata.styled).toBe(false);
+          expect(errorResult.value.metadata.styled).toBe(false);
+          expect(streamResult.value.metadata.styled).toBe(false);
+        }
+      });
+
+      it("should handle null/undefined with raw mode", async () => {
+        const options: FormatOptions = { mode: "raw" };
+        const result = await formatter.formatContent(
+          null as unknown as string,
+          options,
+        );
+
+        expect(isErr(result)).toBe(true);
+        if (isErr(result)) {
+          expect(result.error.type).toBe("formatter");
+          expect(result.error.code).toBe("INVALID_CONTENT");
+          // Error should include the options in details
+          expect(result.error.details?.options).toEqual(options);
+        }
+      });
+
+      it("should preserve content exactly in raw mode", async () => {
+        const options: FormatOptions = { mode: "raw" };
+        const testContent = "Line 1\nLine 2\nSpecial chars: @#$%^&*()";
+        const result = await formatter.formatContent(testContent, options);
+
+        expect(isOk(result)).toBe(true);
+        if (isOk(result)) {
+          expect(result.value.text).toBe(testContent); // Exact preservation
+          expect(result.value.metadata.mode).toBe("raw");
+        }
+      });
+    });
+  });
 });
