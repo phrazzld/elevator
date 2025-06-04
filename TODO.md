@@ -70,12 +70,12 @@
 
 ### REPL Implementation (`src/repl/repl.ts`)
 
-- [ ] Create REPL interface and implementation
-- [ ] Set up readline for interactive input
-- [ ] Handle user input processing through core domain logic
-- [ ] Implement exit commands (exit, quit, Ctrl+C gracefully)
-- [ ] Add welcome and goodbye messages
-- [ ] Ensure proper error handling and display
+- [x] Create REPL interface and implementation
+- [x] Set up readline for interactive input
+- [x] Handle user input processing through core domain logic
+- [x] Implement exit commands (exit, quit, Ctrl+C gracefully)
+- [x] Add welcome and goodbye messages
+- [x] Ensure proper error handling and display
 
 ## Error Handling & Security
 

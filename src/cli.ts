@@ -13,6 +13,7 @@ import {
   type AppConfig,
 } from "./config.js";
 import { createValidatedServiceContainer } from "./dependencyInjection.js";
+import { InteractiveREPL, type REPLOptions } from "./repl/repl.js";
 
 /**
  * CLI argument interface matching configuration options
@@ -96,7 +97,7 @@ function createProgram(): Command {
 /**
  * Main CLI entry point. Parses arguments, creates configuration, and starts the application.
  */
-function main(): void {
+async function main(): Promise<void> {
   try {
     const program = createProgram();
     program.parse();
@@ -110,7 +111,7 @@ function main(): void {
     const config: AppConfig = createAppConfig(mergedEnv);
 
     // Create and wire all application services
-    createValidatedServiceContainer(config);
+    const services = createValidatedServiceContainer(config);
 
     console.log("✅ Configuration loaded successfully");
     console.log(`   Model: ${config.api.modelId}`);
@@ -121,10 +122,19 @@ function main(): void {
     console.log("   ✓ Prompt processing pipeline");
     console.log("   ✓ Gemini API client");
     console.log("   ✓ Console formatter");
-    console.log("\n🚀 Ready for REPL implementation!");
+    console.log("\n🚀 Starting interactive REPL...");
+    console.log();
 
-    // TODO: Replace this with actual REPL when implemented
-    console.log("\n💡 Next: Implement REPL to accept user prompts");
+    // Create and start the REPL
+    const replOptions: REPLOptions = {
+      formatOptions: {
+        mode: config.output.raw ? "raw" : "formatted",
+        streaming: config.output.streaming,
+      },
+    };
+
+    const repl = new InteractiveREPL(services, replOptions);
+    await repl.start();
   } catch (error) {
     if (error instanceof ConfigurationError) {
       console.error(`Configuration Error: ${error.message}`);
@@ -139,9 +149,7 @@ function main(): void {
 }
 
 // Execute main function - this is always the CLI entry point
-try {
-  main();
-} catch (error) {
+main().catch((error) => {
   console.error("Fatal error:", error);
   process.exit(1);
-}
+});
