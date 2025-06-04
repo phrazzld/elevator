@@ -71,6 +71,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "chalk": "^5.4.1",
+    "commander": "^14.0.0",
     "ora": "^8.2.0"
   }
 }

@@ -380,11 +380,11 @@ export function validateEnvironmentVariables(): AppConfig {
 }
 
 /**
- * Default application configuration object.
+ * Lazy-loaded default application configuration object.
  *
  * This immutable configuration object is created from environment variables
- * at module load time. It provides a convenient way to access validated
- * configuration throughout the application.
+ * when first accessed. It provides a convenient way to access validated
+ * configuration throughout the application without causing side effects during module import.
  *
  * @throws {ConfigurationError} When required environment variables are missing or invalid
  *
@@ -396,4 +396,13 @@ export function validateEnvironmentVariables(): AppConfig {
  * console.log(`Log level: ${config.logging.level}`);
  * ```
  */
-export const config: Readonly<AppConfig> = createAppConfig(process.env);
+let _config: Readonly<AppConfig> | undefined;
+
+export const config: Readonly<AppConfig> = new Proxy({} as AppConfig, {
+  get(_target, prop) {
+    if (!_config) {
+      _config = createAppConfig(process.env);
+    }
+    return _config[prop as keyof AppConfig];
+  },
+});

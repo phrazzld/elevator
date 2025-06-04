@@ -62,10 +62,10 @@
 
 ### CLI Entry Point (`src/cli.ts`)
 
-- [ ] Set up commander for argument parsing
-- [ ] Define CLI flags: --model, --temp, --stream, --raw
-- [ ] Map CLI flags to environment variable fallbacks
-- [ ] Add version and help support
+- [x] Set up commander for argument parsing
+- [x] Define CLI flags: --model, --temp, --stream, --raw
+- [x] Map CLI flags to environment variable fallbacks
+- [x] Add version and help support
 - [ ] Implement dependency injection setup (wire adapters to core)
 
 ### REPL Implementation (`src/repl/repl.ts`)
