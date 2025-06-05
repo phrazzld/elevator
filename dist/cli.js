@@ -7,6 +7,7 @@ const dependencyInjection_js_1 = require("./dependencyInjection.js");
 const repl_js_1 = require("./repl/repl.js");
 const security_js_1 = require("./core/security.js");
 const errors_js_1 = require("./core/errors.js");
+const promptProcessor_js_1 = require("./core/promptProcessor.js");
 function mergeCliWithEnv(cliArgs, env = process.env) {
     const merged = { ...env };
     if (cliArgs.model !== undefined) {
@@ -28,7 +29,8 @@ function createProgram() {
     program
         .name("prompt-elevator")
         .description("A lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash")
-        .version("0.1.0");
+        .version("0.1.0")
+        .argument("[prompt]", "Optional: single prompt to process (if omitted, starts interactive mode)");
     program
         .option("--model <model>", "Gemini model to use (gemini-2.5-flash-preview-05-20, gemini-2.0-flash-exp, gemini-1.5-flash, gemini-1.5-flash-8b, gemini-1.5-pro)")
         .option("--temp <temperature>", "Temperature for response generation (0.0 to 2.0)", parseFloat);
@@ -44,6 +46,8 @@ async function main() {
         const program = createProgram();
         program.parse();
         const options = program.opts();
+        const args = program.args;
+        const singlePrompt = args[0];
         const mergedEnv = mergeCliWithEnv(options);
         const config = (0, config_js_1.createAppConfig)(mergedEnv);
         console.log("🔐 Validating API key and security settings...");
@@ -88,17 +92,67 @@ async function main() {
         logger.info("Services initialized successfully", {
             correlationId: logger.getCorrelationId(),
         });
-        console.log("\n🚀 Starting interactive REPL...");
-        console.log();
-        const replOptions = {
-            formatOptions: {
-                mode: config.output.raw ? "raw" : "formatted",
-                streaming: config.output.streaming,
-            },
-            loggerFactory: services.loggerFactory,
-        };
-        const repl = new repl_js_1.InteractiveREPL(services, replOptions);
-        await repl.start();
+        if (singlePrompt) {
+            console.log("\n🚀 Processing single prompt...");
+            const promptLogger = services.loggerFactory.createRootLogger({
+                component: "cli",
+                operation: "single_prompt",
+            });
+            try {
+                const rawPrompt = (0, promptProcessor_js_1.createRawPrompt)(singlePrompt);
+                const result = await services.promptProcessingService.processPrompt(rawPrompt);
+                if ((0, promptProcessor_js_1.isErr)(result)) {
+                    const userFriendlyError = (0, errors_js_1.toUserFriendlyError)(result.error);
+                    console.error(`\n❌ ${userFriendlyError.title}: ${userFriendlyError.message}`);
+                    if (userFriendlyError.suggestions && userFriendlyError.suggestions.length > 0) {
+                        console.error("\n💡 Suggestions:");
+                        userFriendlyError.suggestions.forEach((suggestion) => {
+                            console.error(`   • ${suggestion}`);
+                        });
+                    }
+                    promptLogger.error("Single prompt processing failed", new Error(result.error.message));
+                    process.exit(1);
+                }
+                if ((0, promptProcessor_js_1.isOk)(result)) {
+                    if (config.output.raw) {
+                        console.log(result.value.content);
+                    }
+                    else {
+                        console.log("\n✨ Enhanced prompt:");
+                        console.log(result.value.content);
+                    }
+                    promptLogger.info("Single prompt processed successfully", {
+                        promptLength: singlePrompt.length,
+                        resultLength: result.value.content.length,
+                    });
+                }
+            }
+            catch (error) {
+                const userFriendlyError = (0, errors_js_1.toUserFriendlyError)(error instanceof Error ? error : new Error(String(error)));
+                console.error(`\n❌ ${userFriendlyError.title}: ${userFriendlyError.message}`);
+                if (userFriendlyError.suggestions && userFriendlyError.suggestions.length > 0) {
+                    console.error("\n💡 Suggestions:");
+                    userFriendlyError.suggestions.forEach((suggestion) => {
+                        console.error(`   • ${suggestion}`);
+                    });
+                }
+                promptLogger.error("Single prompt processing failed", error instanceof Error ? error : new Error(String(error)));
+                process.exit(1);
+            }
+        }
+        else {
+            console.log("\n🚀 Starting interactive REPL...");
+            console.log();
+            const replOptions = {
+                formatOptions: {
+                    mode: config.output.raw ? "raw" : "formatted",
+                    streaming: config.output.streaming,
+                },
+                loggerFactory: services.loggerFactory,
+            };
+            const repl = new repl_js_1.InteractiveREPL(services, replOptions);
+            await repl.start();
+        }
     }
     catch (error) {
         if (error instanceof config_js_1.ConfigurationError) {

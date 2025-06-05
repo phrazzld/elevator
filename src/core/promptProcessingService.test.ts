@@ -23,6 +23,12 @@ import {
   isOk,
   isErr,
 } from "./promptProcessor";
+import {
+  type GeminiAPIClient,
+  type APIResponse,
+  type APIError,
+  type APIRequestOptions,
+} from "./apiClient";
 
 // Test implementations of dependencies (no mocking per philosophy)
 class TestPromptValidator implements PromptValidator {
@@ -102,15 +108,96 @@ class TestPromptEnhancer implements PromptEnhancer {
   }
 }
 
+class TestGeminiAPIClient implements GeminiAPIClient {
+  private shouldFailApiCall = false;
+  private apiError: APIError | null = null;
+  private mockResponse = "API response from Gemini";
+
+  generateContent(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _prompt: EnhancedPrompt,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _options?: APIRequestOptions,
+  ): Promise<
+    { success: true; value: APIResponse } | { success: false; error: APIError }
+  > {
+    if (this.shouldFailApiCall && this.apiError) {
+      return Promise.resolve(failure(this.apiError));
+    }
+
+    const response: APIResponse = {
+      content: this.mockResponse,
+      model: "gemini-2.5-flash-preview-05-20",
+      usage: {
+        promptTokens: 5,
+        completionTokens: 10,
+        totalTokens: 15,
+      },
+      metadata: {
+        timestamp: new Date(),
+        duration: 100,
+        finishReason: "stop",
+      },
+    };
+
+    return Promise.resolve(success(response));
+  }
+
+  async *generateStreamingContent(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _prompt: EnhancedPrompt,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _options?: APIRequestOptions,
+  ): AsyncIterable<
+    | { success: true; value: { content: string; done: boolean } }
+    | { success: false; error: APIError }
+  > {
+    // Simplified implementation for testing
+    await Promise.resolve(); // Minimal async operation to satisfy linter
+    yield success({
+      content: this.mockResponse,
+      done: true,
+    });
+  }
+
+  healthCheck(): Promise<
+    | { success: true; value: { status: "healthy" } }
+    | { success: false; error: APIError }
+  > {
+    return Promise.resolve(success({ status: "healthy" }));
+  }
+
+  // Test helper methods
+  setApiFailure(error: APIError): void {
+    this.shouldFailApiCall = true;
+    this.apiError = error;
+  }
+
+  setMockResponse(response: string): void {
+    this.mockResponse = response;
+  }
+
+  resetToSuccess(): void {
+    this.shouldFailApiCall = false;
+    this.apiError = null;
+  }
+}
+
 describe("DefaultPromptProcessingService", () => {
   let service: DefaultPromptProcessingService;
   let validator: TestPromptValidator;
   let enhancer: TestPromptEnhancer;
+  let apiClient: TestGeminiAPIClient;
 
   beforeEach(() => {
     validator = new TestPromptValidator();
     enhancer = new TestPromptEnhancer();
-    service = new DefaultPromptProcessingService(validator, enhancer);
+    apiClient = new TestGeminiAPIClient();
+    service = new DefaultPromptProcessingService(
+      validator,
+      enhancer,
+      apiClient,
+    );
   });
 
   describe("processPrompt", () => {
@@ -126,10 +213,13 @@ describe("DefaultPromptProcessingService", () => {
         // Assert
         expect(isOk(result)).toBe(true);
         if (isOk(result)) {
-          expect(result.value.content).toBe("Enhanced: Write a function");
+          expect(result.value.content).toBe("API response from Gemini");
           expect(result.value.originalContent).toBe("Write a function");
           expect(result.value.enhancedAt).toBeInstanceOf(Date);
-          expect(result.value.enhancements).toEqual(["basic-enhancement"]);
+          expect(result.value.enhancements).toEqual([
+            "basic-enhancement",
+            "api-response",
+          ]);
           expect(result.value.metadata.timestamp).toBeInstanceOf(Date);
         }
       });
@@ -144,7 +234,7 @@ describe("DefaultPromptProcessingService", () => {
         // Assert
         expect(isOk(result)).toBe(true);
         if (isOk(result)) {
-          expect(result.value.content).toBe("Enhanced: Simple prompt");
+          expect(result.value.content).toBe("API response from Gemini");
           expect(result.value.originalContent).toBe("Simple prompt");
           expect(result.value.enhancedAt).toBeInstanceOf(Date);
         }
@@ -161,7 +251,7 @@ describe("DefaultPromptProcessingService", () => {
         // Assert
         expect(isOk(result)).toBe(true);
         if (isOk(result)) {
-          expect(result.value.content).toBe(`Enhanced: ${originalContent}`);
+          expect(result.value.content).toBe("API response from Gemini");
           expect(result.value.originalContent).toBe(originalContent);
         }
       });
@@ -176,7 +266,7 @@ describe("DefaultPromptProcessingService", () => {
         // Assert
         expect(isOk(result)).toBe(true);
         if (isOk(result)) {
-          expect(result.value.content).toBe("Enhanced: ");
+          expect(result.value.content).toBe("API response from Gemini");
           expect(result.value.originalContent).toBe("");
         }
       });
@@ -192,7 +282,7 @@ describe("DefaultPromptProcessingService", () => {
         // Assert
         expect(isOk(result)).toBe(true);
         if (isOk(result)) {
-          expect(result.value.content).toBe(`Enhanced: ${longContent}`);
+          expect(result.value.content).toBe("API response from Gemini");
           expect(result.value.originalContent).toBe(longContent);
         }
       });
@@ -367,7 +457,7 @@ describe("DefaultPromptProcessingService", () => {
         // Assert
         expect(isOk(result)).toBe(true);
         if (isOk(result)) {
-          expect(result.value.content).toBe(`Enhanced: ${specialContent}`);
+          expect(result.value.content).toBe("API response from Gemini");
         }
       });
 
@@ -382,7 +472,7 @@ describe("DefaultPromptProcessingService", () => {
         // Assert
         expect(isOk(result)).toBe(true);
         if (isOk(result)) {
-          expect(result.value.content).toBe(`Enhanced: ${unicodeContent}`);
+          expect(result.value.content).toBe("API response from Gemini");
           expect(result.value.originalContent).toBe(unicodeContent);
         }
       });
@@ -398,7 +488,7 @@ describe("DefaultPromptProcessingService", () => {
         // Assert
         expect(isOk(result)).toBe(true);
         if (isOk(result)) {
-          expect(result.value.content).toBe(`Enhanced: ${whitespaceContent}`);
+          expect(result.value.content).toBe("API response from Gemini");
           expect(result.value.originalContent).toBe(whitespaceContent);
         }
       });
@@ -416,9 +506,8 @@ describe("DefaultPromptProcessingService", () => {
         // Assert
         expect(isOk(result)).toBe(true);
         if (isOk(result)) {
-          // Verify the content flows correctly through validation and enhancement
-          expect(result.value.content).toContain(originalContent);
-          expect(result.value.content).toContain("Enhanced:");
+          // Verify the content flows correctly through validation, enhancement, and API call
+          expect(result.value.content).toBe("API response from Gemini");
 
           // Verify metadata is preserved and augmented
           expect(result.value.metadata.timestamp).toBeInstanceOf(Date);

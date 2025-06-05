@@ -19,7 +19,10 @@ import {
   success,
   failure,
   isOk,
+  isErr,
+  createProcessingError,
 } from "./promptProcessor";
+import { type GeminiAPIClient } from "./apiClient";
 
 /**
  * Default implementation of the prompt processing pipeline.
@@ -31,16 +34,17 @@ export class DefaultPromptProcessingService implements PromptProcessingService {
   constructor(
     private readonly validator: PromptValidator,
     private readonly enhancer: PromptEnhancer,
+    private readonly apiClient: GeminiAPIClient,
   ) {}
 
   /**
-   * Processes a raw prompt through the complete validation and enhancement pipeline.
+   * Processes a raw prompt through the complete validation, enhancement, and API pipeline.
    *
    * @param prompt The raw prompt to process
    * @param options Optional processing configuration
-   * @returns Promise resolving to enhanced prompt or error
+   * @returns Promise resolving to enhanced prompt with API response or error
    */
-  processPrompt(
+  async processPrompt(
     prompt: RawPrompt,
     options?: ProcessingOptions,
   ): Promise<Result<EnhancedPrompt, PromptError>> {
@@ -49,10 +53,8 @@ export class DefaultPromptProcessingService implements PromptProcessingService {
 
     if (!isOk(validationResult)) {
       // PromptValidationError is part of PromptError union
-      return Promise.resolve(
-        failure(
-          (validationResult as { success: false; error: PromptError }).error,
-        ),
+      return failure(
+        (validationResult as { success: false; error: PromptError }).error,
       );
     }
 
@@ -64,13 +66,58 @@ export class DefaultPromptProcessingService implements PromptProcessingService {
 
     if (!isOk(enhancementResult)) {
       // PromptProcessingError is part of PromptError union
-      return Promise.resolve(
-        failure(
-          (enhancementResult as { success: false; error: PromptError }).error,
-        ),
+      return failure(
+        (enhancementResult as { success: false; error: PromptError }).error,
       );
     }
 
-    return Promise.resolve(success(enhancementResult.value));
+    // Step 3: Send enhanced prompt to Gemini API and get response
+    try {
+      const apiResult = await this.apiClient.generateContent(
+        enhancementResult.value,
+      );
+
+      if (isErr(apiResult)) {
+        // Convert API error to PromptProcessingError
+        return failure(
+          createProcessingError(
+            "ENHANCEMENT_FAILED",
+            `API call failed: ${apiResult.error.message}`,
+            "enhancement",
+            {
+              apiError: apiResult.error,
+            },
+          ),
+        );
+      }
+
+      if (isOk(apiResult)) {
+        // Create enhanced prompt with API response content
+        const enhancedPromptWithApiResponse: EnhancedPrompt = {
+          ...enhancementResult.value,
+          content: apiResult.value.content, // Replace enhanced content with API response
+          enhancements: [
+            ...enhancementResult.value.enhancements,
+            "api-response",
+          ],
+        };
+
+        return success(enhancedPromptWithApiResponse);
+      }
+
+      // This should never happen, but TypeScript requires it
+      throw new Error("Unexpected API result state");
+    } catch (error) {
+      return failure(
+        createProcessingError(
+          "ENHANCEMENT_FAILED",
+          `Unexpected error during API call: ${error instanceof Error ? error.message : String(error)}`,
+          "enhancement",
+          {
+            originalError: error,
+          },
+        ),
+      );
+    }
   }
 }

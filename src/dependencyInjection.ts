@@ -75,10 +75,11 @@ export function createServiceContainer(config: AppConfig): ServiceContainer {
   const formatter = new ConsoleFormatter();
   const loggerFactory = createPinoLoggerFactory(config.logging);
 
-  // Create orchestrating services (depend on core services)
+  // Create orchestrating services (depend on core services and API client)
   const promptProcessingService = new DefaultPromptProcessingService(
     validator,
     enhancer,
+    apiClient,
   );
 
   return {

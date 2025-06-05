@@ -16,6 +16,7 @@ import { createValidatedServiceContainer } from "./dependencyInjection.js";
 import { InteractiveREPL, type REPLOptions } from "./repl/repl.js";
 import { validateStartupSecurity } from "./core/security.js";
 import { toUserFriendlyError } from "./core/errors.js";
+import { createRawPrompt, isOk, isErr } from "./core/promptProcessor.js";
 
 /**
  * CLI argument interface matching configuration options
@@ -72,7 +73,11 @@ function createProgram(): Command {
     .description(
       "A lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash",
     )
-    .version("0.1.0");
+    .version("0.1.0")
+    .argument(
+      "[prompt]",
+      "Optional: single prompt to process (if omitted, starts interactive mode)",
+    );
 
   // API Configuration Options
   program
@@ -105,6 +110,8 @@ async function main(): Promise<void> {
     program.parse();
 
     const options = program.opts<CliArgs>();
+    const args = program.args;
+    const singlePrompt = args[0];
 
     // Merge CLI arguments with environment variables
     const mergedEnv = mergeCliWithEnv(options);
@@ -171,20 +178,103 @@ async function main(): Promise<void> {
       correlationId: logger.getCorrelationId(),
     });
 
-    console.log("\n🚀 Starting interactive REPL...");
-    console.log();
+    // Handle single prompt mode vs interactive REPL
+    if (singlePrompt) {
+      // Single prompt mode - process and exit
+      console.log("\n🚀 Processing single prompt...");
 
-    // Create and start the REPL
-    const replOptions: REPLOptions = {
-      formatOptions: {
-        mode: config.output.raw ? "raw" : "formatted",
-        streaming: config.output.streaming,
-      },
-      loggerFactory: services.loggerFactory,
-    };
+      const promptLogger = services.loggerFactory.createRootLogger({
+        component: "cli",
+        operation: "single_prompt",
+      });
 
-    const repl = new InteractiveREPL(services, replOptions);
-    await repl.start();
+      try {
+        const rawPrompt = createRawPrompt(singlePrompt);
+        const result =
+          await services.promptProcessingService.processPrompt(rawPrompt);
+
+        if (isErr(result)) {
+          const userFriendlyError = toUserFriendlyError(result.error);
+
+          console.error(
+            `\n❌ ${userFriendlyError.title}: ${userFriendlyError.message}`,
+          );
+
+          if (
+            userFriendlyError.suggestions &&
+            userFriendlyError.suggestions.length > 0
+          ) {
+            console.error("\n💡 Suggestions:");
+            userFriendlyError.suggestions.forEach((suggestion) => {
+              console.error(`   • ${suggestion}`);
+            });
+          }
+
+          promptLogger.error(
+            "Single prompt processing failed",
+            new Error(result.error.message),
+          );
+
+          process.exit(1);
+        }
+
+        if (isOk(result)) {
+          // Success case
+          if (config.output.raw) {
+            console.log(result.value.content);
+          } else {
+            console.log("\n✨ Enhanced prompt:");
+            console.log(result.value.content);
+          }
+
+          promptLogger.info("Single prompt processed successfully", {
+            promptLength: singlePrompt.length,
+            resultLength: result.value.content.length,
+          });
+        }
+      } catch (error) {
+        const userFriendlyError = toUserFriendlyError(
+          error instanceof Error ? error : new Error(String(error)),
+        );
+
+        console.error(
+          `\n❌ ${userFriendlyError.title}: ${userFriendlyError.message}`,
+        );
+
+        if (
+          userFriendlyError.suggestions &&
+          userFriendlyError.suggestions.length > 0
+        ) {
+          console.error("\n💡 Suggestions:");
+          userFriendlyError.suggestions.forEach((suggestion) => {
+            console.error(`   • ${suggestion}`);
+          });
+        }
+
+        promptLogger.error(
+          "Single prompt processing failed",
+          error instanceof Error ? error : new Error(String(error)),
+        );
+
+        process.exit(1);
+      }
+    } else {
+      // Interactive REPL mode
+      console.log("\n🚀 Starting interactive REPL...");
+      console.log();
+
+      // Create and start the REPL
+      const replOptions: REPLOptions = {
+        formatOptions: {
+          mode: config.output.raw ? "raw" : "formatted",
+          streaming: config.output.streaming,
+        },
+        loggerFactory: services.loggerFactory,
+      };
+
+      const repl = new InteractiveREPL(services, replOptions);
+      await repl.start();
+    }
   } catch (error) {
     if (error instanceof ConfigurationError) {
       console.error(`Configuration Error: ${error.message}`);
