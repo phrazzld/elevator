@@ -117,7 +117,7 @@
 
 - [x] Create integration tests for Gemini adapter with mock API responses
 - [x] Test CLI argument parsing and flag combinations
-- [~] Test REPL loop with simulated user input
+- [x] Test REPL loop with simulated user input
 - [ ] Test end-to-end workflow with mocked external dependencies only
 
 ### Test Infrastructure
