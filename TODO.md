@@ -117,12 +117,12 @@
 
 - [x] Create integration tests for Gemini adapter with mock API responses
 - [x] Test CLI argument parsing and flag combinations
-- [ ] Test REPL loop with simulated user input
+- [~] Test REPL loop with simulated user input
 - [ ] Test end-to-end workflow with mocked external dependencies only
 
 ### Test Infrastructure
 
-- [ ] Create test data builders for consistent test setup
+- [x] Create test data builders for consistent test setup
 - [ ] Set up test fixtures for API responses
 - [ ] Configure test coverage enforcement in CI
 - [ ] Add test utilities for dependency injection in tests
