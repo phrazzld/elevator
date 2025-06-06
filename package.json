@@ -7,9 +7,12 @@
     "prompt-elevator": "dist/cli.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run clean && npm run build:prod && npm run build:validate",
+    "build:prod": "tsc --project tsconfig.prod.json",
+    "build:dev": "tsc",
+    "build:validate": "node -e \"const fs=require('fs'); const cli=require('./dist/cli.js'); if(!fs.existsSync('./dist/cli.js')||!fs.existsSync('./dist/cli.d.ts')) throw new Error('Build validation failed: missing essential files'); console.log('✅ Build validation passed');\"",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist",
+    "clean": "node -e \"const fs=require('fs'); if(fs.existsSync('dist')) fs.rmSync('dist', {recursive: true, force: true}); console.log('🧹 Cleaned build artifacts');\"",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write .",

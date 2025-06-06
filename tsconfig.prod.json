@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "sourceMap": true,
+    "declarationMap": true,
+    "removeComments": true,
+    "inlineSourceMap": false,
+    "inlineSources": false
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/*.test.js",
+    "**/*.spec.js",
+    "src/test-utils/**/*",
+    "src/e2e.test.ts"
+  ]
+}

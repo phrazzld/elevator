@@ -118,23 +118,23 @@
 - [x] Create integration tests for Gemini adapter with mock API responses
 - [x] Test CLI argument parsing and flag combinations
 - [x] Test REPL loop with simulated user input
-- [ ] Test end-to-end workflow with mocked external dependencies only
+- [x] Test end-to-end workflow with mocked external dependencies only
 
 ### Test Infrastructure
 
 - [x] Create test data builders for consistent test setup
 - [x] Set up test fixtures for API responses
-- [ ] Configure test coverage enforcement in CI
-- [ ] Add test utilities for dependency injection in tests
+- [x] Configure test coverage enforcement in CI
+- [x] Add test utilities for dependency injection in tests
 
 ## Build & Distribution
 
 ### Build Configuration
 
-- [ ] Configure TypeScript compilation for production
-- [ ] Set up build script with proper error handling
-- [ ] Add clean script for build artifacts
-- [ ] Configure source maps for debugging
+- [x] Configure TypeScript compilation for production
+- [x] Set up build script with proper error handling
+- [x] Add clean script for build artifacts
+- [x] Configure source maps for debugging
 
 ### NPM Package Preparation
 
