@@ -111,7 +111,7 @@ export class ProgressIndicatorBuilder {
   private message = "Processing...";
   private stage: ProgressIndicator["stage"] = "thinking";
   private active = true;
-  private progress?: number;
+  private progress?: number | undefined;
 
   withMessage(message: string): this {
     this.message = message;

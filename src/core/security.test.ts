@@ -601,6 +601,9 @@ describe("security utilities", () => {
         maxRetries: 3,
         temperature: 0.7,
       },
+      prompt: {
+        enableElevation: true,
+      },
       output: {
         raw: false,
         streaming: true,
@@ -674,6 +677,9 @@ describe("security utilities", () => {
           timeoutMs: 5000,
           maxRetries: 2,
           temperature: 0.5,
+        },
+        prompt: {
+          enableElevation: false,
         },
         output: {
           raw: true,

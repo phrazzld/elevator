@@ -34,7 +34,8 @@ import {
   isErr,
   isOk,
 } from "../core/promptProcessor";
-import { type ApiConfig } from "../config";
+import { type AppConfig } from "../config";
+import { getElevationPrompt } from "../core/elevationPrompt";
 
 /**
  * Type for safety rating from Gemini API
@@ -540,16 +541,16 @@ function mapError(error: unknown): APIError {
 export class GoogleGeminiAdapter implements GeminiAPIClient {
   private readonly client: GoogleGenerativeAI;
   private readonly model: GenerativeModel;
-  private readonly config: ApiConfig;
+  private readonly config: AppConfig;
 
-  constructor(config: ApiConfig) {
+  constructor(config: AppConfig) {
     this.config = config;
-    this.client = new GoogleGenerativeAI(config.apiKey);
+    this.client = new GoogleGenerativeAI(config.api.apiKey);
 
     this.model = this.client.getGenerativeModel({
-      model: config.modelId,
+      model: config.api.modelId,
       generationConfig: {
-        temperature: config.temperature,
+        temperature: config.api.temperature,
       },
     });
   }
@@ -566,19 +567,28 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
     try {
       // Build generation config
       const generationConfig: GenerationConfig = {
-        temperature: options?.temperature ?? this.config.temperature,
+        temperature: options?.temperature ?? this.config.api.temperature,
       };
       if (options?.maxTokens !== undefined) {
         generationConfig.maxOutputTokens = options.maxTokens;
       }
 
-      // Build content
-      const contents: Content[] = [
-        {
+      // Build content with optional elevation system prompt
+      const contents: Content[] = [];
+
+      // Add system prompt for elevation if enabled
+      if (this.config.prompt.enableElevation) {
+        contents.push({
           role: "user",
-          parts: [{ text: prompt.content }],
-        },
-      ];
+          parts: [{ text: getElevationPrompt() }],
+        });
+      }
+
+      // Add user prompt
+      contents.push({
+        role: "user",
+        parts: [{ text: prompt.content }],
+      });
 
       // Generate content
       const request: GenerateContentRequest = {
@@ -590,7 +600,7 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
         request.safetySettings = safetySettings;
       }
       // Apply timeout to the API call
-      const timeoutMs = options?.timeout ?? this.config.timeoutMs;
+      const timeoutMs = options?.timeout ?? this.config.api.timeoutMs;
       const result = await withTimeout(
         this.model.generateContent(request),
         timeoutMs,
@@ -669,7 +679,7 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
       // Build response
       const apiResponse: APIResponse = {
         content: text,
-        model: options?.model ?? this.config.modelId,
+        model: options?.model ?? this.config.api.modelId,
         usage: {
           promptTokens: response.usageMetadata?.promptTokenCount ?? 0,
           completionTokens: response.usageMetadata?.candidatesTokenCount ?? 0,
@@ -702,7 +712,7 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
       // Execute with retry logic
       const result = await withRetry(
         () => this.generateContentCore(prompt, options),
-        this.config.maxRetries,
+        this.config.api.maxRetries,
       );
       return result;
     } finally {
@@ -726,19 +736,28 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
     try {
       // Build generation config
       const generationConfig: GenerationConfig = {
-        temperature: options?.temperature ?? this.config.temperature,
+        temperature: options?.temperature ?? this.config.api.temperature,
       };
       if (options?.maxTokens !== undefined) {
         generationConfig.maxOutputTokens = options.maxTokens;
       }
 
-      // Build content
-      const contents: Content[] = [
-        {
+      // Build content with optional elevation system prompt
+      const contents: Content[] = [];
+
+      // Add system prompt for elevation if enabled
+      if (this.config.prompt.enableElevation) {
+        contents.push({
           role: "user",
-          parts: [{ text: prompt.content }],
-        },
-      ];
+          parts: [{ text: getElevationPrompt() }],
+        });
+      }
+
+      // Add user prompt
+      contents.push({
+        role: "user",
+        parts: [{ text: prompt.content }],
+      });
 
       // Start streaming
       const request: GenerateContentRequest = {
@@ -750,7 +769,7 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
         request.safetySettings = safetySettings;
       }
       // Apply timeout to the streaming API call
-      const timeoutMs = options?.timeout ?? this.config.timeoutMs;
+      const timeoutMs = options?.timeout ?? this.config.api.timeoutMs;
       const streamResult = await withTimeout(
         this.model.generateContentStream(request),
         timeoutMs,
@@ -779,7 +798,7 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
       // Retry the initial connection setup
       const connectionResult = await withRetry(
         () => this.createStreamingConnection(prompt, options),
-        this.config.maxRetries,
+        this.config.api.maxRetries,
       );
 
       if (isErr(connectionResult)) {
@@ -937,7 +956,7 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
           contents: [{ role: "user", parts: [{ text: "ping" }] }],
           generationConfig: { maxOutputTokens: 10, temperature: 0 },
         }),
-        this.config.timeoutMs,
+        this.config.api.timeoutMs,
         "Health check",
       );
 
@@ -959,7 +978,7 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
    * Check if the API client is properly configured and accessible.
    */
   async healthCheck(): Promise<Result<{ status: "healthy" }, APIError>> {
-    return withRetry(() => this.healthCheckCore(), this.config.maxRetries);
+    return withRetry(() => this.healthCheckCore(), this.config.api.maxRetries);
   }
 
   /**

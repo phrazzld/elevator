@@ -6,7 +6,7 @@ import {
   type EnhancedPrompt,
   type Result,
 } from "../core/promptProcessor";
-import { type ApiConfig } from "../config";
+import { type AppConfig } from "../config";
 import {
   type APIStreamChunk,
   type APIError,
@@ -44,17 +44,32 @@ vi.mock("@google/generative-ai", () => {
 
 describe("GoogleGeminiAdapter", () => {
   let adapter: GoogleGeminiAdapter;
-  let mockConfig: ApiConfig;
+  let mockConfig: AppConfig;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
     mockConfig = {
-      apiKey: "test-api-key",
-      modelId: "gemini-2.5-flash-preview-05-20",
-      temperature: 0.7,
-      timeoutMs: 30000,
-      maxRetries: 3,
+      api: {
+        apiKey: "test-api-key",
+        modelId: "gemini-2.5-flash-preview-05-20",
+        temperature: 0.7,
+        timeoutMs: 30000,
+        maxRetries: 3,
+      },
+      prompt: {
+        enableElevation: false, // Disable for most tests to avoid system prompt complications
+      },
+      output: {
+        raw: false,
+        streaming: true,
+        showProgress: true,
+      },
+      logging: {
+        level: "info",
+        serviceName: "test",
+        jsonFormat: true,
+      },
     };
 
     adapter = new GoogleGeminiAdapter(mockConfig);
@@ -1067,6 +1082,101 @@ describe("GoogleGeminiAdapter", () => {
         expect(result.value.status).toBe("healthy");
       }
       expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe("Prompt Elevation", () => {
+    it("should include elevation system prompt when enabled", async () => {
+      // Arrange - Create config with elevation enabled
+      const elevationConfig = {
+        ...mockConfig,
+        prompt: { enableElevation: true },
+      };
+      const elevationAdapter = new GoogleGeminiAdapter(elevationConfig);
+
+      const mockResponse = {
+        response: {
+          text: () => "Technical response with elevated specifications",
+          candidates: [{ finishReason: "STOP", safetyRatings: [] }],
+          usageMetadata: {
+            promptTokenCount: 50, // Higher due to system prompt
+            candidatesTokenCount: 30,
+            totalTokenCount: 80,
+          },
+        },
+      };
+
+      mockGenerateContent.mockResolvedValue(mockResponse);
+
+      const prompt = createMockEnhancedPrompt("Create a login form");
+
+      // Act
+      const result = await elevationAdapter.generateContent(prompt);
+
+      // Assert
+      expect(isOk(result)).toBe(true);
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+
+      // Verify that the request included both system prompt and user prompt
+      const mockCall = mockGenerateContent.mock.calls[0];
+      expect(mockCall).toBeDefined();
+      const requestArg = mockCall?.[0] as {
+        contents: Array<{ role: string; parts: Array<{ text: string }> }>;
+      };
+      expect(requestArg.contents).toBeDefined();
+      expect(requestArg.contents).toHaveLength(2);
+      const requestContents = requestArg.contents;
+
+      // First message should be the elevation system prompt
+      expect(requestContents[0]?.role).toBe("user");
+      expect(requestContents[0]?.parts[0]?.text).toContain(
+        "technical assistant",
+      );
+      expect(requestContents[0]?.parts[0]?.text).toContain("enhance");
+
+      // Second message should be the actual user prompt
+      expect(requestContents[1]?.role).toBe("user");
+      expect(requestContents[1]?.parts[0]?.text).toBe("Create a login form");
+    });
+
+    it("should not include elevation system prompt when disabled", async () => {
+      // mockConfig already has elevation disabled
+      const mockResponse = {
+        response: {
+          text: () => "Standard response",
+          candidates: [{ finishReason: "STOP", safetyRatings: [] }],
+          usageMetadata: {
+            promptTokenCount: 10,
+            candidatesTokenCount: 15,
+            totalTokenCount: 25,
+          },
+        },
+      };
+
+      mockGenerateContent.mockResolvedValue(mockResponse);
+
+      const prompt = createMockEnhancedPrompt("Create a login form");
+
+      // Act
+      const result = await adapter.generateContent(prompt);
+
+      // Assert
+      expect(isOk(result)).toBe(true);
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+
+      // Verify that the request only included the user prompt
+      const mockCall = mockGenerateContent.mock.calls[0];
+      expect(mockCall).toBeDefined();
+      const requestArg = mockCall?.[0] as {
+        contents: Array<{ role: string; parts: Array<{ text: string }> }>;
+      };
+      expect(requestArg.contents).toBeDefined();
+      expect(requestArg.contents).toHaveLength(1);
+      const requestContents = requestArg.contents;
+
+      // Only message should be the user prompt
+      expect(requestContents[0]?.role).toBe("user");
+      expect(requestContents[0]?.parts[0]?.text).toBe("Create a login form");
     });
   });
 });

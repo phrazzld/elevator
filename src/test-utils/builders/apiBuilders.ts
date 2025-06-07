@@ -258,8 +258,8 @@ export class APIErrorBuilder {
 export class APIStreamChunkBuilder {
   private content = "Partial response content ";
   private done = false;
-  private usage?: APIResponse["usage"];
-  private metadata?: APIResponse["metadata"];
+  private usage?: APIResponse["usage"] | undefined;
+  private metadata?: APIResponse["metadata"] | undefined;
 
   withContent(content: string): this {
     this.content = content;

@@ -35,6 +35,9 @@ describe("Configuration Module", () => {
             timeoutMs: 30000,
             maxRetries: 3,
           },
+          prompt: {
+            enableElevation: true,
+          },
           output: {
             raw: false,
             streaming: true,
@@ -75,6 +78,9 @@ describe("Configuration Module", () => {
             temperature: 0.5,
             timeoutMs: 60000,
             maxRetries: 5,
+          },
+          prompt: {
+            enableElevation: true,
           },
           output: {
             raw: true,

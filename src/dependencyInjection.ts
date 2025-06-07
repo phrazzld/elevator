@@ -71,7 +71,7 @@ export function createServiceContainer(config: AppConfig): ServiceContainer {
   const enhancer = new DefaultPromptEnhancer();
 
   // Create infrastructure adapters (depend on configuration)
-  const apiClient = new GoogleGeminiAdapter(config.api);
+  const apiClient = new GoogleGeminiAdapter(config);
   const formatter = new ConsoleFormatter();
   const loggerFactory = createPinoLoggerFactory(config.logging);
 

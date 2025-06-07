@@ -39,6 +39,14 @@ export interface ApiConfig {
 }
 
 /**
+ * Prompt processing configuration
+ */
+export interface PromptConfig {
+  /** Enable AI-powered prompt elevation to technical specifications */
+  readonly enableElevation: boolean;
+}
+
+/**
  * Output formatting configuration
  */
 export interface OutputConfig {
@@ -73,6 +81,9 @@ export interface LoggingConfig {
 export interface AppConfig {
   /** API configuration for Gemini integration */
   readonly api: ApiConfig;
+
+  /** Prompt processing configuration */
+  readonly prompt: PromptConfig;
 
   /** Output formatting configuration */
   readonly output: OutputConfig;
@@ -321,6 +332,9 @@ export function createAppConfig(
       3,
     );
 
+    // Validate optional prompt configuration
+    const enableElevation = env["PROMPT_ENABLE_ELEVATION"] !== "false"; // Default to true
+
     // Validate optional output configuration
     const raw = env["OUTPUT_RAW"] === "true";
     const streaming = env["OUTPUT_STREAMING"] !== "false"; // Default to true
@@ -344,6 +358,9 @@ export function createAppConfig(
         temperature,
         timeoutMs,
         maxRetries,
+      },
+      prompt: {
+        enableElevation,
       },
       output: {
         raw,
