@@ -149,13 +149,13 @@
 ### User Documentation
 
 - [x] Create comprehensive README.md with installation and usage
-- [ ] Document all CLI flags and environment variables
-- [ ] Add troubleshooting section with common issues
-- [ ] Include API key setup instructions
+- [x] Document all CLI flags and environment variables
+- [x] Add troubleshooting section with common issues
+- [x] Include API key setup instructions
 
 ### Developer Documentation
 
-- [ ] Document architecture decisions and core design principles
+- [x] Document architecture decisions and core design principles
 - [ ] Add contribution guidelines referencing development philosophy
 - [ ] Create API documentation for core interfaces
 - [ ] Document testing strategy and coverage requirements
