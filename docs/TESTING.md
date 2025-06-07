@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the comprehensive testing strategy for **prompt-elevator**, based on our development philosophy of building confidence through verification. Our testing approach prioritizes **testability as a design constraint**, **no internal mocking**, and **comprehensive coverage** of business logic.
+This document outlines the comprehensive testing strategy for **elevator**, based on our development philosophy of building confidence through verification. Our testing approach prioritizes **testability as a design constraint**, **no internal mocking**, and **comprehensive coverage** of business logic.
 
 The testing strategy supports the hexagonal architecture by focusing on **behavior verification** rather than implementation details, enabling safe refactoring and confident evolution of the codebase.
 

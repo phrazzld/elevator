@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**prompt-elevator** is a lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash. Built with Node.js 18+ and TypeScript.
+**elevator** is a lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash. Built with Node.js 18+ and TypeScript.
 
 ## Development Commands
 

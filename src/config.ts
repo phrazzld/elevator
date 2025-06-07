@@ -334,7 +334,7 @@ export function createAppConfig(
       "info",
     );
 
-    const serviceName = env["SERVICE_NAME"] || "prompt-elevator";
+    const serviceName = env["SERVICE_NAME"] || "elevator";
     const jsonFormat = env["LOG_JSON_FORMAT"] !== "false"; // Default to true
 
     return {

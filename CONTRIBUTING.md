@@ -1,6 +1,6 @@
-# Contributing to prompt-elevator
+# Contributing to elevator
 
-Thank you for your interest in contributing to **prompt-elevator**! This document provides guidelines for contributing to this project while adhering to our development philosophy and maintaining code quality.
+Thank you for your interest in contributing to **elevator**! This document provides guidelines for contributing to this project while adhering to our development philosophy and maintaining code quality.
 
 ## Table of Contents
 
@@ -47,8 +47,8 @@ This project strictly adheres to the principles outlined in [`docs/DEVELOPMENT_P
 1. **Fork and Clone**
 
    ```bash
-   git clone https://github.com/your-username/prompt-elevator.git
-   cd prompt-elevator
+   git clone https://github.com/your-username/elevator.git
+   cd elevator
    ```
 
 2. **Install Dependencies**
@@ -430,10 +430,10 @@ Core → Adapters    (❌ FORBIDDEN)
 
 ## License
 
-By contributing to prompt-elevator, you agree that your contributions will be licensed under the same MIT License that covers the project.
+By contributing to elevator, you agree that your contributions will be licensed under the same MIT License that covers the project.
 
 ---
 
 **Remember**: The goal is to build software that is simple, modular, testable, maintainable, secure, and observable. Every contribution should advance these goals while following our development philosophy.
 
-Thank you for contributing to prompt-elevator! 🚀
+Thank you for contributing to elevator! 🚀

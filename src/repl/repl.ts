@@ -1,5 +1,5 @@
 /**
- * REPL (Read-Eval-Print Loop) implementation for prompt-elevator CLI.
+ * REPL (Read-Eval-Print Loop) implementation for elevator CLI.
  *
  * This module provides an interactive command-line interface that accepts
  * natural language prompts and returns enhanced responses using the Gemini API.
@@ -135,7 +135,7 @@ export class InteractiveREPL implements REPL {
 
     // Display goodbye message without blocking
     void this.displayGoodbye().catch(() => {
-      console.log("👋 Goodbye! Thank you for using prompt-elevator.");
+      console.log("👋 Goodbye! Thank you for using elevator.");
     });
 
     if (this.readline) {
@@ -184,7 +184,7 @@ export class InteractiveREPL implements REPL {
   private async displayWelcome(): Promise<void> {
     const welcomeMessage =
       this.options.welcomeMessage ||
-      "🚀 Welcome to prompt-elevator! Enter your prompts below. Type 'help' for commands or 'exit' to quit.";
+      "🚀 Welcome to elevator! Enter your prompts below. Type 'help' for commands or 'exit' to quit.";
 
     const result = await this.services.formatter.formatContent(
       welcomeMessage,
@@ -205,7 +205,7 @@ export class InteractiveREPL implements REPL {
   private async displayGoodbye(): Promise<void> {
     const goodbyeMessage =
       this.options.goodbyeMessage ||
-      "👋 Goodbye! Thank you for using prompt-elevator.";
+      "👋 Goodbye! Thank you for using elevator.";
 
     const result = await this.services.formatter.formatContent(
       goodbyeMessage,

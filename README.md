@@ -1,4 +1,4 @@
-# prompt-elevator
+# elevator
 
 A lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash.
 
@@ -24,26 +24,26 @@ A lightweight CLI that continuously accepts natural-language prompts and returns
 
 ```bash
 # Using npm
-npm install -g prompt-elevator
+npm install -g elevator
 
 # Using pnpm (recommended)
-pnpm add -g prompt-elevator
+pnpm add -g elevator
 
 # Using yarn
-yarn global add prompt-elevator
+yarn global add elevator
 ```
 
 ### Local Installation
 
 ```bash
 # Using npm
-npm install prompt-elevator
+npm install elevator
 
 # Using pnpm
-pnpm add prompt-elevator
+pnpm add elevator
 
 # Using yarn
-yarn add prompt-elevator
+yarn add elevator
 ```
 
 ## Quick Start
@@ -66,10 +66,10 @@ echo "GEMINI_API_KEY=your-api-key-here" > .env
 
 ```bash
 # Interactive mode
-prompt-elevator
+elevator
 
 # Single prompt mode
-prompt-elevator "Explain quantum computing in simple terms"
+elevator "Explain quantum computing in simple terms"
 ```
 
 ## Usage
@@ -79,11 +79,11 @@ prompt-elevator "Explain quantum computing in simple terms"
 Start the interactive REPL by running the command without arguments:
 
 ```bash
-prompt-elevator
+elevator
 ```
 
 ```
-🚀 Welcome to prompt-elevator! Enter your prompts below. Type 'help' for commands or 'exit' to quit.
+🚀 Welcome to elevator! Enter your prompts below. Type 'help' for commands or 'exit' to quit.
 
 prompt> Write a function to calculate fibonacci numbers
 ✨ Enhanced prompt:
@@ -104,23 +104,23 @@ prompt> exit
 Process a single prompt and exit:
 
 ```bash
-prompt-elevator "Your prompt here"
+elevator "Your prompt here"
 ```
 
 **Examples:**
 
 ```bash
 # Basic usage
-prompt-elevator "Explain REST APIs"
+elevator "Explain REST APIs"
 
 # With model selection
-prompt-elevator --model gemini-1.5-pro "Write a Python script to parse CSV files"
+elevator --model gemini-1.5-pro "Write a Python script to parse CSV files"
 
 # With custom temperature
-prompt-elevator --temp 0.9 "Generate creative story ideas"
+elevator --temp 0.9 "Generate creative story ideas"
 
 # Raw output (no formatting)
-prompt-elevator --raw "List the top 5 programming languages"
+elevator --raw "List the top 5 programming languages"
 ```
 
 ### CLI Options
@@ -159,7 +159,7 @@ prompt-elevator --raw "List the top 5 programming languages"
 | `OUTPUT_STREAMING`     | No       | `true`                           | Enable streaming output                          |
 | `OUTPUT_SHOW_PROGRESS` | No       | `true`                           | Show progress indicators                         |
 | `LOG_LEVEL`            | No       | `info`                           | Logging level (`debug`, `info`, `warn`, `error`) |
-| `SERVICE_NAME`         | No       | `prompt-elevator`                | Service name for logs                            |
+| `SERVICE_NAME`         | No       | `elevator`                       | Service name for logs                            |
 | `LOG_JSON_FORMAT`      | No       | `true`                           | Use JSON format for logs                         |
 
 ### Configuration Examples
@@ -188,7 +188,7 @@ export GEMINI_API_KEY="your-api-key"
 export GEMINI_TIMEOUT_MS="60000"
 export GEMINI_MAX_RETRIES="5"
 export LOG_LEVEL="warn"
-export SERVICE_NAME="my-app-prompt-elevator"
+export SERVICE_NAME="my-app-elevator"
 ```
 
 ## API Key Setup
@@ -220,7 +220,7 @@ echo "GEMINI_API_KEY=your-api-key-here" > .env
 **Option 3: One-time Usage**
 
 ```bash
-GEMINI_API_KEY="your-api-key-here" prompt-elevator "Your prompt"
+GEMINI_API_KEY="your-api-key-here" elevator "Your prompt"
 ```
 
 ## Examples
@@ -228,31 +228,31 @@ GEMINI_API_KEY="your-api-key-here" prompt-elevator "Your prompt"
 ### Writing Code
 
 ```bash
-prompt-elevator "Write a TypeScript function that validates email addresses with detailed error messages"
+elevator "Write a TypeScript function that validates email addresses with detailed error messages"
 ```
 
 ### Technical Explanations
 
 ```bash
-prompt-elevator --model gemini-1.5-pro "Explain the differences between SQL and NoSQL databases with use cases"
+elevator --model gemini-1.5-pro "Explain the differences between SQL and NoSQL databases with use cases"
 ```
 
 ### Creative Writing
 
 ```bash
-prompt-elevator --temp 1.2 "Generate 5 unique story prompts for science fiction novels"
+elevator --temp 1.2 "Generate 5 unique story prompts for science fiction novels"
 ```
 
 ### Code Review
 
 ```bash
-prompt-elevator "Review this Python function for potential improvements: [paste your code here]"
+elevator "Review this Python function for potential improvements: [paste your code here]"
 ```
 
 ### Documentation
 
 ```bash
-prompt-elevator --raw "Generate API documentation for a REST endpoint that creates user accounts" > api-docs.md
+elevator --raw "Generate API documentation for a REST endpoint that creates user accounts" > api-docs.md
 ```
 
 ## Troubleshooting
@@ -308,14 +308,14 @@ prompt-elevator --raw "Generate API documentation for a REST endpoint that creat
 Enable detailed logging for troubleshooting:
 
 ```bash
-LOG_LEVEL=debug prompt-elevator "test prompt"
+LOG_LEVEL=debug elevator "test prompt"
 ```
 
 ### Getting Help
 
-- **CLI Help**: `prompt-elevator --help`
+- **CLI Help**: `elevator --help`
 - **Interactive Help**: Type `help` in the REPL
-- **Issues**: Report bugs on [GitHub Issues](https://github.com/your-org/prompt-elevator/issues)
+- **Issues**: Report bugs on [GitHub Issues](https://github.com/your-org/elevator/issues)
 
 ## Contributing
 
@@ -328,8 +328,8 @@ This project follows strict development standards. Please see:
 
 ```bash
 # Clone and install
-git clone https://github.com/your-org/prompt-elevator.git
-cd prompt-elevator
+git clone https://github.com/your-org/elevator.git
+cd elevator
 pnpm install
 
 # Set up environment

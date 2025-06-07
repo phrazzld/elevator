@@ -1,5 +1,5 @@
 /**
- * Security validation utilities for prompt-elevator CLI.
+ * Security validation utilities for elevator CLI.
  *
  * This module provides security-focused validation functions that ensure
  * proper authentication and secure operation of the application.

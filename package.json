@@ -1,11 +1,11 @@
 {
-  "name": "prompt-elevator",
+  "name": "elevator",
   "version": "0.1.0",
   "description": "A lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash",
   "main": "dist/cli.js",
   "types": "dist/cli.d.ts",
   "bin": {
-    "prompt-elevator": "dist/cli.js"
+    "elevator": "dist/cli.js"
   },
   "files": [
     "dist/**/*.js",
@@ -64,12 +64,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-org/prompt-elevator.git"
+    "url": "git+https://github.com/your-org/elevator.git"
   },
   "bugs": {
-    "url": "https://github.com/your-org/prompt-elevator/issues"
+    "url": "https://github.com/your-org/elevator/issues"
   },
-  "homepage": "https://github.com/your-org/prompt-elevator#readme",
+  "homepage": "https://github.com/your-org/elevator#readme",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

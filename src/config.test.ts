@@ -42,7 +42,7 @@ describe("Configuration Module", () => {
           },
           logging: {
             level: "info",
-            serviceName: "prompt-elevator",
+            serviceName: "elevator",
             jsonFormat: true,
           },
         });
@@ -494,7 +494,7 @@ describe("Configuration Module", () => {
         expect(config.output.streaming).toBe(true);
         expect(config.output.showProgress).toBe(true);
         expect(config.logging.level).toBe("info");
-        expect(config.logging.serviceName).toBe("prompt-elevator");
+        expect(config.logging.serviceName).toBe("elevator");
         expect(config.logging.jsonFormat).toBe(true);
       });
 
@@ -515,7 +515,7 @@ describe("Configuration Module", () => {
         expect(config.api.modelId).toBe("gemini-2.5-flash-preview-05-20");
         expect(config.api.temperature).toBe(0.7);
         expect(config.logging.level).toBe("info");
-        expect(config.logging.serviceName).toBe("prompt-elevator");
+        expect(config.logging.serviceName).toBe("elevator");
       });
 
       it("should use default values when optional variables are whitespace", () => {

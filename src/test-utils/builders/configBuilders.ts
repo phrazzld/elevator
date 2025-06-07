@@ -155,7 +155,7 @@ export class OutputConfigBuilder {
  */
 export class LoggingConfigBuilder {
   private level: LogLevel = "info";
-  private serviceName = "prompt-elevator";
+  private serviceName = "elevator";
   private jsonFormat = true;
 
   withLevel(level: LogLevel): this {

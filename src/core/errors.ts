@@ -1,5 +1,5 @@
 /**
- * Comprehensive error type definitions for prompt-elevator CLI.
+ * Comprehensive error type definitions for elevator CLI.
  *
  * This module provides a unified error system that consolidates all error types
  * used throughout the application, following hexagonal architecture principles.

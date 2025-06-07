@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **prompt-elevator** CLI is built using **hexagonal architecture** (also known as ports and adapters pattern) with strict adherence to the **dependency inversion principle**. This architectural approach ensures that the core business logic remains pure, testable, and completely independent of external concerns like APIs, databases, or user interfaces.
+The **elevator** CLI is built using **hexagonal architecture** (also known as ports and adapters pattern) with strict adherence to the **dependency inversion principle**. This architectural approach ensures that the core business logic remains pure, testable, and completely independent of external concerns like APIs, databases, or user interfaces.
 
 The architecture prioritizes **simplicity**, **modularity**, and **testability** while maintaining clear separation between domain logic and infrastructure concerns.
 

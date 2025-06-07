@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * prompt-elevator CLI entry point
+ * elevator CLI entry point
  * A lightweight CLI that accepts natural-language prompts and returns
  * richer, more technical articulations using Google Gemini 2.5 Flash
  */
@@ -69,7 +69,7 @@ function createProgram(): Command {
   const program = new Command();
 
   program
-    .name("prompt-elevator")
+    .name("elevator")
     .description(
       "A lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash",
     )

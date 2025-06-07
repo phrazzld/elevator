@@ -1,5 +1,5 @@
 /**
- * Dependency injection container for prompt-elevator CLI.
+ * Dependency injection container for elevator CLI.
  *
  * This module provides factories for creating and wiring together all
  * application services following hexagonal architecture principles.

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document details the core interfaces and types that define the business domain of **prompt-elevator**. These interfaces follow **hexagonal architecture** principles, where the core domain defines contracts that infrastructure adapters must implement.
+This document details the core interfaces and types that define the business domain of **elevator**. These interfaces follow **hexagonal architecture** principles, where the core domain defines contracts that infrastructure adapters must implement.
 
 The core APIs are designed around **explicit error handling**, **immutability**, and **pure functional programming** principles. Understanding the _why_ behind these design decisions is crucial for extending and maintaining the system.
 

@@ -1,5 +1,5 @@
 /**
- * Core logging abstractions for prompt-elevator CLI.
+ * Core logging abstractions for elevator CLI.
  *
  * This module defines the logging interface and utilities that the core
  * business logic depends on, following hexagonal architecture principles.
