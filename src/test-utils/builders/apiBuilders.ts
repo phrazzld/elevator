@@ -283,7 +283,7 @@ export class APIStreamChunkBuilder {
 
   asIntermediateChunk(): this {
     this.done = false;
-    // Reset optional properties for intermediate chunks
+    // Remove optional properties for intermediate chunks
     this.usage = undefined;
     this.metadata = undefined;
     return this;

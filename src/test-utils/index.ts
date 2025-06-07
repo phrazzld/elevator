@@ -27,5 +27,8 @@ export * from "./builders/apiBuilders";
 export * from "./builders/errorBuilders";
 export * from "./builders/formatterBuilders";
 
+// Re-export dependency injection test utilities
+export * from "./diHelpers";
+
 // Re-export the main builders namespace
 export { TestDataBuilders } from "./builders";
