@@ -573,16 +573,16 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
         generationConfig.maxOutputTokens = options.maxTokens;
       }
 
-      // Build content with optional elevation system prompt
+      // Build content with elevation system prompt
       const contents: Content[] = [];
 
-      // Add system prompt for elevation if enabled
-      if (this.config.prompt.enableElevation) {
-        contents.push({
-          role: "user",
-          parts: [{ text: getElevationPrompt() }],
-        });
-      }
+      // Always add system prompt for elevation (this is the core purpose of elevator)
+      contents.push({
+        role: "user",
+        parts: [
+          { text: getElevationPrompt(this.config.prompt.elevationStrategy) },
+        ],
+      });
 
       // Add user prompt
       contents.push({
@@ -742,16 +742,16 @@ export class GoogleGeminiAdapter implements GeminiAPIClient {
         generationConfig.maxOutputTokens = options.maxTokens;
       }
 
-      // Build content with optional elevation system prompt
+      // Build content with elevation system prompt
       const contents: Content[] = [];
 
-      // Add system prompt for elevation if enabled
-      if (this.config.prompt.enableElevation) {
-        contents.push({
-          role: "user",
-          parts: [{ text: getElevationPrompt() }],
-        });
-      }
+      // Always add system prompt for elevation (this is the core purpose of elevator)
+      contents.push({
+        role: "user",
+        parts: [
+          { text: getElevationPrompt(this.config.prompt.elevationStrategy) },
+        ],
+      });
 
       // Add user prompt
       contents.push({

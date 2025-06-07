@@ -330,7 +330,7 @@ export class AppConfigBuilder {
   build(): AppConfig {
     return {
       api: this.apiBuilder.build(),
-      prompt: { enableElevation: true },
+      prompt: { elevationStrategy: "concise" },
       output: this.outputBuilder.build(),
       logging: this.loggingBuilder.build(),
     };

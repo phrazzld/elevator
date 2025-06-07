@@ -36,7 +36,7 @@ describe("Configuration Module", () => {
             maxRetries: 3,
           },
           prompt: {
-            enableElevation: true,
+            elevationStrategy: "concise",
           },
           output: {
             raw: false,
@@ -80,7 +80,7 @@ describe("Configuration Module", () => {
             maxRetries: 5,
           },
           prompt: {
-            enableElevation: true,
+            elevationStrategy: "concise",
           },
           output: {
             raw: true,

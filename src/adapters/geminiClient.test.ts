@@ -58,7 +58,7 @@ describe("GoogleGeminiAdapter", () => {
         maxRetries: 3,
       },
       prompt: {
-        enableElevation: false, // Disable for most tests to avoid system prompt complications
+        elevationStrategy: "concise", // Use concise for tests
       },
       output: {
         raw: false,
@@ -262,15 +262,23 @@ describe("GoogleGeminiAdapter", () => {
       const result = await adapter.generateContent(prompt, options);
 
       expect(isOk(result)).toBe(true);
-      expect(mockGenerateContent).toHaveBeenCalledWith(
-        expect.objectContaining({
-          contents: [{ role: "user", parts: [{ text: prompt.content }] }],
-          generationConfig: expect.objectContaining({
-            temperature: 0.9,
-            maxOutputTokens: 1000,
-          }) as unknown,
-        }) as unknown,
-      );
+      // Verify the call was made with proper structure
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+      const callArgs = mockGenerateContent.mock.calls[0];
+      expect(callArgs).toBeDefined();
+      const [requestConfig] = callArgs as [
+        {
+          contents: Array<{ role: string; parts: Array<{ text: string }> }>;
+          generationConfig: { temperature: number; maxOutputTokens: number };
+        },
+      ];
+      expect(requestConfig.contents).toHaveLength(2);
+      expect(requestConfig.contents[0]?.role).toBe("user");
+      expect(requestConfig.contents[0]?.parts[0]?.text).toContain("practical");
+      expect(requestConfig.contents[1]?.role).toBe("user");
+      expect(requestConfig.contents[1]?.parts[0]?.text).toBe(prompt.content);
+      expect(requestConfig.generationConfig.temperature).toBe(0.9);
+      expect(requestConfig.generationConfig.maxOutputTokens).toBe(1000);
     });
   });
 
@@ -1086,11 +1094,11 @@ describe("GoogleGeminiAdapter", () => {
   });
 
   describe("Prompt Elevation", () => {
-    it("should include elevation system prompt when enabled", async () => {
-      // Arrange - Create config with elevation enabled
+    it("should always include elevation system prompt with specified strategy", async () => {
+      // Arrange - Create config with specific elevation strategy
       const elevationConfig = {
         ...mockConfig,
-        prompt: { enableElevation: true },
+        prompt: { elevationStrategy: "balanced" as const },
       };
       const elevationAdapter = new GoogleGeminiAdapter(elevationConfig);
 
@@ -1129,26 +1137,30 @@ describe("GoogleGeminiAdapter", () => {
 
       // First message should be the elevation system prompt
       expect(requestContents[0]?.role).toBe("user");
-      expect(requestContents[0]?.parts[0]?.text).toContain(
-        "technical assistant",
-      );
       expect(requestContents[0]?.parts[0]?.text).toContain("enhance");
+      expect(requestContents[0]?.parts[0]?.text).toContain("guidance");
 
       // Second message should be the actual user prompt
       expect(requestContents[1]?.role).toBe("user");
       expect(requestContents[1]?.parts[0]?.text).toBe("Create a login form");
     });
 
-    it("should not include elevation system prompt when disabled", async () => {
-      // mockConfig already has elevation disabled
+    it("should use different elevation strategies", async () => {
+      // Arrange - Create config with concise strategy
+      const conciseConfig = {
+        ...mockConfig,
+        prompt: { elevationStrategy: "concise" as const },
+      };
+      const conciseAdapter = new GoogleGeminiAdapter(conciseConfig);
+
       const mockResponse = {
         response: {
-          text: () => "Standard response",
+          text: () => "Concise technical response",
           candidates: [{ finishReason: "STOP", safetyRatings: [] }],
           usageMetadata: {
-            promptTokenCount: 10,
+            promptTokenCount: 20,
             candidatesTokenCount: 15,
-            totalTokenCount: 25,
+            totalTokenCount: 35,
           },
         },
       };
@@ -1158,25 +1170,29 @@ describe("GoogleGeminiAdapter", () => {
       const prompt = createMockEnhancedPrompt("Create a login form");
 
       // Act
-      const result = await adapter.generateContent(prompt);
+      const result = await conciseAdapter.generateContent(prompt);
 
       // Assert
       expect(isOk(result)).toBe(true);
       expect(mockGenerateContent).toHaveBeenCalledTimes(1);
 
-      // Verify that the request only included the user prompt
+      // Verify that the request always includes elevation prompt
       const mockCall = mockGenerateContent.mock.calls[0];
       expect(mockCall).toBeDefined();
       const requestArg = mockCall?.[0] as {
         contents: Array<{ role: string; parts: Array<{ text: string }> }>;
       };
       expect(requestArg.contents).toBeDefined();
-      expect(requestArg.contents).toHaveLength(1);
+      expect(requestArg.contents).toHaveLength(2);
       const requestContents = requestArg.contents;
 
-      // Only message should be the user prompt
+      // First message should be the concise elevation prompt
       expect(requestContents[0]?.role).toBe("user");
-      expect(requestContents[0]?.parts[0]?.text).toBe("Create a login form");
+      expect(requestContents[0]?.parts[0]?.text).toContain("practical");
+
+      // Second message should be the user prompt
+      expect(requestContents[1]?.role).toBe("user");
+      expect(requestContents[1]?.parts[0]?.text).toBe("Create a login form");
     });
   });
 });

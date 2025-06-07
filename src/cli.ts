@@ -117,10 +117,26 @@ async function main(): Promise<void> {
     const mergedEnv = mergeCliWithEnv(options);
 
     // Create configuration using existing pure function
-    const config: AppConfig = createAppConfig(mergedEnv);
+    let config: AppConfig = createAppConfig(mergedEnv);
+
+    // For single prompt mode, reduce logging verbosity
+    if (singlePrompt) {
+      config = {
+        ...config,
+        logging: {
+          ...config.logging,
+          level: "error", // Only show errors in single prompt mode
+        },
+      };
+    }
+
+    // Determine if we're in single prompt mode for reduced verbosity
+    const isInteractiveMode = !singlePrompt;
 
     // Validate security (including API key functionality)
-    console.log("🔐 Validating API key and security settings...");
+    if (isInteractiveMode) {
+      console.log("🔐 Validating API key and security settings...");
+    }
     const securityResult = await validateStartupSecurity(config);
 
     if (securityResult.success === false) {
@@ -142,7 +158,9 @@ async function main(): Promise<void> {
       process.exit(1);
     }
 
-    console.log("✅ API key validated successfully");
+    if (isInteractiveMode) {
+      console.log("✅ API key validated successfully");
+    }
 
     // Create and wire all application services
     const services = createValidatedServiceContainer(config);
@@ -163,16 +181,18 @@ async function main(): Promise<void> {
       },
     });
 
-    console.log("✅ Configuration and security validation complete");
-    console.log(`   Model: ${config.api.modelId}`);
-    console.log(`   Temperature: ${config.api.temperature}`);
-    console.log(`   Streaming: ${config.output.streaming}`);
-    console.log(`   Raw mode: ${config.output.raw}`);
-    console.log("\n🔧 Services initialized:");
-    console.log("   ✓ Prompt processing pipeline");
-    console.log("   ✓ Gemini API client");
-    console.log("   ✓ Console formatter");
-    console.log("   ✓ Structured logging");
+    if (isInteractiveMode) {
+      console.log("✅ Configuration and security validation complete");
+      console.log(`   Model: ${config.api.modelId}`);
+      console.log(`   Temperature: ${config.api.temperature}`);
+      console.log(`   Streaming: ${config.output.streaming}`);
+      console.log(`   Raw mode: ${config.output.raw}`);
+      console.log("\n🔧 Services initialized:");
+      console.log("   ✓ Prompt processing pipeline");
+      console.log("   ✓ Gemini API client");
+      console.log("   ✓ Console formatter");
+      console.log("   ✓ Structured logging");
+    }
 
     logger.info("Services initialized successfully", {
       correlationId: logger.getCorrelationId(),
@@ -180,8 +200,7 @@ async function main(): Promise<void> {
 
     // Handle single prompt mode vs interactive REPL
     if (singlePrompt) {
-      // Single prompt mode - process and exit
-      console.log("\n🚀 Processing single prompt...");
+      // Single prompt mode - process and exit (quiet mode)
 
       const promptLogger = services.loggerFactory.createRootLogger({
         component: "cli",

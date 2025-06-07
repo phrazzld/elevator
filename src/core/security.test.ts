@@ -602,7 +602,7 @@ describe("security utilities", () => {
         temperature: 0.7,
       },
       prompt: {
-        enableElevation: true,
+        elevationStrategy: "concise",
       },
       output: {
         raw: false,
@@ -679,7 +679,7 @@ describe("security utilities", () => {
           temperature: 0.5,
         },
         prompt: {
-          enableElevation: false,
+          elevationStrategy: "balanced",
         },
         output: {
           raw: true,

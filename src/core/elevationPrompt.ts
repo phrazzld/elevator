@@ -1,31 +1,28 @@
 /**
  * System prompt for AI-powered prompt elevation.
  *
- * This module defines the core prompt that instructs the AI to transform
- * simple user requests into comprehensive, technical specifications.
+ * This module defines prompts that instruct the AI to transform and elevate
+ * user requests into more sophisticated, technically precise articulations
+ * while preserving the original intent and scope.
  */
 
 /**
- * System prompt that instructs the AI to elevate user prompts to technical specifications.
+ * System prompt that instructs the AI to elevate user prompts into more sophisticated articulations.
  *
- * This prompt transforms casual requests into detailed, implementation-focused
- * specifications with technical depth, best practices, and actionable guidance.
+ * This prompt transforms simple requests into technically precise, professional-grade
+ * specifications while preserving the original intent and scope.
  */
-export const ELEVATION_SYSTEM_PROMPT = `You are a technical assistant that elevates user prompts into comprehensive, implementation-focused specifications. When given a user's request, enhance it by providing:
+export const ELEVATION_SYSTEM_PROMPT = `Transform the user's request into a more sophisticated, technically precise articulation. Output only the elevated request - no headers, explanations, or commentary.
 
-**Technical Depth**: Add specific technical details, technologies, frameworks, and implementation approaches relevant to the request.
+**Transform the request itself**: Take the user's simple prompt and rearticulate it using specific technical language, professional terminology, and structured phrasing.
 
-**Best Practices**: Include industry standards, security considerations, performance optimizations, and maintainability practices.
+**Preserve the original intent**: The elevated version must request the same outcome as the original, just expressed with greater technical sophistication.
 
-**Implementation Context**: Consider scalability, real-world constraints, error handling, testing approaches, and deployment considerations.
+**Add technical specificity**: Replace vague terms with precise technical concepts, methodologies, and industry-standard terminology.
 
-**Structured Guidance**: Break complex requests into clear, actionable components with step-by-step implementation guidance.
+**Output format**: Provide only the elevated request. No "Original Request:" or "Technically Precise Version:" headers. Just the transformed request itself.
 
-**Professional Standards**: Use precise technical terminology, reference established patterns, and provide code examples where helpful.
-
-Transform the user's request into a detailed technical specification while preserving their original intent. Focus on practical implementation guidance that a developer could immediately act upon.
-
-Respond with the enhanced technical approach, not just an acknowledgment. Begin directly with the technical content.`;
+Transform the user's prompt into a technically elevated version that a subject matter expert would use to express the same request.`;
 
 /**
  * Alternative elevation prompts for different use cases.
@@ -33,24 +30,24 @@ Respond with the enhanced technical approach, not just an acknowledgment. Begin 
  */
 export const ELEVATION_PROMPTS = {
   /**
-   * Default technical specification focus
+   * Balanced technical elevation (default)
    */
-  technical: ELEVATION_SYSTEM_PROMPT,
+  balanced: ELEVATION_SYSTEM_PROMPT,
 
   /**
-   * Concise elevation for simpler requests
+   * Concise elevation for straightforward requests
    */
-  concise: `Enhance this request with technical specificity, implementation details, and best practices. Provide actionable guidance while keeping the response focused and practical.`,
+  concise: `Transform this user request into a more technically precise version using professional terminology and specific technical concepts. Output only the elevated request - no headers, no explanations, no commentary. Just provide the same request articulated with greater technical sophistication.`,
 
   /**
-   * Detailed elevation for complex projects
+   * Comprehensive elevation for complex specifications
    */
-  detailed: `Transform this request into a comprehensive technical specification including: architecture considerations, technology choices, implementation phases, testing strategies, security requirements, performance considerations, and deployment planning. Provide detailed guidance suitable for enterprise development.`,
+  comprehensive: `Elevate this request into a detailed, enterprise-grade technical specification that includes architectural considerations, implementation methodologies, quality assurance protocols, security requirements, performance criteria, and operational procedures. Transform the simple request into a comprehensive technical directive that captures all relevant professional considerations.`,
 
   /**
-   * Educational elevation that explains concepts
+   * Educational elevation with learning objectives
    */
-  educational: `Elevate this request by adding technical context, explaining relevant concepts, providing implementation examples, and suggesting learning resources. Make it educational while remaining actionable.`,
+  educational: `Rearticulate this request with educational context, incorporating relevant technical concepts, learning objectives, skill development components, and knowledge transfer elements. Transform the basic request into an instructionally-focused technical directive that emphasizes understanding and capability building.`,
 } as const;
 
 /**
@@ -62,7 +59,7 @@ export type ElevationStrategy = keyof typeof ELEVATION_PROMPTS;
  * Get elevation prompt by strategy
  */
 export function getElevationPrompt(
-  strategy: ElevationStrategy = "technical",
+  strategy: ElevationStrategy = "balanced",
 ): string {
   return ELEVATION_PROMPTS[strategy];
 }

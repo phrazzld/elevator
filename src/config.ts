@@ -42,8 +42,12 @@ export interface ApiConfig {
  * Prompt processing configuration
  */
 export interface PromptConfig {
-  /** Enable AI-powered prompt elevation to technical specifications */
-  readonly enableElevation: boolean;
+  /** Strategy for AI-powered prompt elevation */
+  readonly elevationStrategy:
+    | "concise"
+    | "balanced"
+    | "comprehensive"
+    | "educational";
 }
 
 /**
@@ -333,7 +337,12 @@ export function createAppConfig(
     );
 
     // Validate optional prompt configuration
-    const enableElevation = env["PROMPT_ENABLE_ELEVATION"] !== "false"; // Default to true
+    const elevationStrategy = validateEnum(
+      "PROMPT_ELEVATION_STRATEGY",
+      env["PROMPT_ELEVATION_STRATEGY"],
+      ["concise", "balanced", "comprehensive", "educational"],
+      "concise", // Default to concise for better UX
+    );
 
     // Validate optional output configuration
     const raw = env["OUTPUT_RAW"] === "true";
@@ -360,7 +369,7 @@ export function createAppConfig(
         maxRetries,
       },
       prompt: {
-        enableElevation,
+        elevationStrategy,
       },
       output: {
         raw,
