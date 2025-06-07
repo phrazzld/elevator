@@ -3,9 +3,18 @@
   "version": "0.1.0",
   "description": "A lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash",
   "main": "dist/cli.js",
+  "types": "dist/cli.d.ts",
   "bin": {
     "prompt-elevator": "dist/cli.js"
   },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/**/*.js.map",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "npm run clean && npm run build:prod && npm run build:validate",
     "build:prod": "tsc --project tsconfig.prod.json",
@@ -22,18 +31,31 @@
     "test:coverage": "vitest --coverage",
     "test:coverage:ci": "vitest run --coverage --reporter=default",
     "coverage:report": "vitest run --coverage --reporter=json --reporter=html",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepublishOnly": "npm run build && npm run lint && npm run typecheck && npm run test:coverage:ci",
+    "prepack": "npm run build",
+    "postpack": "echo '📦 Package ready for publishing'"
   },
   "keywords": [
     "cli",
     "prompt",
     "ai",
+    "artificial-intelligence",
     "gemini",
     "google",
+    "google-ai",
     "prompt-engineering",
-    "developer-tools"
+    "prompt-enhancement",
+    "developer-tools",
+    "command-line",
+    "terminal",
+    "repl",
+    "interactive",
+    "typescript",
+    "node",
+    "nodejs"
   ],
-  "author": "",
+  "author": "CLI Development Team",
   "license": "MIT",
   "packageManager": "pnpm@10.10.0",
   "engines": {
@@ -42,12 +64,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/prompt-elevator.git"
+    "url": "git+https://github.com/your-org/prompt-elevator.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/prompt-elevator/issues"
+    "url": "https://github.com/your-org/prompt-elevator/issues"
   },
-  "homepage": "https://github.com/yourusername/prompt-elevator#readme",
+  "homepage": "https://github.com/your-org/prompt-elevator#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
