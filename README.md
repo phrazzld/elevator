@@ -1,49 +1,36 @@
 # elevator
 
-A lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash.
+A lightweight CLI that transforms natural-language prompts into more sophisticated, technically precise articulations using Google Gemini 2.5 Flash.
 
 ## Features
 
-- 🚀 **Interactive REPL Mode**: Continuous prompt processing with persistent session
-- ⚡ **Single Prompt Mode**: Process individual prompts directly from command line
-- 🎛️ **Multiple Gemini Models**: Support for latest Gemini models including 2.5 Flash and 2.0 Flash
-- 🌊 **Streaming Output**: Real-time response streaming (configurable)
-- 🎨 **Formatted Output**: Enhanced console formatting with progress indicators
-- ⚙️ **Flexible Configuration**: Environment variables and CLI flags
-- 🔒 **Security First**: API key validation and secure credential handling
+- ⚡ **Direct API Integration**: Simple, fast prompt elevation using native fetch
+- 🎯 **Technical Enhancement**: Converts casual prompts into professional technical language
+- 🔒 **Security First**: Environment-based API key management
 - 📝 **Structured Logging**: JSON-formatted logs with correlation IDs
+- 🚀 **Minimal Dependencies**: Lightweight with only essential dependencies
 
 ## Installation
 
 ### Prerequisites
 
 - **Node.js** >=18.0.0
-- **npm**, **pnpm** >=10.0.0, or **yarn**
+- **pnpm** (recommended) or **npm**
 
-### Global Installation
+### From Source (Development)
 
-```bash
-# Using npm
-npm install -g elevator
-
-# Using pnpm (recommended)
-pnpm add -g elevator
-
-# Using yarn
-yarn global add elevator
-```
-
-### Local Installation
+This project is currently in development. To use it:
 
 ```bash
-# Using npm
-npm install elevator
+# Clone the repository
+git clone <repository-url>
+cd elevator
 
-# Using pnpm
-pnpm add elevator
+# Install dependencies
+pnpm install
 
-# Using yarn
-yarn add elevator
+# Build the project
+pnpm build
 ```
 
 ## Quick Start
@@ -57,139 +44,54 @@ Visit [Google AI Studio](https://aistudio.google.com/app/apikey) to get your fre
 ```bash
 # Add to your shell profile (.bashrc, .zshrc, etc.)
 export GEMINI_API_KEY="your-api-key-here"
-
-# Or create a .env file in your project
-echo "GEMINI_API_KEY=your-api-key-here" > .env
 ```
 
 ### 3. Start Using
 
 ```bash
-# Interactive mode
-elevator
+# Run a prompt through the built CLI
+node dist/cli.js "make a todo app"
 
-# Single prompt mode
-elevator "Explain quantum computing in simple terms"
+# Or with raw output (no formatting)
+node dist/cli.js --raw "explain REST APIs"
 ```
 
 ## Usage
 
-### Interactive Mode (Default)
+### Basic Usage
 
-Start the interactive REPL by running the command without arguments:
-
-```bash
-elevator
-```
-
-```
-🚀 Welcome to elevator! Enter your prompts below. Type 'help' for commands or 'exit' to quit.
-
-prompt> Write a function to calculate fibonacci numbers
-✨ Enhanced prompt:
-[Enhanced response appears here...]
-
-prompt> exit
-👋 Goodbye!
-```
-
-**Interactive Commands:**
-
-- `help` - Show available commands
-- `exit`, `quit` - Exit the REPL
-- `Ctrl+C` - Graceful exit
-
-### Single Prompt Mode
-
-Process a single prompt and exit:
+Process a single prompt and get an elevated, technical version:
 
 ```bash
-elevator "Your prompt here"
+node dist/cli.js "Your prompt here"
 ```
 
 **Examples:**
 
 ```bash
-# Basic usage
-elevator "Explain REST APIs"
-
-# With model selection
-elevator --model gemini-1.5-pro "Write a Python script to parse CSV files"
-
-# With custom temperature
-elevator --temp 0.9 "Generate creative story ideas"
+# Basic prompt elevation
+node dist/cli.js "make a website"
 
 # Raw output (no formatting)
-elevator --raw "List the top 5 programming languages"
+node dist/cli.js --raw "build a calculator app"
 ```
 
 ### CLI Options
 
-| Option                 | Description                               | Default                          |
-| ---------------------- | ----------------------------------------- | -------------------------------- |
-| `--model <model>`      | Gemini model to use                       | `gemini-2.5-flash-preview-05-20` |
-| `--temp <temperature>` | Response generation temperature (0.0-2.0) | `0.7`                            |
-| `--stream`             | Enable streaming output                   | `true`                           |
-| `--no-stream`          | Disable streaming output                  | -                                |
-| `--raw`                | Enable raw output mode (no formatting)    | `false`                          |
-| `--no-raw`             | Disable raw output mode                   | -                                |
-| `-V, --version`        | Show version number                       | -                                |
-| `-h, --help`           | Show help information                     | -                                |
-
-### Available Models
-
-- `gemini-2.5-flash-preview-05-20` (default)
-- `gemini-2.0-flash-exp`
-- `gemini-1.5-flash`
-- `gemini-1.5-flash-8b`
-- `gemini-1.5-pro`
+| Option       | Description                         | Default |
+| ------------ | ----------------------------------- | ------- |
+| `--raw`      | Output raw response (no formatting) | `false` |
+| `-h, --help` | Show help information               | -       |
 
 ## Configuration
 
 ### Environment Variables
 
-| Variable               | Required | Default                          | Description                                      |
-| ---------------------- | -------- | -------------------------------- | ------------------------------------------------ |
-| `GEMINI_API_KEY`       | ✅ Yes   | -                                | Your Gemini API key                              |
-| `GEMINI_MODEL`         | No       | `gemini-2.5-flash-preview-05-20` | Gemini model to use                              |
-| `GEMINI_TEMPERATURE`   | No       | `0.7`                            | Temperature for response generation (0.0-2.0)    |
-| `GEMINI_TIMEOUT_MS`    | No       | `30000`                          | Request timeout in milliseconds (1000-300000)    |
-| `GEMINI_MAX_RETRIES`   | No       | `3`                              | Maximum retry attempts (0-10)                    |
-| `OUTPUT_RAW`           | No       | `false`                          | Enable raw output mode                           |
-| `OUTPUT_STREAMING`     | No       | `true`                           | Enable streaming output                          |
-| `OUTPUT_SHOW_PROGRESS` | No       | `true`                           | Show progress indicators                         |
-| `LOG_LEVEL`            | No       | `info`                           | Logging level (`debug`, `info`, `warn`, `error`) |
-| `SERVICE_NAME`         | No       | `elevator`                       | Service name for logs                            |
-| `LOG_JSON_FORMAT`      | No       | `true`                           | Use JSON format for logs                         |
+| Variable         | Required | Default | Description         |
+| ---------------- | -------- | ------- | ------------------- |
+| `GEMINI_API_KEY` | ✅ Yes   | -       | Your Gemini API key |
 
-### Configuration Examples
-
-**Basic Configuration:**
-
-```bash
-export GEMINI_API_KEY="your-api-key"
-export GEMINI_MODEL="gemini-1.5-pro"
-export GEMINI_TEMPERATURE="0.9"
-```
-
-**Development Configuration:**
-
-```bash
-export GEMINI_API_KEY="your-api-key"
-export LOG_LEVEL="debug"
-export OUTPUT_STREAMING="false"
-export LOG_JSON_FORMAT="false"
-```
-
-**Production Configuration:**
-
-```bash
-export GEMINI_API_KEY="your-api-key"
-export GEMINI_TIMEOUT_MS="60000"
-export GEMINI_MAX_RETRIES="5"
-export LOG_LEVEL="warn"
-export SERVICE_NAME="my-app-elevator"
-```
+The CLI uses the fixed Gemini 2.5 Flash model with a 30-second timeout and structured JSON logging.
 
 ## API Key Setup
 
@@ -202,57 +104,42 @@ export SERVICE_NAME="my-app-elevator"
 
 ### Setting Your API Key
 
-**Option 1: Environment Variable (Recommended)**
-
 ```bash
 # Add to your shell profile
 echo 'export GEMINI_API_KEY="your-api-key-here"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-**Option 2: Project .env File**
-
-```bash
-# In your project directory
-echo "GEMINI_API_KEY=your-api-key-here" > .env
-```
-
-**Option 3: One-time Usage**
-
-```bash
-GEMINI_API_KEY="your-api-key-here" elevator "Your prompt"
-```
-
 ## Examples
 
-### Writing Code
+### Basic Prompt Elevation
 
 ```bash
-elevator "Write a TypeScript function that validates email addresses with detailed error messages"
+node dist/cli.js "make a todo app"
 ```
 
-### Technical Explanations
+**Output:**
 
-```bash
-elevator --model gemini-1.5-pro "Explain the differences between SQL and NoSQL databases with use cases"
+```
+Develop a comprehensive task management application with full CRUD operations, user authentication, persistent data storage, and an intuitive user interface for creating, organizing, and tracking personal productivity tasks.
 ```
 
-### Creative Writing
+### Technical Enhancement
 
 ```bash
-elevator --temp 1.2 "Generate 5 unique story prompts for science fiction novels"
+node dist/cli.js "build an API"
 ```
 
-### Code Review
+**Output:**
 
-```bash
-elevator "Review this Python function for potential improvements: [paste your code here]"
+```
+Design and implement a RESTful API architecture with proper HTTP methods, status codes, authentication middleware, data validation, error handling, and comprehensive documentation following OpenAPI specifications.
 ```
 
-### Documentation
+### Raw Output for Scripting
 
 ```bash
-elevator --raw "Generate API documentation for a REST endpoint that creates user accounts" > api-docs.md
+node dist/cli.js --raw "write tests" > enhanced-prompt.txt
 ```
 
 ## Troubleshooting
@@ -262,15 +149,15 @@ elevator --raw "Generate API documentation for a REST endpoint that creates user
 **API Key Not Found**
 
 ```
-❌ Configuration Error: Environment variable GEMINI_API_KEY is required but not set
+Error: GEMINI_API_KEY required
 ```
 
-- **Solution**: Set your `GEMINI_API_KEY` environment variable or create a `.env` file
+- **Solution**: Set your `GEMINI_API_KEY` environment variable
 
 **API Key Invalid**
 
 ```
-❌ API Error: Invalid API key provided
+API error: 401 Unauthorized - Invalid API key. Verify your GEMINI_API_KEY
 ```
 
 - **Solution**: Verify your API key at [Google AI Studio](https://aistudio.google.com/app/apikey)
@@ -279,71 +166,47 @@ elevator --raw "Generate API documentation for a REST endpoint that creates user
 **Network Timeout**
 
 ```
-❌ Network Error: Request timeout after 30000ms
+Request timeout - API call exceeded 30 seconds
 ```
 
 - **Solution**: Check your internet connection
-- **Solution**: Increase timeout with `GEMINI_TIMEOUT_MS=60000`
+- **Solution**: Try again with a shorter prompt
 
 **Rate Limiting**
 
 ```
-❌ API Error: Rate limit exceeded
+API error: 429 Too Many Requests - Rate limit exceeded. Please try again later
 ```
 
 - **Solution**: Wait a moment and try again
-- **Solution**: Reduce request frequency
-
-**Model Not Available**
-
-```
-❌ Configuration Error: Environment variable GEMINI_MODEL must be one of: ...
-```
-
-- **Solution**: Use one of the supported models listed above
-- **Solution**: Check for typos in the model name
-
-### Debug Mode
-
-Enable detailed logging for troubleshooting:
-
-```bash
-LOG_LEVEL=debug elevator "test prompt"
-```
 
 ### Getting Help
 
-- **CLI Help**: `elevator --help`
-- **Interactive Help**: Type `help` in the REPL
+- **CLI Help**: `node dist/cli.js --help`
 - **Issues**: Report bugs on [GitHub Issues](https://github.com/your-org/elevator/issues)
 
-## Contributing
-
-This project follows strict development standards. Please see:
-
-- [Development Philosophy](docs/DEVELOPMENT_PHILOSOPHY.md)
-- [TypeScript Guidelines](docs/DEVELOPMENT_PHILOSOPHY_APPENDIX_TYPESCRIPT.md)
+## Development
 
 ### Development Setup
 
 ```bash
 # Clone and install
-git clone https://github.com/your-org/elevator.git
+git clone <repository-url>
 cd elevator
 pnpm install
 
 # Set up environment
-cp .env.example .env
-# Edit .env with your GEMINI_API_KEY
+export GEMINI_API_KEY="your-api-key-here"
 
 # Development commands
-pnpm dev          # Watch mode
+pnpm build        # Build TypeScript to JavaScript
 pnpm test         # Run tests
-pnpm test:coverage # Coverage report
-pnpm lint         # Lint code
-pnpm format       # Format code
-pnpm build        # Production build
+pnpm typecheck    # Check TypeScript types
 ```
+
+### Project Architecture
+
+This project follows a radically simplified architecture focusing on directness and maintainability. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed information about the design decisions.
 
 ## License
 
@@ -351,4 +214,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-**Made with ❤️ for developers who want better prompts**
+**A simple tool for elevating prompts with technical precision**
