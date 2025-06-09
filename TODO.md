@@ -58,7 +58,7 @@
     - **Depends-on:** [T001]
 
 ## CLI Integration
-- [ ] **T006 · Refactor · P0: update `src/cli.ts` to use direct API call**
+- [x] **T006 · Refactor · P0: update `src/cli.ts` to use direct API call**
     - **Context:** Phase 2: CLI Integration
     - **Action:**
         1. Remove all dependency injection container setup and usage.
