@@ -1,161 +1,178 @@
-# elevator CLI - MVP Implementation Tasks
+# Todo
 
-## Project Foundation & Automation
+## API Core
+- [x] **T001 · Feature · P0: implement direct API function in `src/api.ts`**
+    - **Context:** Phase 1: Core API Function
+    - **Action:**
+        1. Create `src/api.ts` with an `async function elevatePrompt(prompt: string): Promise<string>`.
+        2. Implement the direct `fetch()` call to the Gemini API endpoint, including headers and body structure.
+        3. Extract the elevation prompt template into a simple constant within the module.
+    - **Done-when:**
+        1. `src/api.ts` exists and compiles.
+        2. The `elevatePrompt` function makes a successful API call with a valid key and prompt.
+    - **Verification:**
+        1. Manually invoke the function from a test script with a valid `GEMINI_API_KEY` to confirm it returns a string response.
+    - **Depends-on:** none
 
-### Core Project Setup
+- [ ] **T002 · Feature · P1: add robust error handling to API calls**
+    - **Context:** Phase 1: Core API Function; Open Questions #1
+    - **Action:**
+        1. Check for `!response.ok` and throw a detailed error: `API error: ${response.status} ${response.statusText}`.
+        2. Wrap `response.json()` in a try/catch block to handle malformed JSON responses.
+    - **Done-when:**
+        1. A failed HTTP request (e.g., 4xx, 5xx) throws a specific, descriptive error.
+        2. An unparsable JSON response throws a specific error.
+    - **Verification:**
+        1. Point the API endpoint to a server that returns a 500 error and confirm the correct error is thrown.
+    - **Depends-on:** [T001]
 
-- [x] Initialize Node.js project with TypeScript support
-- [x] Configure `package.json` with bin field for global CLI installation
-- [x] Set up strict TypeScript configuration (`tsconfig.json`) with `"strict": true`
-- [x] Configure ESLint with TypeScript rules (recommended + recommended-requiring-type-checking)
-- [x] Configure Prettier for formatting (non-negotiable, zero-config approach)
-- [x] Set up Vitest as testing framework
-- [x] Create `.gitignore` with Node.js and IDE patterns
-- [x] Create `.env.example` with `GEMINI_API_KEY` placeholder
+- [ ] **T003 · Feature · P1: implement request timeout handling**
+    - **Context:** Open Questions & Decisions: #2. Timeout Handling
+    - **Action:**
+        1. Use an `AbortController` with `AbortSignal.timeout(30000)` to add a 30-second timeout to the `fetch()` call in `src/api.ts`.
+    - **Done-when:**
+        1. An API request that exceeds 30 seconds is aborted and throws a timeout error.
+    - **Verification:**
+        1. Test against an endpoint that intentionally delays its response for >30s to confirm the timeout error is triggered.
+    - **Depends-on:** [T001]
 
-### Mandatory Automation
+- [ ] **T004 · Feature · P2: add basic API response structure validation**
+    - **Context:** Open Questions & Decisions: #3. Response Validation
+    - **Action:**
+        1. After parsing the JSON response, validate that the path `data.candidates[0].content.parts[0].text` exists.
+        2. If the path is invalid, throw a descriptive error like "Invalid API response structure".
+    - **Done-when:**
+        1. The function safely handles unexpected API response schemas without crashing.
+    - **Verification:**
+        1. Mock a fetch response with a valid but structurally incorrect JSON object and confirm the correct error is thrown.
+    - **Depends-on:** [T001]
 
-- [x] Set up pre-commit hooks with lint, format, and type check
-- [x] Configure GitHub Actions CI pipeline (lint → typecheck → test → build)
-- [x] Add npm audit for dependency vulnerability scanning in CI
-- [x] Set up test coverage enforcement (85% minimum threshold)
-- [x] Configure Conventional Commits validation in pre-commit hooks
+- [ ] **T005 · Feature · P1: implement simple structured JSON logging**
+    - **Context:** Logging & Observability
+    - **Action:**
+        1. In `src/api.ts`, add structured `console.log` or `console.error` calls for key events: API request start, API request completion (success/failure), and error occurrences.
+        2. Logged objects should include `timestamp`, `level`, and `message`.
+    - **Done-when:**
+        1. API interactions produce structured JSON logs to the console.
+        2. API keys or other sensitive information are NOT present in logs.
+    - **Depends-on:** [T001]
 
-## Core Domain Logic (Pure Functions)
+## CLI Integration
+- [ ] **T006 · Refactor · P0: update `src/cli.ts` to use direct API call**
+    - **Context:** Phase 2: CLI Integration
+    - **Action:**
+        1. Remove all dependency injection container setup and usage.
+        2. Import `elevatePrompt` directly from `src/api.ts`.
+        3. Replace the old implementation with a direct `await elevatePrompt(prompt)` call within a simple `try/catch` block.
+    - **Done-when:**
+        1. `src/cli.ts` no longer has dependency injection logic.
+        2. The CLI successfully processes a prompt using the new direct API call.
+    - **Verification:**
+        1. Run the compiled CLI from the command line with a test prompt and confirm it outputs an elevated prompt.
+    - **Depends-on:** [T001]
 
-### Configuration Module (`src/config.ts`)
+## File & Dependency Cleanup
+- [ ] **T007 · Chore · P1: delete obsolete adapter and core files**
+    - **Context:** Phase 3: File Elimination
+    - **Action:**
+        1. Delete the following files: `src/core/apiClient.ts`, `src/adapters/geminiClient.ts`, `src/adapters/apiProgressAdapter.ts`, and `src/dependencyInjection.ts`.
+    - **Done-when:**
+        1. The specified files are removed from the repository.
+        2. The project still compiles successfully (after import paths are fixed in the next task).
+    - **Depends-on:** [T006]
 
-- [x] Define strict configuration interface with readonly properties
-- [x] Implement environment variable validation with explicit error messages
-- [x] Create configuration factory function (pure, testable)
-- [x] Add default values for model ID and temperature
-- [x] Export typed, immutable configuration object
+- [ ] **T008 · Chore · P1: update all imports and remove Result types**
+    - **Context:** Phase 3: File Elimination
+    - **Action:**
+        1. Find and remove all imports from the deleted files across the codebase.
+        2. Remove all usages of the `Result` type, refactoring code to use standard `Promise`/`async/await` with `try/catch`.
+    - **Done-when:**
+        1. The project compiles without any errors related to missing files or types.
+    - **Depends-on:** [T007]
 
-### Prompt Processing Core (`src/core/promptProcessor.ts`)
+- [ ] **T009 · Chore · P2: remove unused dependencies from `package.json`**
+    - **Context:** Phase 5: Cleanup & Verification
+    - **Action:**
+        1. Uninstall the Google AI SDK, any Result type libraries, and any other dependencies made redundant by this refactor.
+        2. Run the package manager's install command to update the lockfile.
+    - **Done-when:**
+        1. `package.json` and the lockfile are clean of unused dependencies.
+        2. The project installs, builds, and tests successfully.
+    - **Depends-on:** [T008]
 
-- [x] Define prompt processing interface (input/output contracts)
-- [x] Implement prompt validation logic (pure function)
-- [x] Create prompt enhancement logic as pure function
-- [x] Define error types for validation failures
-- [x] Add comprehensive unit tests for all pure functions
+## Testing
+- [ ] **T010 · Test · P1: create primary integration test for `src/api.ts`**
+    - **Context:** Phase 4: Testing Strategy
+    - **Action:**
+        1. Create `test/api.integration.test.ts`.
+        2. Add a test that calls `elevatePrompt` and asserts a successful response, running only if `GEMINI_API_KEY` is present.
+        3. Add a test that asserts `elevatePrompt` rejects with an error if `GEMINI_API_KEY` is missing.
+    - **Done-when:**
+        1. The integration test suite passes for both happy path and API key error cases.
+    - **Verification:**
+        1. Run the test suite with and without the `GEMINI_API_KEY` environment variable set.
+    - **Depends-on:** [T001]
 
-## Infrastructure Adapters
+- [ ] **T011 · Test · P1: create secondary integration test for the CLI**
+    - **Context:** Testing Strategy: CLI Tests
+    - **Action:**
+        1. Create `test/cli.integration.test.ts`.
+        2. Write a test that executes the compiled CLI as a subprocess (e.g., via `execAsync`).
+        3. Assert that for a given prompt, the process exits with code 0 and `stdout` is not empty.
+    - **Done-when:**
+        1. The CLI integration test successfully verifies end-to-end functionality.
+    - **Depends-on:** [T006]
 
-### Gemini API Client (`src/adapters/geminiClient.ts`)
+- [ ] **T012 · Chore · P2: delete obsolete adapter tests**
+    - **Context:** Phase 3 & 4
+    - **Action:**
+        1. Delete the test file `src/adapters/geminiClient.test.ts`.
+        2. Review and remove any other tests that were specifically for mocking or testing the now-deleted abstractions.
+    - **Done-when:**
+        1. The specified test files are removed.
+        2. The test suite runs successfully without them.
+    - **Depends-on:** [T007]
 
-- [x] Create Gemini API interface (defined by core, not Google SDK)
-- [x] Implement Google Generative AI client adapter
-- [x] Add retry logic with exponential backoff (max 3 attempts)
-- [x] Handle rate limiting and safety blocks appropriately
-- [x] Add timeout handling for API calls
-- [x] Create comprehensive error mapping to domain errors
+## Finalization
+- [ ] **T013 · Chore · P1: perform full end-to-end verification**
+    - **Context:** Phase 5: Cleanup & Verification
+    - **Action:**
+        1. Manually run the CLI tool with a variety of prompts to ensure feature parity and quality of output.
+    - **Done-when:**
+        1. The tool is confirmed to be fully functional and reliable for its primary use case.
+    - **Verification:**
+        1. Run `node dist/cli.js "explain REST APIs simply"` and confirm a high-quality response.
+        2. Run `node dist/cli.js ""` and confirm graceful failure.
+    - **Depends-on:** [T006, T010, T011]
 
-### Output Formatter (`src/adapters/formatter.ts`)
+- [ ] **T014 · Documentation · P2: update `ARCHITECTURE.md`**
+    - **Context:** Post-Implementation: Architecture Documentation
+    - **Action:**
+        1. Update `docs/ARCHITECTURE.md` to reflect the new, simplified architecture.
+        2. Replace the old data flow diagram with `CLI → Direct Function → API`.
+        3. Add a brief rationale explaining the shift to radical simplification.
+    - **Done-when:**
+        1. The architecture documentation accurately describes the current codebase.
+    - **Depends-on:** [T013]
 
-- [x] Create formatter interface (defined by core)
-- [x] Implement console output formatter with chalk
-- [x] Add progress indicator for "thinking" state
-- [x] Support raw output mode (no formatting)
-- [x] Handle streaming vs non-streaming output rendering
+- [ ] **T015 · Chore · P3: benchmark performance improvements**
+    - **Context:** Success Metrics: Quantitative Targets
+    - **Action:**
+        1. Measure and record the new build time and test execution time.
+        2. Compare against pre-refactor metrics to confirm targets are met.
+    - **Done-when:**
+        1. Performance metrics are recorded and confirm a significant improvement.
+    - **Depends-on:** [T009, T012]
 
-## CLI Interface & REPL
+---
 
-### CLI Entry Point (`src/cli.ts`)
-
-- [x] Set up commander for argument parsing
-- [x] Define CLI flags: --model, --temp, --stream, --raw
-- [x] Map CLI flags to environment variable fallbacks
-- [x] Add version and help support
-- [x] Implement dependency injection setup (wire adapters to core)
-
-### REPL Implementation (`src/repl/repl.ts`)
-
-- [x] Create REPL interface and implementation
-- [x] Set up readline for interactive input
-- [x] Handle user input processing through core domain logic
-- [x] Implement exit commands (exit, quit, Ctrl+C gracefully)
-- [x] Add welcome and goodbye messages
-- [x] Ensure proper error handling and display
-
-## Error Handling & Security
-
-### Domain Error Types (`src/core/errors.ts`)
-
-- [x] Define custom error classes for different failure scenarios
-- [x] Create network error, validation error, and API error types
-- [x] Implement error serialization for logging
-- [x] Add proper error messages for user-facing scenarios
-
-### Security Implementation
-
-- [x] Validate API key presence on startup with actionable error message
-- [x] Ensure API key is only read from environment variables
-- [x] Add input sanitization before API calls
-- [x] Prevent credential logging in any output
-
-## Logging & Observability
-
-### Structured Logging (`src/infrastructure/logger.ts`)
-
-- [x] Set up pino for structured JSON logging
-- [x] Configure log levels via environment variables
-- [x] Add correlation ID generation and propagation
-- [x] Include mandatory context fields (timestamp, level, service_name, correlation_id)
-- [x] Implement contextual logger injection
-
-## Testing Strategy
-
-### Unit Tests
-
-- [x] Set up Vitest configuration with coverage reporting
-- [x] Write comprehensive tests for core domain logic (100% coverage target)
-- [x] Test configuration module with various environment scenarios
-- [x] Test prompt processing with edge cases and validation scenarios
-- [x] Test error handling and error type creation
-
-### Integration Tests
-
-- [x] Create integration tests for Gemini adapter with mock API responses
-- [x] Test CLI argument parsing and flag combinations
-- [x] Test REPL loop with simulated user input
-- [x] Test end-to-end workflow with mocked external dependencies only
-
-### Test Infrastructure
-
-- [x] Create test data builders for consistent test setup
-- [x] Set up test fixtures for API responses
-- [x] Configure test coverage enforcement in CI
-- [x] Add test utilities for dependency injection in tests
-
-## Build & Distribution
-
-### Build Configuration
-
-- [x] Configure TypeScript compilation for production
-- [x] Set up build script with proper error handling
-- [x] Add clean script for build artifacts
-- [x] Configure source maps for debugging
-
-### NPM Package Preparation
-
-- [x] Configure package.json for npm publishing
-- [x] Set up bin field for global CLI installation
-- [x] Define files to include in published package
-- [x] Add keywords and metadata for discoverability
-- [x] Test local npm installation and global command execution
-
-## Documentation (Essential Only)
-
-### User Documentation
-
-- [x] Create comprehensive README.md with installation and usage
-- [x] Document all CLI flags and environment variables
-- [x] Add troubleshooting section with common issues
-- [x] Include API key setup instructions
-
-### Developer Documentation
-
-- [x] Document architecture decisions and core design principles
-- [x] Add contribution guidelines referencing development philosophy
-- [x] Create API documentation for core interfaces
-- [x] Document testing strategy and coverage requirements
+### Clarifications & Assumptions
+- [ ] **Issue:** Streaming support has been explicitly removed.
+    - **Context:** Open Questions #4. This will be addressed in Issue #19 if needed.
+    - **Blocking?:** no
+- [ ] **Issue:** A more advanced configuration system is deferred.
+    - **Context:** Configuration Migration. This will be addressed in Issue #11 if needed.
+    - **Blocking?:** no
+- [ ] **Issue:** Simple retry logic is deferred.
+    - **Context:** Risk Analysis & Mitigation. This will be addressed in Issue #2 if needed.
+    - **Blocking?:** no
