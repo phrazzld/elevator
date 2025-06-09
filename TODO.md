@@ -72,7 +72,7 @@
     - **Depends-on:** [T001]
 
 ## File & Dependency Cleanup
-- [ ] **T007 · Chore · P1: delete obsolete adapter and core files**
+- [x] **T007 · Chore · P1: delete obsolete adapter and core files**
     - **Context:** Phase 3: File Elimination
     - **Action:**
         1. Delete the following files: `src/core/apiClient.ts`, `src/adapters/geminiClient.ts`, `src/adapters/apiProgressAdapter.ts`, and `src/dependencyInjection.ts`.
