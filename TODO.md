@@ -14,7 +14,7 @@
         1. Manually invoke the function from a test script with a valid `GEMINI_API_KEY` to confirm it returns a string response.
     - **Depends-on:** none
 
-- [ ] **T002 · Feature · P1: add robust error handling to API calls**
+- [x] **T002 · Feature · P1: add robust error handling to API calls**
     - **Context:** Phase 1: Core API Function; Open Questions #1
     - **Action:**
         1. Check for `!response.ok` and throw a detailed error: `API error: ${response.status} ${response.statusText}`.
@@ -26,7 +26,7 @@
         1. Point the API endpoint to a server that returns a 500 error and confirm the correct error is thrown.
     - **Depends-on:** [T001]
 
-- [ ] **T003 · Feature · P1: implement request timeout handling**
+- [x] **T003 · Feature · P1: implement request timeout handling**
     - **Context:** Open Questions & Decisions: #2. Timeout Handling
     - **Action:**
         1. Use an `AbortController` with `AbortSignal.timeout(30000)` to add a 30-second timeout to the `fetch()` call in `src/api.ts`.
@@ -36,7 +36,7 @@
         1. Test against an endpoint that intentionally delays its response for >30s to confirm the timeout error is triggered.
     - **Depends-on:** [T001]
 
-- [ ] **T004 · Feature · P2: add basic API response structure validation**
+- [x] **T004 · Feature · P2: add basic API response structure validation**
     - **Context:** Open Questions & Decisions: #3. Response Validation
     - **Action:**
         1. After parsing the JSON response, validate that the path `data.candidates[0].content.parts[0].text` exists.
@@ -47,7 +47,7 @@
         1. Mock a fetch response with a valid but structurally incorrect JSON object and confirm the correct error is thrown.
     - **Depends-on:** [T001]
 
-- [ ] **T005 · Feature · P1: implement simple structured JSON logging**
+- [x] **T005 · Feature · P1: implement simple structured JSON logging**
     - **Context:** Logging & Observability
     - **Action:**
         1. In `src/api.ts`, add structured `console.log` or `console.error` calls for key events: API request start, API request completion (success/failure), and error occurrences.
@@ -81,7 +81,7 @@
         2. The project still compiles successfully (after import paths are fixed in the next task).
     - **Depends-on:** [T006]
 
-- [ ] **T008 · Chore · P1: update all imports and remove Result types**
+- [x] **T008 · Chore · P1: update all imports and remove Result types**
     - **Context:** Phase 3: File Elimination
     - **Action:**
         1. Find and remove all imports from the deleted files across the codebase.
@@ -90,7 +90,7 @@
         1. The project compiles without any errors related to missing files or types.
     - **Depends-on:** [T007]
 
-- [ ] **T009 · Chore · P2: remove unused dependencies from `package.json`**
+- [x] **T009 · Chore · P2: remove unused dependencies from `package.json`**
     - **Context:** Phase 5: Cleanup & Verification
     - **Action:**
         1. Uninstall the Google AI SDK, any Result type libraries, and any other dependencies made redundant by this refactor.
@@ -101,7 +101,7 @@
     - **Depends-on:** [T008]
 
 ## Testing
-- [ ] **T010 · Test · P1: create primary integration test for `src/api.ts`**
+- [x] **T010 · Test · P1: create primary integration test for `src/api.ts`**
     - **Context:** Phase 4: Testing Strategy
     - **Action:**
         1. Create `test/api.integration.test.ts`.
@@ -113,7 +113,7 @@
         1. Run the test suite with and without the `GEMINI_API_KEY` environment variable set.
     - **Depends-on:** [T001]
 
-- [ ] **T011 · Test · P1: create secondary integration test for the CLI**
+- [x] **T011 · Test · P1: create secondary integration test for the CLI**
     - **Context:** Testing Strategy: CLI Tests
     - **Action:**
         1. Create `test/cli.integration.test.ts`.
@@ -123,7 +123,7 @@
         1. The CLI integration test successfully verifies end-to-end functionality.
     - **Depends-on:** [T006]
 
-- [ ] **T012 · Chore · P2: delete obsolete adapter tests**
+- [x] **T012 · Chore · P2: delete obsolete adapter tests**
     - **Context:** Phase 3 & 4
     - **Action:**
         1. Delete the test file `src/adapters/geminiClient.test.ts`.
@@ -134,7 +134,7 @@
     - **Depends-on:** [T007]
 
 ## Finalization
-- [ ] **T013 · Chore · P1: perform full end-to-end verification**
+- [x] **T013 · Chore · P1: perform full end-to-end verification**
     - **Context:** Phase 5: Cleanup & Verification
     - **Action:**
         1. Manually run the CLI tool with a variety of prompts to ensure feature parity and quality of output.
@@ -145,7 +145,7 @@
         2. Run `node dist/cli.js ""` and confirm graceful failure.
     - **Depends-on:** [T006, T010, T011]
 
-- [ ] **T014 · Documentation · P2: update `ARCHITECTURE.md`**
+- [x] **T014 · Documentation · P2: update `ARCHITECTURE.md`**
     - **Context:** Post-Implementation: Architecture Documentation
     - **Action:**
         1. Update `docs/ARCHITECTURE.md` to reflect the new, simplified architecture.
@@ -155,7 +155,7 @@
         1. The architecture documentation accurately describes the current codebase.
     - **Depends-on:** [T013]
 
-- [ ] **T015 · Chore · P3: benchmark performance improvements**
+- [x] **T015 · Chore · P3: benchmark performance improvements**
     - **Context:** Success Metrics: Quantitative Targets
     - **Action:**
         1. Measure and record the new build time and test execution time.
