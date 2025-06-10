@@ -17,20 +17,10 @@ A lightweight CLI that transforms natural-language prompts into more sophisticat
 - **Node.js** >=18.0.0
 - **pnpm** (recommended) or **npm**
 
-### From Source (Development)
-
-This project is currently in development. To use it:
+### Global Installation (Recommended)
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd elevator
-
-# Install dependencies
-pnpm install
-
-# Build the project
-pnpm build
+npm install -g prompt-elevator
 ```
 
 ## Quick Start
@@ -49,11 +39,11 @@ export GEMINI_API_KEY="your-api-key-here"
 ### 3. Start Using
 
 ```bash
-# Run a prompt through the built CLI
-node dist/cli.js "make a todo app"
+# Run a prompt through the CLI
+prompt-elevator "make a todo app"
 
 # Or with raw output (no formatting)
-node dist/cli.js --raw "explain REST APIs"
+prompt-elevator --raw "explain REST APIs"
 ```
 
 ## Usage
@@ -63,17 +53,17 @@ node dist/cli.js --raw "explain REST APIs"
 Process a single prompt and get an elevated, technical version:
 
 ```bash
-node dist/cli.js "Your prompt here"
+prompt-elevator "Your prompt here"
 ```
 
 **Examples:**
 
 ```bash
 # Basic prompt elevation
-node dist/cli.js "make a website"
+prompt-elevator "make a website"
 
 # Raw output (no formatting)
-node dist/cli.js --raw "build a calculator app"
+prompt-elevator --raw "build a calculator app"
 ```
 
 ### CLI Options

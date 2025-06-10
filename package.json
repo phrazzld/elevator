@@ -1,11 +1,11 @@
 {
-  "name": "elevator",
-  "version": "0.1.0",
+  "name": "prompt-elevator",
+  "version": "1.0.0",
   "description": "A lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash",
   "main": "dist/cli.js",
   "types": "dist/cli.d.ts",
   "bin": {
-    "elevator": "dist/cli.js"
+    "prompt-elevator": "dist/cli.js"
   },
   "files": [
     "dist/**/*.js",
@@ -19,7 +19,7 @@
     "build": "npm run clean && npm run build:prod && npm run build:validate",
     "build:prod": "tsc --project tsconfig.prod.json",
     "build:dev": "tsc",
-    "build:validate": "node -e \"const fs=require('fs'); const cli=require('./dist/cli.js'); if(!fs.existsSync('./dist/cli.js')||!fs.existsSync('./dist/cli.d.ts')) throw new Error('Build validation failed: missing essential files'); console.log('✅ Build validation passed');\"",
+    "build:validate": "node -e \"const fs=require('fs'); const cli=require('./dist/cli.js'); if(!fs.existsSync('./dist/cli.js')||!fs.existsSync('./dist/cli.d.ts')) throw new Error('Build validation failed: missing essential files'); fs.chmodSync('./dist/cli.js', 0o755); console.log('✅ Build validation passed');\"",
     "dev": "tsc --watch",
     "clean": "node -e \"const fs=require('fs'); if(fs.existsSync('dist')) fs.rmSync('dist', {recursive: true, force: true}); console.log('🧹 Cleaned build artifacts');\"",
     "typecheck": "tsc --noEmit",
@@ -30,9 +30,12 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "test:coverage:ci": "vitest run --coverage --reporter=default",
+    "test:integration": "test/integration/publish.test.sh",
     "coverage:report": "vitest run --coverage --reporter=json --reporter=html",
     "prepare": "husky",
     "prepublishOnly": "npm run build && npm run lint && npm run typecheck && npm run test:coverage:ci",
+    "publish:check": "npm pack --dry-run",
+    "publish:local": "npm pack",
     "prepack": "npm run build",
     "postpack": "echo '📦 Package ready for publishing'"
   },
@@ -64,15 +67,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-org/elevator.git"
+    "url": "git+https://github.com/phaedrus/elevator.git"
   },
   "bugs": {
-    "url": "https://github.com/your-org/elevator/issues"
+    "url": "https://github.com/phaedrus/elevator/issues"
   },
-  "homepage": "https://github.com/your-org/elevator#readme",
+  "homepage": "https://github.com/phaedrus/elevator#readme",
   "publishConfig": {
     "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
