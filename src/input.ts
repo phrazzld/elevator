@@ -97,13 +97,19 @@ async function readStreamToEnd(stream: Readable): Promise<string> {
 async function readInteractiveInput(): Promise<string> {
   const lines: string[] = [];
 
-  // Create readline interface with clean multiline input (no prompts)
+  // Create readline interface with immediate EOF response and clean UX
   const rl = readline.createInterface({
     input: process.stdin,
-    output: undefined, // Suppress all output including prompts for clean UX
-    terminal: false, // Disable interactive terminal features that show prompts
+    output: process.stdout, // Enable output for immediate terminal response
+    terminal: true, // Enable terminal mode for immediate Ctrl+D handling
+    prompt: "", // Empty prompt for clean multiline input appearance
     crlfDelay: Infinity, // Handle different line endings properly
   });
+
+  // Suppress the initial prompt display for clean UX
+  if (typeof rl.setPrompt === "function") {
+    rl.setPrompt("");
+  }
 
   // Display instructions
   console.log("Enter your prompt (press Ctrl+D when done):");
