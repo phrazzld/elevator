@@ -97,11 +97,12 @@ async function readStreamToEnd(stream: Readable): Promise<string> {
 async function readInteractiveInput(): Promise<string> {
   const lines: string[] = [];
 
-  // Create readline interface
+  // Create readline interface with clean multiline input (no prompts)
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout,
-    terminal: true,
+    output: undefined, // Suppress all output including prompts for clean UX
+    terminal: false, // Disable interactive terminal features that show prompts
+    crlfDelay: Infinity, // Handle different line endings properly
   });
 
   // Display instructions
