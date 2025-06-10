@@ -114,7 +114,10 @@ async function main(): Promise<void> {
   } catch (error) {
     // Handle input-specific errors with clearer messages
     if (error instanceof Error) {
-      if (error.message === "No input provided") {
+      if (error.message === "Operation cancelled by user") {
+        console.error("❌ Operation cancelled");
+        process.exit(130); // Standard exit code for Ctrl+C
+      } else if (error.message === "No input provided") {
         console.error("❌ Error: No input provided");
         console.error(
           "Usage: elevator [prompt] or enter multiline mode without arguments",
