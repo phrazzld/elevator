@@ -138,7 +138,7 @@ async function readInteractiveInput(): Promise<string> {
     rl.on("SIGINT", () => {
       console.log("\nOperation cancelled");
       rl.close();
-      process.exit(0);
+      reject(new Error("Operation cancelled by user"));
     });
   });
 }
