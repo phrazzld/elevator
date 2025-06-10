@@ -1,8 +1,9 @@
 ---
 id: automation
-last_modified: '2025-05-08'
-version: '0.1.0'
+last_modified: "2025-05-08"
+version: "0.1.0"
 ---
+
 # Tenet: Automation as a Force Multiplier
 
 Treat manual, repetitive tasks as bugs in your process. Invest in automating every

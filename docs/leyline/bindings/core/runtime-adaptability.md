@@ -1,10 +1,11 @@
 ---
 id: runtime-adaptability
-last_modified: '2025-06-02'
-version: '0.1.0'
+last_modified: "2025-06-02"
+version: "0.1.0"
 derived_from: adaptability-and-reversibility
-enforced_by: 'Configuration management, runtime monitoring, adaptive systems'
+enforced_by: "Configuration management, runtime monitoring, adaptive systems"
 ---
+
 # Binding: Enable Runtime System Adaptation
 
 Design systems that can modify their behavior, performance characteristics, and resource allocation dynamically in response to changing conditions without requiring restarts or deployments. This enables real-time adaptation to load, failures, and environmental changes.
@@ -34,6 +35,7 @@ Runtime adaptability must implement these dynamic principles:
 - **Health-Based Routing**: Dynamically route requests based on real-time health and performance metrics of downstream services.
 
 **Adaptation Triggers:**
+
 - System performance metrics (CPU, memory, latency)
 - External service availability and response times
 - User traffic patterns and request volumes
@@ -41,6 +43,7 @@ Runtime adaptability must implement these dynamic principles:
 - Business rule changes and operational requirements
 
 **Adaptation Mechanisms:**
+
 - Dynamic configuration updates
 - Algorithm selection based on conditions
 - Resource pool resizing
@@ -64,10 +67,10 @@ Runtime adaptability must implement these dynamic principles:
 ```typescript
 // ❌ BAD: Static configuration and fixed behavior
 class ApiService {
-  private readonly maxConnections = 100;    // Fixed pool size
-  private readonly timeout = 5000;          // Fixed 5 second timeout
-  private readonly retryAttempts = 3;       // Fixed retry count
-  private readonly cacheSize = 1000;        // Fixed cache size
+  private readonly maxConnections = 100; // Fixed pool size
+  private readonly timeout = 5000; // Fixed 5 second timeout
+  private readonly retryAttempts = 3; // Fixed retry count
+  private readonly cacheSize = 1000; // Fixed cache size
 
   async makeRequest(endpoint: string): Promise<any> {
     // Fixed timeout regardless of system load
@@ -76,7 +79,7 @@ class ApiService {
 
     try {
       const response = await fetch(endpoint, {
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -88,7 +91,7 @@ class ApiService {
             return retryResponse.json();
           }
         }
-        throw new Error('Request failed after retries');
+        throw new Error("Request failed after retries");
       }
 
       return response.json();
@@ -134,7 +137,7 @@ interface AdaptiveConfiguration {
   };
   cache: {
     maxSize: number;
-    evictionStrategy: 'lru' | 'lfu' | 'adaptive';
+    evictionStrategy: "lru" | "lfu" | "adaptive";
     ttl: number;
   };
 }
@@ -181,7 +184,10 @@ class AdaptiveApiService {
     const serviceHealth = await this.getServiceHealth(endpoint);
 
     // Adapt timeout based on current conditions
-    const adaptiveTimeout = this.calculateAdaptiveTimeout(metrics, serviceHealth);
+    const adaptiveTimeout = this.calculateAdaptiveTimeout(
+      metrics,
+      serviceHealth,
+    );
 
     // Use circuit breaker with adaptive thresholds
     return this.circuitBreaker.execute(async () => {
@@ -192,11 +198,15 @@ class AdaptiveApiService {
         setTimeout(() => controller.abort(), adaptiveTimeout);
 
         const response = await fetch(endpoint, {
-          signal: controller.signal
+          signal: controller.signal,
         });
 
         // Update metrics for future adaptations
-        this.metricsCollector.recordRequest(endpoint, response.status, Date.now());
+        this.metricsCollector.recordRequest(
+          endpoint,
+          response.status,
+          Date.now(),
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -209,7 +219,10 @@ class AdaptiveApiService {
     });
   }
 
-  private calculateAdaptiveTimeout(metrics: SystemMetrics, health: ServiceHealth): number {
+  private calculateAdaptiveTimeout(
+    metrics: SystemMetrics,
+    health: ServiceHealth,
+  ): number {
     let timeout = this.config.timeouts.base;
 
     // Increase timeout if system is under load
@@ -228,11 +241,17 @@ class AdaptiveApiService {
     }
 
     // Ensure timeout stays within bounds
-    return Math.min(Math.max(timeout, this.config.timeouts.base), this.config.timeouts.max);
+    return Math.min(
+      Math.max(timeout, this.config.timeouts.base),
+      this.config.timeouts.max,
+    );
   }
 
   private async getServiceHealth(endpoint: string): Promise<ServiceHealth> {
-    const recent = await this.metricsCollector.getRecentMetrics(endpoint, 5 * 60 * 1000); // Last 5 minutes
+    const recent = await this.metricsCollector.getRecentMetrics(
+      endpoint,
+      5 * 60 * 1000,
+    ); // Last 5 minutes
 
     const errorRate = recent.errors / Math.max(recent.total, 1);
     const averageLatency = recent.totalLatency / Math.max(recent.total, 1);
@@ -241,7 +260,7 @@ class AdaptiveApiService {
       isHealthy: errorRate < 0.05 && averageLatency < 2000,
       averageLatency,
       errorRate,
-      lastFailure: recent.lastError
+      lastFailure: recent.lastError,
     };
   }
 
@@ -263,11 +282,11 @@ class AdaptiveApiService {
     // Adapt circuit breaker thresholds based on error patterns
     await this.adaptCircuitBreaker(metrics);
 
-    console.log('System adapted to current conditions', {
+    console.log("System adapted to current conditions", {
       cpuUsage: metrics.cpuUsage,
       memoryUsage: metrics.memoryUsage,
       connections: this.connectionPool.getCurrentSize(),
-      cacheSize: this.adaptiveCache.getCurrentSize()
+      cacheSize: this.adaptiveCache.getCurrentSize(),
     });
   }
 
@@ -299,10 +318,10 @@ class AdaptiveApiService {
     // Adapt cache size based on memory pressure
     if (metrics.memoryUsage > 0.9) {
       await this.adaptiveCache.reduceSize(0.7); // Reduce by 30%
-      await this.adaptiveCache.setEvictionStrategy('aggressive');
+      await this.adaptiveCache.setEvictionStrategy("aggressive");
     } else if (metrics.memoryUsage < 0.5) {
       await this.adaptiveCache.increaseSize(1.2); // Increase by 20%
-      await this.adaptiveCache.setEvictionStrategy('conservative');
+      await this.adaptiveCache.setEvictionStrategy("conservative");
     }
 
     // Adapt TTL based on hit rates
@@ -330,19 +349,22 @@ class AdaptiveApiService {
   }
 
   private watchConfigurationChanges(): void {
-    this.configWatcher.watch('api-service-config', async (newConfig: AdaptiveConfiguration) => {
-      console.log('Configuration updated, applying changes...');
+    this.configWatcher.watch(
+      "api-service-config",
+      async (newConfig: AdaptiveConfiguration) => {
+        console.log("Configuration updated, applying changes...");
 
-      // Hot-reload configuration without restart
-      this.config = { ...newConfig };
+        // Hot-reload configuration without restart
+        this.config = { ...newConfig };
 
-      // Apply configuration changes to components
-      await this.connectionPool.updateConfiguration(newConfig.connections);
-      await this.adaptiveCache.updateConfiguration(newConfig.cache);
-      await this.circuitBreaker.updateConfiguration(newConfig.retries);
+        // Apply configuration changes to components
+        await this.connectionPool.updateConfiguration(newConfig.connections);
+        await this.adaptiveCache.updateConfiguration(newConfig.cache);
+        await this.circuitBreaker.updateConfiguration(newConfig.retries);
 
-      console.log('Configuration changes applied successfully');
-    });
+        console.log("Configuration changes applied successfully");
+      },
+    );
   }
 
   // Cached data access with adaptive behavior
@@ -356,8 +378,11 @@ class AdaptiveApiService {
 
     if (metrics.memoryUsage > 0.9) {
       // High memory pressure - only cache small, frequently accessed items
-      if (this.estimateSize(value) < 1024 && await this.isFrequentlyAccessed(key)) {
-        await this.adaptiveCache.set(key, value, { priority: 'high' });
+      if (
+        this.estimateSize(value) < 1024 &&
+        (await this.isFrequentlyAccessed(key))
+      ) {
+        await this.adaptiveCache.set(key, value, { priority: "high" });
       }
     } else {
       // Normal operation - cache normally
@@ -388,12 +413,12 @@ class AdaptiveConnectionPool {
     } else if (targetSize < currentSize) {
       // Remove connections (only idle ones)
       const toRemove = currentSize - targetSize;
-      const idleConnections = this.connections.filter(c => !c.isActive);
+      const idleConnections = this.connections.filter((c) => !c.isActive);
 
       for (let i = 0; i < Math.min(toRemove, idleConnections.length); i++) {
         const connection = idleConnections[i];
         await connection.close();
-        this.connections = this.connections.filter(c => c !== connection);
+        this.connections = this.connections.filter((c) => c !== connection);
       }
     }
   }
@@ -403,7 +428,7 @@ class AdaptiveConnectionPool {
   }
 
   async acquire(): Promise<Connection> {
-    const availableConnection = this.connections.find(c => !c.isActive);
+    const availableConnection = this.connections.find((c) => !c.isActive);
 
     if (availableConnection) {
       availableConnection.isActive = true;
@@ -455,17 +480,23 @@ class AdaptiveCache {
     return null;
   }
 
-  async set(key: string, value: any, options?: { priority?: 'high' | 'normal' }): Promise<void> {
+  async set(
+    key: string,
+    value: any,
+    options?: { priority?: "high" | "normal" },
+  ): Promise<void> {
     // Check if eviction is needed
     if (this.cache.size >= this.config.maxSize) {
-      await this.evictEntries(options?.priority === 'high' ? 1 : Math.ceil(this.config.maxSize * 0.1));
+      await this.evictEntries(
+        options?.priority === "high" ? 1 : Math.ceil(this.config.maxSize * 0.1),
+      );
     }
 
     const entry: CacheEntry = {
       value,
       timestamp: Date.now(),
       ttl: this.config.ttl,
-      priority: options?.priority || 'normal'
+      priority: options?.priority || "normal",
     };
 
     this.cache.set(key, entry);
@@ -480,7 +511,9 @@ class AdaptiveCache {
     }
   }
 
-  async setEvictionStrategy(strategy: 'aggressive' | 'conservative'): Promise<void> {
+  async setEvictionStrategy(
+    strategy: "aggressive" | "conservative",
+  ): Promise<void> {
     this.config.evictionStrategy = strategy;
   }
 
@@ -500,7 +533,7 @@ class AdaptiveCache {
       const bAge = Date.now() - b[1].timestamp;
 
       // Evict less frequently accessed and older items first
-      return (aAccess - bAccess) || (bAge - aAge);
+      return aAccess - bAccess || bAge - aAge;
     });
 
     for (let i = 0; i < count && i < entries.length; i++) {
@@ -522,7 +555,7 @@ interface CacheEntry {
   value: any;
   timestamp: number;
   ttl: number;
-  priority: 'high' | 'normal';
+  priority: "high" | "normal";
 }
 
 interface Connection {

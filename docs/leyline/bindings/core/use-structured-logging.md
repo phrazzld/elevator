@@ -2,9 +2,10 @@
 derived_from: automation
 enforced_by: linters & code review
 id: use-structured-logging
-last_modified: '2025-05-14'
-version: '0.1.0'
+last_modified: "2025-05-14"
+version: "0.1.0"
 ---
+
 # Binding: Implement Complete Observability with Structured Logs, Metrics, and Traces
 
 All systems must implement the three pillars of observability: structured logs, metrics,
@@ -182,27 +183,30 @@ pillars:
 
      ```typescript
      // Setup with pino
-     import pino from 'pino';
+     import pino from "pino";
 
      const logger = pino({
-       messageKey: 'message',
+       messageKey: "message",
        timestamp: pino.stdTimeFunctions.isoTime,
        base: {
-         service: 'user-service',
+         service: "user-service",
        },
      });
 
      // Usage with request context
      app.use((req, res, next) => {
        req.log = logger.child({
-         correlation_id: req.headers['x-correlation-id'] || generateId(),
-         component: 'http-handler'
+         correlation_id: req.headers["x-correlation-id"] || generateId(),
+         component: "http-handler",
        });
        next();
      });
 
      // Log with structured context
-     req.log.info({ userId, action: 'login' }, 'User authentication successful');
+     req.log.info(
+       { userId, action: "login" },
+       "User authentication successful",
+     );
      ```
 
    - **Go**:
@@ -262,7 +266,7 @@ pillars:
 
      ```typescript
      // Setup with Prometheus client
-     import * as promClient from 'prom-client';
+     import * as promClient from "prom-client";
 
      // Initialize metrics registry
      const registry = new promClient.Registry();
@@ -270,16 +274,16 @@ pillars:
 
      // Create standard metrics
      const httpRequestDuration = new promClient.Histogram({
-       name: 'http_request_duration_seconds',
-       help: 'Duration of HTTP requests in seconds',
-       labelNames: ['method', 'route', 'status_code'],
-       buckets: [0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7, 10]
+       name: "http_request_duration_seconds",
+       help: "Duration of HTTP requests in seconds",
+       labelNames: ["method", "route", "status_code"],
+       buckets: [0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7, 10],
      });
 
      const httpRequestTotal = new promClient.Counter({
-       name: 'http_requests_total',
-       help: 'Total number of HTTP requests',
-       labelNames: ['method', 'route', 'status_code']
+       name: "http_requests_total",
+       help: "Total number of HTTP requests",
+       labelNames: ["method", "route", "status_code"],
      });
 
      // Register metrics
@@ -291,12 +295,12 @@ pillars:
        const start = Date.now();
 
        // Add response hook to record metrics on completion
-       res.on('finish', () => {
+       res.on("finish", () => {
          const duration = (Date.now() - start) / 1000;
          const labels = {
            method: req.method,
-           route: req.route?.path || 'unknown',
-           status_code: res.statusCode
+           route: req.route?.path || "unknown",
+           status_code: res.statusCode,
          };
 
          httpRequestDuration.observe(labels, duration);
@@ -307,8 +311,8 @@ pillars:
      });
 
      // Expose metrics endpoint
-     app.get('/metrics', async (req, res) => {
-       res.set('Content-Type', registry.contentType);
+     app.get("/metrics", async (req, res) => {
+       res.set("Content-Type", registry.contentType);
        res.end(await registry.metrics());
      });
      ```
@@ -398,16 +402,16 @@ pillars:
    ```typescript
    // Create business metrics
    const orderTotal = new promClient.Counter({
-     name: 'business_orders_total',
-     help: 'Total number of orders placed',
-     labelNames: ['product_type', 'payment_method', 'customer_tier']
+     name: "business_orders_total",
+     help: "Total number of orders placed",
+     labelNames: ["product_type", "payment_method", "customer_tier"],
    });
 
    const orderValue = new promClient.Histogram({
-     name: 'business_order_value_dollars',
-     help: 'Distribution of order values in dollars',
-     labelNames: ['product_type', 'customer_tier'],
-     buckets: [10, 25, 50, 100, 250, 500, 1000, 2500, 5000]
+     name: "business_order_value_dollars",
+     help: "Distribution of order values in dollars",
+     labelNames: ["product_type", "customer_tier"],
+     buckets: [10, 25, 50, 100, 250, 500, 1000, 2500, 5000],
    });
 
    // Record business metrics during order processing
@@ -415,14 +419,17 @@ pillars:
      const labels = {
        product_type: order.productType,
        payment_method: order.paymentMethod,
-       customer_tier: order.customerTier
+       customer_tier: order.customerTier,
      };
 
      orderTotal.inc(labels);
-     orderValue.observe({
-       product_type: order.productType,
-       customer_tier: order.customerTier
-     }, order.totalAmount);
+     orderValue.observe(
+       {
+         product_type: order.productType,
+         customer_tier: order.customerTier,
+       },
+       order.totalAmount,
+     );
 
      // Process order...
    }
@@ -438,23 +445,23 @@ pillars:
      evaluation_interval: 15s
 
    scrape_configs:
-     - job_name: 'api_services'
-       metrics_path: '/metrics'
+     - job_name: "api_services"
+       metrics_path: "/metrics"
        static_configs:
-         - targets: ['api-service-1:8080', 'api-service-2:8080']
+         - targets: ["api-service-1:8080", "api-service-2:8080"]
        relabel_configs:
          - source_labels: [__address__]
            target_label: instance
 
-     - job_name: 'database_services'
-       metrics_path: '/metrics'
+     - job_name: "database_services"
+       metrics_path: "/metrics"
        static_configs:
-         - targets: ['db-service-1:9100', 'db-service-2:9100']
+         - targets: ["db-service-1:9100", "db-service-2:9100"]
 
    alerting:
      alertmanagers:
-     - static_configs:
-       - targets: ['alertmanager:9093']
+       - static_configs:
+           - targets: ["alertmanager:9093"]
    ```
 
 ### 3. Distributed Tracing Implementation
@@ -466,44 +473,44 @@ pillars:
 
      ```typescript
      // Setup with OpenTelemetry
-     import * as opentelemetry from '@opentelemetry/sdk-node';
-     import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-     import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
-     import { Resource } from '@opentelemetry/resources';
-     import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+     import * as opentelemetry from "@opentelemetry/sdk-node";
+     import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
+     import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
+     import { Resource } from "@opentelemetry/resources";
+     import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
 
      // Configure the SDK
      const sdk = new opentelemetry.NodeSDK({
        resource: new Resource({
-         [SemanticResourceAttributes.SERVICE_NAME]: 'order-api',
-         [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
-         environment: 'production'
+         [SemanticResourceAttributes.SERVICE_NAME]: "order-api",
+         [SemanticResourceAttributes.SERVICE_VERSION]: "1.0.0",
+         environment: "production",
        }),
        traceExporter: new OTLPTraceExporter({
-         url: 'http://otel-collector:4318/v1/traces'
+         url: "http://otel-collector:4318/v1/traces",
        }),
-       instrumentations: [getNodeAutoInstrumentations()]
+       instrumentations: [getNodeAutoInstrumentations()],
      });
 
      // Initialize OpenTelemetry
      sdk.start();
 
      // Manual tracing for business operations
-     import { trace } from '@opentelemetry/api';
+     import { trace } from "@opentelemetry/api";
 
      async function processPayment(orderId, paymentDetails) {
-       const tracer = trace.getTracer('payment-processor');
+       const tracer = trace.getTracer("payment-processor");
 
        // Create span for payment processing
-       const span = tracer.startSpan('process_payment');
-       span.setAttribute('order_id', orderId);
-       span.setAttribute('payment_method', paymentDetails.method);
-       span.setAttribute('amount', paymentDetails.amount);
+       const span = tracer.startSpan("process_payment");
+       span.setAttribute("order_id", orderId);
+       span.setAttribute("payment_method", paymentDetails.method);
+       span.setAttribute("amount", paymentDetails.amount);
 
        try {
          // Process payment logic
          const result = await paymentProvider.charge(paymentDetails);
-         span.setAttribute('transaction_id', result.transactionId);
+         span.setAttribute("transaction_id", result.transactionId);
          return result;
        } catch (error) {
          // Record error in span
@@ -610,9 +617,9 @@ pillars:
 
    ```typescript
    // HTTP client with context propagation
-   import { context, trace } from '@opentelemetry/api';
-   import axios from 'axios';
-   import { W3CTraceContextPropagator } from '@opentelemetry/core';
+   import { context, trace } from "@opentelemetry/api";
+   import axios from "axios";
+   import { W3CTraceContextPropagator } from "@opentelemetry/core";
 
    const propagator = new W3CTraceContextPropagator();
 
@@ -628,10 +635,10 @@ pillars:
      // Make HTTP request with propagated context
      try {
        return await axios({
-         method: 'POST',
+         method: "POST",
          url,
          data,
-         headers
+         headers,
        });
      } catch (error) {
        // Record error in current span
@@ -647,7 +654,7 @@ pillars:
 
    ```yaml
    # docker-compose.yml for observability stack
-   version: '3'
+   version: "3"
    services:
      # Metrics collection
      prometheus:
@@ -669,8 +676,8 @@ pillars:
      jaeger:
        image: jaegertracing/all-in-one
        ports:
-         - "16686:16686"  # UI
-         - "14268:14268"  # Collector
+         - "16686:16686" # UI
+         - "14268:14268" # Collector
 
      # OpenTelemetry collector
      otel-collector:
@@ -679,8 +686,8 @@ pillars:
          - ./otel-collector-config.yml:/etc/otel-collector-config.yml
        command: ["--config=/etc/otel-collector-config.yml"]
        ports:
-         - "4317:4317"  # OTLP gRPC
-         - "4318:4318"  # OTLP HTTP
+         - "4317:4317" # OTLP gRPC
+         - "4318:4318" # OTLP HTTP
 
      # Log aggregation
      elasticsearch:
@@ -711,15 +718,15 @@ pillars:
 
    ```typescript
    // observability.ts - Unified interface for all three pillars
-   import * as opentelemetry from '@opentelemetry/sdk-node';
-   import * as promClient from 'prom-client';
-   import pino from 'pino';
+   import * as opentelemetry from "@opentelemetry/sdk-node";
+   import * as promClient from "prom-client";
+   import pino from "pino";
 
    // Initialize unified observability
    export function initializeObservability(serviceName, serviceVersion) {
      // Set up structured logging
      const logger = pino({
-       messageKey: 'message',
+       messageKey: "message",
        timestamp: pino.stdTimeFunctions.isoTime,
        base: {
          service: serviceName,
@@ -733,16 +740,16 @@ pillars:
 
      // Set up standard metrics
      const httpRequestDuration = new promClient.Histogram({
-       name: 'http_request_duration_seconds',
-       help: 'Duration of HTTP requests in seconds',
-       labelNames: ['method', 'route', 'status_code'],
-       buckets: [0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7, 10]
+       name: "http_request_duration_seconds",
+       help: "Duration of HTTP requests in seconds",
+       labelNames: ["method", "route", "status_code"],
+       buckets: [0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7, 10],
      });
 
      const httpRequestTotal = new promClient.Counter({
-       name: 'http_requests_total',
-       help: 'Total number of HTTP requests',
-       labelNames: ['method', 'route', 'status_code']
+       name: "http_requests_total",
+       help: "Total number of HTTP requests",
+       labelNames: ["method", "route", "status_code"],
      });
 
      metricsRegistry.registerMetric(httpRequestDuration);
@@ -769,10 +776,15 @@ pillars:
            return gauge;
          },
          createHistogram: (name, help, labelNames, buckets) => {
-           const histogram = new promClient.Histogram({ name, help, labelNames, buckets });
+           const histogram = new promClient.Histogram({
+             name,
+             help,
+             labelNames,
+             buckets,
+           });
            metricsRegistry.registerMetric(histogram);
            return histogram;
-         }
+         },
        },
        tracing: {
          getTracer: (name) => opentelemetry.trace.getTracer(name),
@@ -781,8 +793,8 @@ pillars:
        // Context-aware logger that includes trace information
        getContextLogger: (traceContext, component) => {
          const span = opentelemetry.trace.getSpan(traceContext);
-         let traceId = 'unknown';
-         let spanId = 'unknown';
+         let traceId = "unknown";
+         let spanId = "unknown";
 
          if (span) {
            const spanContext = span.spanContext();
@@ -793,7 +805,7 @@ pillars:
          return logger.child({
            trace_id: traceId,
            span_id: spanId,
-           component
+           component,
          });
        },
 
@@ -802,9 +814,9 @@ pillars:
          const start = Date.now();
 
          // Extract or create trace context
-         const traceId = req.headers['traceparent'] ?
-           parseTraceParent(req.headers['traceparent']).traceId :
-           generateId();
+         const traceId = req.headers["traceparent"]
+           ? parseTraceParent(req.headers["traceparent"]).traceId
+           : generateId();
 
          // Add context to request
          req.observability = {
@@ -812,28 +824,31 @@ pillars:
            startTime: start,
            logger: logger.child({
              trace_id: traceId,
-             component: 'http-handler',
+             component: "http-handler",
              method: req.method,
-             path: req.path
-           })
+             path: req.path,
+           }),
          };
 
          // Log request
-         req.observability.logger.info({
-           event: 'http_request_received',
-           method: req.method,
-           path: req.path,
-           query: req.query,
-           remote_addr: req.ip
-         }, 'Received HTTP request');
+         req.observability.logger.info(
+           {
+             event: "http_request_received",
+             method: req.method,
+             path: req.path,
+             query: req.query,
+             remote_addr: req.ip,
+           },
+           "Received HTTP request",
+         );
 
          // Add response hook
-         res.on('finish', () => {
+         res.on("finish", () => {
            const duration = (Date.now() - start) / 1000;
            const labels = {
              method: req.method,
              route: req.route?.path || req.path,
-             status_code: res.statusCode.toString()
+             status_code: res.statusCode.toString(),
            };
 
            // Record metrics
@@ -841,17 +856,20 @@ pillars:
            httpRequestTotal.inc(labels);
 
            // Log response
-           req.observability.logger.info({
-             event: 'http_request_completed',
-             method: req.method,
-             path: req.path,
-             status_code: res.statusCode,
-             duration_ms: duration * 1000
-           }, 'Completed HTTP request');
+           req.observability.logger.info(
+             {
+               event: "http_request_completed",
+               method: req.method,
+               path: req.path,
+               status_code: res.statusCode,
+               duration_ms: duration * 1000,
+             },
+             "Completed HTTP request",
+           );
          });
 
          next();
-       }
+       },
      };
    }
    ```
@@ -861,36 +879,38 @@ pillars:
 
    ```typescript
    // health-checks.ts
-   import { Router } from 'express';
+   import { Router } from "express";
 
    export function createHealthRoutes(observability) {
      const router = Router();
 
      // Basic health check
-     router.get('/health', (req, res) => {
-       res.status(200).json({ status: 'ok' });
+     router.get("/health", (req, res) => {
+       res.status(200).json({ status: "ok" });
      });
 
      // Detailed health check with diagnostics
-     router.get('/health/detailed', (req, res) => {
+     router.get("/health/detailed", (req, res) => {
        // Check all three observability pillars
        const checks = {
          logging: checkLogging(),
          metrics: checkMetrics(observability.metrics.registry),
-         tracing: checkTracing()
+         tracing: checkTracing(),
        };
 
-       const allHealthy = Object.values(checks).every(check => check.status === 'ok');
+       const allHealthy = Object.values(checks).every(
+         (check) => check.status === "ok",
+       );
 
        res.status(allHealthy ? 200 : 503).json({
-         status: allHealthy ? 'ok' : 'degraded',
-         checks
+         status: allHealthy ? "ok" : "degraded",
+         checks,
        });
      });
 
      // Prometheus metrics endpoint
-     router.get('/metrics', async (req, res) => {
-       res.set('Content-Type', observability.metrics.registry.contentType);
+     router.get("/metrics", async (req, res) => {
+       res.set("Content-Type", observability.metrics.registry.contentType);
        res.end(await observability.metrics.registry.metrics());
      });
 
@@ -900,11 +920,11 @@ pillars:
    function checkLogging() {
      try {
        // Attempt to write a log entry
-       return { status: 'ok' };
+       return { status: "ok" };
      } catch (error) {
        return {
-         status: 'error',
-         error: error.message
+         status: "error",
+         error: error.message,
        };
      }
    }
@@ -914,13 +934,13 @@ pillars:
        // Check if metrics registry is functioning
        const metricCount = registry.getMetricsAsArray().length;
        return {
-         status: 'ok',
-         metrics_count: metricCount
+         status: "ok",
+         metrics_count: metricCount,
        };
      } catch (error) {
        return {
-         status: 'error',
-         error: error.message
+         status: "error",
+         error: error.message,
        };
      }
    }
@@ -928,11 +948,11 @@ pillars:
    function checkTracing() {
      try {
        // Verify tracing exporter is connected
-       return { status: 'ok' };
+       return { status: "ok" };
      } catch (error) {
        return {
-         status: 'error',
-         error: error.message
+         status: "error",
+         error: error.message,
        };
      }
    }
@@ -1009,24 +1029,30 @@ console.log(`Processing order ${orderId}`);
 console.error("Failed to connect: " + error.message);
 
 // ✅ GOOD: Structured logging with consistent fields
-logger.info({
-  component: "auth-service",
-  correlation_id: requestId,
-  user_id: userId,
-  action: "login",
-  duration_ms: loginTime
-}, "User authentication successful");
+logger.info(
+  {
+    component: "auth-service",
+    correlation_id: requestId,
+    user_id: userId,
+    action: "login",
+    duration_ms: loginTime,
+  },
+  "User authentication successful",
+);
 
-logger.error({
-  component: "order-service",
-  correlation_id: requestId,
-  order_id: orderId,
-  error: {
-    type: error.name,
-    message: error.message,
-    stack: error.stack
-  }
-}, "Order processing failed");
+logger.error(
+  {
+    component: "order-service",
+    correlation_id: requestId,
+    order_id: orderId,
+    error: {
+      type: error.name,
+      message: error.message,
+      stack: error.stack,
+    },
+  },
+  "Order processing failed",
+);
 ```
 
 ```go
@@ -1085,28 +1111,28 @@ app.use((req, res, next) => {
 
 // ✅ GOOD: Standardized metrics using Prometheus
 const requestCounter = new promClient.Counter({
-  name: 'http_requests_total',
-  help: 'Total HTTP requests',
-  labelNames: ['method', 'path', 'status']
+  name: "http_requests_total",
+  help: "Total HTTP requests",
+  labelNames: ["method", "path", "status"],
 });
 
 const requestDuration = new promClient.Histogram({
-  name: 'http_request_duration_seconds',
-  help: 'HTTP request duration in seconds',
-  labelNames: ['method', 'path', 'status'],
-  buckets: [0.01, 0.05, 0.1, 0.5, 1, 2, 5, 10]
+  name: "http_request_duration_seconds",
+  help: "HTTP request duration in seconds",
+  labelNames: ["method", "path", "status"],
+  buckets: [0.01, 0.05, 0.1, 0.5, 1, 2, 5, 10],
 });
 
 app.use((req, res, next) => {
   const start = Date.now();
 
   // After response
-  res.on('finish', () => {
+  res.on("finish", () => {
     const duration = (Date.now() - start) / 1000;
     const labels = {
       method: req.method,
       path: req.route ? req.route.path : req.path,
-      status: res.statusCode.toString()
+      status: res.statusCode.toString(),
     };
 
     requestCounter.inc(labels);
@@ -1117,8 +1143,8 @@ app.use((req, res, next) => {
 });
 
 // Expose metrics endpoint for scraping
-app.get('/metrics', (req, res) => {
-  res.set('Content-Type', promClient.contentType);
+app.get("/metrics", (req, res) => {
+  res.set("Content-Type", promClient.contentType);
   res.end(promClient.register.metrics());
 });
 ```
@@ -1202,45 +1228,50 @@ function processPayment(orderId, amount) {
   console.log(`[${correlationId}] Processing payment for order ${orderId}`);
 
   // Call payment service with manually added header
-  return axios.post('https://payment-api/process', {
-    order_id: orderId,
-    amount: amount
-  }, {
-    headers: {
-      'X-Correlation-ID': correlationId
-    }
-  })
-  .then(response => {
-    console.log(`[${correlationId}] Payment successful`);
-    return response.data;
-  })
-  .catch(error => {
-    console.error(`[${correlationId}] Payment failed: ${error.message}`);
-    throw error;
-  });
+  return axios
+    .post(
+      "https://payment-api/process",
+      {
+        order_id: orderId,
+        amount: amount,
+      },
+      {
+        headers: {
+          "X-Correlation-ID": correlationId,
+        },
+      },
+    )
+    .then((response) => {
+      console.log(`[${correlationId}] Payment successful`);
+      return response.data;
+    })
+    .catch((error) => {
+      console.error(`[${correlationId}] Payment failed: ${error.message}`);
+      throw error;
+    });
 }
 
 // ✅ GOOD: OpenTelemetry tracing with automatic context propagation
 async function processPayment(orderId, amount) {
-  const tracer = trace.getTracer('payment-service');
+  const tracer = trace.getTracer("payment-service");
 
   // Create a span for the payment operation
-  return tracer.startActiveSpan('process_payment', async (span) => {
+  return tracer.startActiveSpan("process_payment", async (span) => {
     try {
       // Add business context as span attributes
-      span.setAttribute('order_id', orderId);
-      span.setAttribute('amount', amount);
-      span.setAttribute('payment_method', 'credit_card');
+      span.setAttribute("order_id", orderId);
+      span.setAttribute("amount", amount);
+      span.setAttribute("payment_method", "credit_card");
 
       // OpenTelemetry HTTP instrumentation automatically propagates context
-      const response = await axios.post('https://payment-api/process', {
+      const response = await axios.post("https://payment-api/process", {
         order_id: orderId,
-        amount: amount
+        amount: amount,
       });
 
       // Add outcome to span
-      span.setAttribute('status', 'success');
-      span.setAttribute('transaction_id', response.data.transactionId);
+      span.setAttribute("status", "success");
+      span.setAttribute("transaction_id", response.data.transactionId);
 
       return response.data;
     } catch (error) {
@@ -1248,7 +1279,7 @@ async function processPayment(orderId, amount) {
       span.recordException(error);
       span.setStatus({
         code: SpanStatusCode.ERROR,
-        message: error.message
+        message: error.message,
       });
       throw error;
     } finally {
@@ -1348,7 +1379,7 @@ function handleCheckout(req, res) {
   const startTime = Date.now();
 
   // Separate correlation ID with manual propagation
-  const requestId = req.headers['x-request-id'] || uuid.v4();
+  const requestId = req.headers["x-request-id"] || uuid.v4();
 
   try {
     // Process the checkout...
@@ -1377,14 +1408,14 @@ function handleCheckout(req, res) {
   const metrics = obs.metrics;
 
   // Start a trace span
-  return tracer.startActiveSpan('checkout_process', async (span) => {
+  return tracer.startActiveSpan("checkout_process", async (span) => {
     try {
       // Log with trace context automatically included
       logger.info({
-        event: 'checkout_started',
+        event: "checkout_started",
         user_id: req.user.id,
         item_count: req.body.items.length,
-        cart_value: calculateTotal(req.body.items)
+        cart_value: calculateTotal(req.body.items),
       });
 
       // Process the checkout with trace context propagation
@@ -1392,28 +1423,31 @@ function handleCheckout(req, res) {
 
       // Record metrics with same identifiers as logs and traces
       metrics.orderTotal.inc({
-        status: 'completed',
+        status: "completed",
         payment_method: req.body.paymentMethod,
-        user_tier: req.user.tier
+        user_tier: req.user.tier,
       });
 
-      metrics.orderValue.observe({
-        payment_method: req.body.paymentMethod,
-        user_tier: req.user.tier
-      }, calculateTotal(req.body.items));
+      metrics.orderValue.observe(
+        {
+          payment_method: req.body.paymentMethod,
+          user_tier: req.user.tier,
+        },
+        calculateTotal(req.body.items),
+      );
 
       // Log completion with same correlation ID
       logger.info({
-        event: 'checkout_completed',
+        event: "checkout_completed",
         user_id: req.user.id,
         order_id: result.orderId,
-        processing_time_ms: result.processingTime
+        processing_time_ms: result.processingTime,
       });
 
       // Add business context to span
-      span.setAttribute('order_id', result.orderId);
-      span.setAttribute('order_value', calculateTotal(req.body.items));
-      span.setAttribute('processing_time_ms', result.processingTime);
+      span.setAttribute("order_id", result.orderId);
+      span.setAttribute("order_value", calculateTotal(req.body.items));
+      span.setAttribute("processing_time_ms", result.processingTime);
 
       res.json(result);
     } catch (error) {
@@ -1425,16 +1459,16 @@ function handleCheckout(req, res) {
 
       // Log with trace context
       logger.error({
-        event: 'checkout_failed',
+        event: "checkout_failed",
         user_id: req.user.id,
         error_type: error.name,
-        error_message: error.message
+        error_message: error.message,
       });
 
       // Increment error metric with consistent labels
       metrics.checkoutErrors.inc({
         error_type: error.name,
-        payment_method: req.body.paymentMethod
+        payment_method: req.body.paymentMethod,
       });
 
       res.status(500).json({ error: error.message });

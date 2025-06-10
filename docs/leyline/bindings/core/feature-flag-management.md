@@ -1,10 +1,11 @@
 ---
 id: feature-flag-management
-last_modified: '2025-06-02'
-version: '0.1.0'
+last_modified: "2025-06-02"
+version: "0.1.0"
 derived_from: adaptability-and-reversibility
-enforced_by: 'Feature flag platforms, deployment controls, runtime configuration'
+enforced_by: "Feature flag platforms, deployment controls, runtime configuration"
 ---
+
 # Binding: Implement Comprehensive Feature Flag Management
 
 Use feature flags to control functionality at runtime, enabling safe rollouts, quick rollbacks, A/B testing, and gradual feature adoption. This provides the ability to reverse decisions and adapt behavior without code deployments.
@@ -34,6 +35,7 @@ Feature flag management must establish these operational principles:
 - **Performance Optimization**: Ensure flag evaluation is fast and doesn't impact application performance, with proper caching and fallback mechanisms.
 
 **Flag Types:**
+
 - **Release flags**: Control rollout of new features
 - **Experiment flags**: Enable A/B testing and experimentation
 - **Operational flags**: Control system behavior and performance settings
@@ -41,6 +43,7 @@ Feature flag management must establish these operational principles:
 - **Kill switches**: Provide emergency shutoff capabilities
 
 **Targeting Strategies:**
+
 - Percentage-based rollouts for gradual adoption
 - User segment targeting for specific audiences
 - Environment-based flags for deployment stages
@@ -66,13 +69,13 @@ Feature flag management must establish these operational principles:
 class UserRegistrationService {
   async registerUser(userData: UserData): Promise<User> {
     // Hardcoded feature control - requires deployment to change
-    const enableEmailVerification = process.env.NODE_ENV === 'production';
+    const enableEmailVerification = process.env.NODE_ENV === "production";
 
     // Hardcoded percentage rollout - cannot be adjusted dynamically
     const enableNewValidationLogic = Math.random() < 0.1; // 10% of users
 
     // Hardcoded premium feature control
-    const allowPremiumFeatures = userData.plan === 'enterprise';
+    const allowPremiumFeatures = userData.plan === "enterprise";
 
     if (enableNewValidationLogic) {
       // New validation logic
@@ -120,9 +123,20 @@ interface FeatureFlagResult<T = boolean> {
 
 // Feature flag client interface
 interface FeatureFlagClient {
-  isEnabled(flagKey: string, context: FeatureFlagContext): Promise<FeatureFlagResult<boolean>>;
-  getVariant<T>(flagKey: string, defaultValue: T, context: FeatureFlagContext): Promise<FeatureFlagResult<T>>;
-  track(eventName: string, context: FeatureFlagContext, properties?: Record<string, any>): Promise<void>;
+  isEnabled(
+    flagKey: string,
+    context: FeatureFlagContext,
+  ): Promise<FeatureFlagResult<boolean>>;
+  getVariant<T>(
+    flagKey: string,
+    defaultValue: T,
+    context: FeatureFlagContext,
+  ): Promise<FeatureFlagResult<T>>;
+  track(
+    eventName: string,
+    context: FeatureFlagContext,
+    properties?: Record<string, any>,
+  ): Promise<void>;
 }
 
 // Flag configuration with sophisticated targeting
@@ -156,7 +170,13 @@ interface TargetingRule {
 
 interface Condition {
   attribute: string;
-  operator: 'equals' | 'contains' | 'in' | 'greaterThan' | 'lessThan' | 'matches';
+  operator:
+    | "equals"
+    | "contains"
+    | "in"
+    | "greaterThan"
+    | "lessThan"
+    | "matches";
   value: any;
 }
 
@@ -168,17 +188,20 @@ class ProductionFeatureFlagClient implements FeatureFlagClient {
   constructor(
     private flagService: FeatureFlagService,
     private analytics: AnalyticsService,
-    private logger: Logger
+    private logger: Logger,
   ) {}
 
-  async isEnabled(flagKey: string, context: FeatureFlagContext): Promise<FeatureFlagResult<boolean>> {
+  async isEnabled(
+    flagKey: string,
+    context: FeatureFlagContext,
+  ): Promise<FeatureFlagResult<boolean>> {
     return this.getVariant(flagKey, false, context);
   }
 
   async getVariant<T>(
     flagKey: string,
     defaultValue: T,
-    context: FeatureFlagContext
+    context: FeatureFlagContext,
   ): Promise<FeatureFlagResult<T>> {
     try {
       // Check cache first
@@ -190,7 +213,7 @@ class ProductionFeatureFlagClient implements FeatureFlagClient {
       // Fetch flag configuration
       const flagConfig = await this.flagService.getFlagConfiguration(flagKey);
       if (!flagConfig) {
-        return this.createResult(defaultValue, 'flag_not_found');
+        return this.createResult(defaultValue, "flag_not_found");
       }
 
       // Evaluate flag for current context
@@ -200,41 +223,44 @@ class ProductionFeatureFlagClient implements FeatureFlagClient {
       this.cacheResult(flagKey, context, result);
 
       // Track flag evaluation for analytics
-      await this.track('feature_flag_evaluated', context, {
+      await this.track("feature_flag_evaluated", context, {
         flagKey,
         value: result.value,
         variant: result.variant,
-        reason: result.reason
+        reason: result.reason,
       });
 
-      this.logger.debug('Feature flag evaluated', {
+      this.logger.debug("Feature flag evaluated", {
         flagKey,
         userId: context.userId,
         value: result.value,
-        reason: result.reason
+        reason: result.reason,
       });
 
       return result;
     } catch (error) {
-      this.logger.error('Feature flag evaluation failed', {
+      this.logger.error("Feature flag evaluation failed", {
         flagKey,
         error: error.message,
-        context
+        context,
       });
 
       // Return safe default on error
-      return this.createResult(defaultValue, 'evaluation_error');
+      return this.createResult(defaultValue, "evaluation_error");
     }
   }
 
   private evaluateFlag<T>(
     config: FlagConfiguration,
     context: FeatureFlagContext,
-    defaultValue: T
+    defaultValue: T,
   ): FeatureFlagResult<T> {
     const envConfig = config.environments[context.environment];
     if (!envConfig || !envConfig.enabled) {
-      return this.createResult(envConfig?.fallbackValue ?? defaultValue, 'environment_disabled');
+      return this.createResult(
+        envConfig?.fallbackValue ?? defaultValue,
+        "environment_disabled",
+      );
     }
 
     // Evaluate targeting rules in order
@@ -248,30 +274,39 @@ class ProductionFeatureFlagClient implements FeatureFlagClient {
           }
         }
 
-        return this.createResult(rule.value, 'rule_match', rule.variant);
+        return this.createResult(rule.value, "rule_match", rule.variant);
       }
     }
 
     // No rules matched, return default
-    return this.createResult(envConfig.fallbackValue ?? defaultValue, 'default_value');
+    return this.createResult(
+      envConfig.fallbackValue ?? defaultValue,
+      "default_value",
+    );
   }
 
-  private evaluateConditions(conditions: Condition[], context: FeatureFlagContext): boolean {
-    return conditions.every(condition => {
+  private evaluateConditions(
+    conditions: Condition[],
+    context: FeatureFlagContext,
+  ): boolean {
+    return conditions.every((condition) => {
       const contextValue = this.getContextValue(condition.attribute, context);
 
       switch (condition.operator) {
-        case 'equals':
+        case "equals":
           return contextValue === condition.value;
-        case 'contains':
+        case "contains":
           return String(contextValue).includes(condition.value);
-        case 'in':
-          return Array.isArray(condition.value) && condition.value.includes(contextValue);
-        case 'greaterThan':
+        case "in":
+          return (
+            Array.isArray(condition.value) &&
+            condition.value.includes(contextValue)
+          );
+        case "greaterThan":
           return Number(contextValue) > Number(condition.value);
-        case 'lessThan':
+        case "lessThan":
           return Number(contextValue) < Number(condition.value);
-        case 'matches':
+        case "matches":
           return new RegExp(condition.value).test(String(contextValue));
         default:
           return false;
@@ -281,41 +316,52 @@ class ProductionFeatureFlagClient implements FeatureFlagClient {
 
   private getContextValue(attribute: string, context: FeatureFlagContext): any {
     switch (attribute) {
-      case 'userId':
+      case "userId":
         return context.userId;
-      case 'userPlan':
+      case "userPlan":
         return context.userPlan;
-      case 'environment':
+      case "environment":
         return context.environment;
       default:
         return context.userAttributes?.[attribute];
     }
   }
 
-  private hashContextForPercentage(context: FeatureFlagContext, flagKey: string): number {
+  private hashContextForPercentage(
+    context: FeatureFlagContext,
+    flagKey: string,
+  ): number {
     // Consistent hashing for stable percentage rollouts
-    const input = `${context.userId || 'anonymous'}-${flagKey}`;
+    const input = `${context.userId || "anonymous"}-${flagKey}`;
     let hash = 0;
     for (let i = 0; i < input.length; i++) {
       const char = input.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return Math.abs(hash) % 100;
   }
 
-  private createResult<T>(value: T, reason: string, variant?: string): FeatureFlagResult<T> {
+  private createResult<T>(
+    value: T,
+    reason: string,
+    variant?: string,
+  ): FeatureFlagResult<T> {
     return { value, reason, variant };
   }
 
-  async track(eventName: string, context: FeatureFlagContext, properties?: Record<string, any>): Promise<void> {
+  async track(
+    eventName: string,
+    context: FeatureFlagContext,
+    properties?: Record<string, any>,
+  ): Promise<void> {
     await this.analytics.track(eventName, {
       userId: context.userId,
       timestamp: context.timestamp || new Date(),
       properties: {
         environment: context.environment,
-        ...properties
-      }
+        ...properties,
+      },
     });
   }
 }
@@ -326,25 +372,25 @@ class FlexibleUserRegistrationService {
     private featureFlags: FeatureFlagClient,
     private userRepository: UserRepository,
     private emailService: EmailService,
-    private validationService: ValidationService
+    private validationService: ValidationService,
   ) {}
 
   async registerUser(userData: UserData): Promise<User> {
     const context: FeatureFlagContext = {
       userId: userData.email, // Use email as temporary ID
       userPlan: userData.plan,
-      environment: process.env.NODE_ENV || 'development',
+      environment: process.env.NODE_ENV || "development",
       userAttributes: {
         country: userData.country,
         referralSource: userData.referralSource,
-        accountAge: userData.accountAge
-      }
+        accountAge: userData.accountAge,
+      },
     };
 
     // Feature flag: New validation logic rollout
     const useNewValidation = await this.featureFlags.isEnabled(
-      'user_registration_validation_v2',
-      context
+      "user_registration_validation_v2",
+      context,
     );
 
     if (useNewValidation.value) {
@@ -355,32 +401,35 @@ class FlexibleUserRegistrationService {
 
     // Feature flag: Email verification requirement
     const requireEmailVerification = await this.featureFlags.isEnabled(
-      'require_email_verification',
-      context
+      "require_email_verification",
+      context,
     );
 
     // Feature flag: Premium features availability
     const premiumFeaturesEnabled = await this.featureFlags.isEnabled(
-      'premium_features_available',
-      context
+      "premium_features_available",
+      context,
     );
 
     // Feature flag: Registration rate limiting
     const rateLimitConfig = await this.featureFlags.getVariant(
-      'registration_rate_limit',
+      "registration_rate_limit",
       { enabled: false, requestsPerMinute: 10 },
-      context
+      context,
     );
 
     if (rateLimitConfig.value.enabled) {
-      await this.checkRateLimit(userData.email, rateLimitConfig.value.requestsPerMinute);
+      await this.checkRateLimit(
+        userData.email,
+        rateLimitConfig.value.requestsPerMinute,
+      );
     }
 
     // Create user
     const user = await this.userRepository.create({
       ...userData,
       emailVerified: !requireEmailVerification.value,
-      premiumFeaturesEnabled: premiumFeaturesEnabled.value
+      premiumFeaturesEnabled: premiumFeaturesEnabled.value,
     });
 
     // Conditional email verification
@@ -388,16 +437,16 @@ class FlexibleUserRegistrationService {
       await this.emailService.sendVerificationEmail(user.email);
 
       // Track feature usage
-      await this.featureFlags.track('email_verification_sent', context, {
-        userId: user.id
+      await this.featureFlags.track("email_verification_sent", context, {
+        userId: user.id,
       });
     }
 
     // Feature flag: Welcome email variants
     const welcomeEmailVariant = await this.featureFlags.getVariant(
-      'welcome_email_variant',
-      'standard',
-      context
+      "welcome_email_variant",
+      "standard",
+      context,
     );
 
     await this.sendWelcomeEmail(user, welcomeEmailVariant.value);
@@ -407,12 +456,12 @@ class FlexibleUserRegistrationService {
 
   private async sendWelcomeEmail(user: User, variant: string): Promise<void> {
     const templates = {
-      'standard': 'welcome_standard',
-      'premium': 'welcome_premium',
-      'minimal': 'welcome_minimal'
+      standard: "welcome_standard",
+      premium: "welcome_premium",
+      minimal: "welcome_minimal",
     };
 
-    const template = templates[variant] || templates['standard'];
+    const template = templates[variant] || templates["standard"];
     await this.emailService.sendTemplatedEmail(user.email, template, { user });
   }
 }
@@ -425,7 +474,10 @@ class FeatureFlagManager {
     await this.flagService.createFlag(config);
   }
 
-  async updateFlag(flagKey: string, updates: Partial<FlagConfiguration>): Promise<void> {
+  async updateFlag(
+    flagKey: string,
+    updates: Partial<FlagConfiguration>,
+  ): Promise<void> {
     await this.flagService.updateFlag(flagKey, updates);
   }
 
@@ -435,12 +487,15 @@ class FeatureFlagManager {
       environments: {
         production: { enabled: false, rules: [], fallbackValue: false },
         staging: { enabled: false, rules: [], fallbackValue: false },
-        development: { enabled: false, rules: [], fallbackValue: false }
-      }
+        development: { enabled: false, rules: [], fallbackValue: false },
+      },
     });
 
     // Schedule flag deletion after confirmation period
-    await this.flagService.scheduleForDeletion(flagKey, new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)); // 30 days
+    await this.flagService.scheduleForDeletion(
+      flagKey,
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    ); // 30 days
   }
 }
 ```

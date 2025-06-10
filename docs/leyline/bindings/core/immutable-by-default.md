@@ -2,9 +2,10 @@
 derived_from: simplicity
 enforced_by: linters & code review
 id: immutable-by-default
-last_modified: '2025-05-14'
-version: '0.1.0'
+last_modified: "2025-05-14"
+version: "0.1.0"
 ---
+
 # Binding: Treat All Data as Unchangeable by Default
 
 Never modify data after it's created. When you need to update state, create entirely new
@@ -142,7 +143,7 @@ Here are concrete strategies for implementing immutability across your codebase:
      const newItems = [...items, newItem];
 
      // Remove item from array by creating a new array
-     const filteredItems = items.filter(item => item.id !== itemToRemove.id);
+     const filteredItems = items.filter((item) => item.id !== itemToRemove.id);
      ```
 
    - Builder pattern for complex objects:
@@ -206,9 +207,9 @@ Here are concrete strategies for implementing immutability across your codebase:
 function updateUserPreferences(user, preferences) {
   user.preferences = {
     ...user.preferences,
-    ...preferences
+    ...preferences,
   };
-  return user;  // Returns same object with modified properties
+  return user; // Returns same object with modified properties
 }
 
 const user = { name: "Alice", preferences: { theme: "light" } };
@@ -221,9 +222,9 @@ function updateUserPreferences(user, preferences) {
     ...user,
     preferences: {
       ...user.preferences,
-      ...preferences
-    }
-  };  // Returns new object with updated properties
+      ...preferences,
+    },
+  }; // Returns new object with updated properties
 }
 
 const user = { name: "Alice", preferences: { theme: "light" } };
@@ -235,18 +236,18 @@ const updatedUser = updateUserPreferences(user, { notifications: "all" });
 ```javascript
 // ❌ BAD: Mutating arrays in place
 function addItem(cart, item) {
-  cart.items.push(item);         // Mutates the array in place
-  cart.total += item.price;      // Mutates the total
-  return cart;                   // Returns the same modified object
+  cart.items.push(item); // Mutates the array in place
+  cart.total += item.price; // Mutates the total
+  return cart; // Returns the same modified object
 }
 
 // ✅ GOOD: Creating new arrays and objects
 function addItem(cart, item) {
   return {
     ...cart,
-    items: [...cart.items, item],  // Creates new array with added item
-    total: cart.total + item.price // Calculates new total
-  };  // Returns entirely new cart object
+    items: [...cart.items, item], // Creates new array with added item
+    total: cart.total + item.price, // Calculates new total
+  }; // Returns entirely new cart object
 }
 ```
 

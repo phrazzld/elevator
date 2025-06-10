@@ -1,10 +1,11 @@
 ---
 derived_from: simplicity
 id: async-patterns
-last_modified: '2025-05-14'
-version: '0.1.0'
+last_modified: "2025-05-14"
+version: "0.1.0"
 enforced_by: code review & style guides
 ---
+
 # Binding: Structure TypeScript Async Code with Best Practices
 
 Use async/await for all asynchronous operations in TypeScript, with proper error
@@ -109,11 +110,11 @@ This binding establishes clear requirements for async code patterns in TypeScrip
        if (!response.ok) {
          throw new ApiError(
            `Failed to fetch user data: ${response.statusText}`,
-           response.status
+           response.status,
          );
        }
 
-       return await response.json() as UserData;
+       return (await response.json()) as UserData;
      } catch (error) {
        // Add context to the error
        if (error instanceof ApiError) {
@@ -125,7 +126,7 @@ This binding establishes clear requirements for async code patterns in TypeScrip
        throw new ApiError(
          `Error fetching user ${userId}: ${error instanceof Error ? error.message : String(error)}`,
          500,
-         error instanceof Error ? error : undefined
+         error instanceof Error ? error : undefined,
        );
      }
    }
@@ -135,10 +136,10 @@ This binding establishes clear requirements for async code patterns in TypeScrip
      constructor(
        message: string,
        public statusCode: number,
-       public cause?: Error
+       public cause?: Error,
      ) {
        super(message);
-       this.name = 'ApiError';
+       this.name = "ApiError";
      }
    }
    ```
@@ -156,7 +157,7 @@ This binding establishes clear requirements for async code patterns in TypeScrip
    export function fetchWithTimeout<T>(
      url: string,
      options?: RequestInit,
-     timeoutMs = 5000
+     timeoutMs = 5000,
    ): CancellableOperation<T> {
      // Create an AbortController to handle cancellation
      const controller = new AbortController();
@@ -169,15 +170,20 @@ This binding establishes clear requirements for async code patterns in TypeScrip
      const fetchPromise = fetch(url, {
        ...options,
        signal,
-     }).then(async (response) => {
-       if (!response.ok) {
-         throw new ApiError(`Request failed: ${response.statusText}`, response.status);
-       }
-       return await response.json() as T;
-     }).finally(() => {
-       // Clean up timeout when fetch completes (success or failure)
-       clearTimeout(timeoutId);
-     });
+     })
+       .then(async (response) => {
+         if (!response.ok) {
+           throw new ApiError(
+             `Request failed: ${response.statusText}`,
+             response.status,
+           );
+         }
+         return (await response.json()) as T;
+       })
+       .finally(() => {
+         // Clean up timeout when fetch completes (success or failure)
+         clearTimeout(timeoutId);
+       });
 
      // Return both the promise and a cancel function
      return {
@@ -185,12 +191,12 @@ This binding establishes clear requirements for async code patterns in TypeScrip
        cancel: () => {
          clearTimeout(timeoutId);
          controller.abort();
-       }
+       },
      };
    }
 
    // Usage:
-   const { promise, cancel } = fetchWithTimeout<UserData>('/api/users/123');
+   const { promise, cancel } = fetchWithTimeout<UserData>("/api/users/123");
 
    // Later, if needed:
    cancel(); // This will abort the request
@@ -209,44 +215,46 @@ This binding establishes clear requirements for async code patterns in TypeScrip
        const [userData, ordersData, notificationsData] = await Promise.all([
          fetchUserData(userId),
          fetchUserOrders(userId),
-         fetchNotifications(userId)
+         fetchNotifications(userId),
        ]);
 
        return {
          user: userData,
          orders: ordersData,
-         notifications: notificationsData
+         notifications: notificationsData,
        };
      } catch (error) {
        // If any request fails, the entire operation fails
        throw new DashboardError(
          `Failed to load dashboard for user ${userId}`,
-         error instanceof Error ? error : undefined
+         error instanceof Error ? error : undefined,
        );
      }
    }
 
    // When individual failures should be tolerated
-   async function loadDashboardDataResilient(userId: string): Promise<DashboardData> {
+   async function loadDashboardDataResilient(
+     userId: string,
+   ): Promise<DashboardData> {
      const results = await Promise.allSettled([
        fetchUserData(userId),
        fetchUserOrders(userId),
-       fetchNotifications(userId)
+       fetchNotifications(userId),
      ]);
 
      // Process results, handling failures individually
      return {
-       user: results[0].status === 'fulfilled' ? results[0].value : null,
-       orders: results[1].status === 'fulfilled' ? results[1].value : [],
-       notifications: results[2].status === 'fulfilled' ? results[2].value : []
+       user: results[0].status === "fulfilled" ? results[0].value : null,
+       orders: results[1].status === "fulfilled" ? results[1].value : [],
+       notifications: results[2].status === "fulfilled" ? results[2].value : [],
      };
    }
 
    // When you need the first successful response
    async function fetchFromMirroredApis<T>(urls: string[]): Promise<T> {
      // Create an array of promises with timeouts
-     const fetchPromises = urls.map(url =>
-       fetchWithTimeout<T>(url, undefined, 2000).promise
+     const fetchPromises = urls.map(
+       (url) => fetchWithTimeout<T>(url, undefined, 2000).promise,
      );
 
      // Race to get the first successful response
@@ -274,7 +282,7 @@ This binding establishes clear requirements for async code patterns in TypeScrip
          return Promise.resolve();
        }
 
-       return new Promise<void>(resolve => {
+       return new Promise<void>((resolve) => {
          this.queue.push(resolve);
        });
      }
@@ -293,13 +301,16 @@ This binding establishes clear requirements for async code patterns in TypeScrip
    async function processItemsWithLimit<T, R>(
      items: T[],
      processFn: (item: T) => Promise<R>,
-     concurrencyLimit = 5
+     concurrencyLimit = 5,
    ): Promise<R[]> {
      const semaphore = new Semaphore(concurrencyLimit);
      const results: R[] = [];
 
      // Create a processing function that acquires a permit before processing
-     const processWithSemaphore = async (item: T, index: number): Promise<void> => {
+     const processWithSemaphore = async (
+       item: T,
+       index: number,
+     ): Promise<void> => {
        try {
          await semaphore.acquire();
          const result = await processFn(item);
@@ -310,7 +321,9 @@ This binding establishes clear requirements for async code patterns in TypeScrip
      };
 
      // Launch all tasks, but they'll wait on the semaphore
-     const tasks = items.map((item, index) => processWithSemaphore(item, index));
+     const tasks = items.map((item, index) =>
+       processWithSemaphore(item, index),
+     );
 
      // Wait for all tasks to complete
      await Promise.all(tasks);
@@ -319,11 +332,11 @@ This binding establishes clear requirements for async code patterns in TypeScrip
    }
 
    // Usage example:
-   const userIds = ['user1', 'user2', 'user3', /* ... hundreds more ... */];
+   const userIds = ["user1", "user2", "user3" /* ... hundreds more ... */];
    const userData = await processItemsWithLimit(
      userIds,
-     id => fetchUserData(id),
-     10 // Only 10 concurrent requests
+     (id) => fetchUserData(id),
+     10, // Only 10 concurrent requests
    );
    ```
 
@@ -336,7 +349,7 @@ This binding establishes clear requirements for async code patterns in TypeScrip
      url: string,
      options?: RequestInit,
      maxRetries = 3,
-     initialDelayMs = 1000
+     initialDelayMs = 1000,
    ): Promise<T> {
      let retries = 0;
      let delayMs = initialDelayMs;
@@ -352,14 +365,18 @@ This binding establishes clear requirements for async code patterns in TypeScrip
            }
 
            // Don't retry on other client errors
-           throw new ApiError(`Request failed: ${response.statusText}`, response.status);
+           throw new ApiError(
+             `Request failed: ${response.statusText}`,
+             response.status,
+           );
          }
 
-         return await response.json() as T;
+         return (await response.json()) as T;
        } catch (error) {
          // Only retry on network errors or marked retryable errors
-         const isRetryable = error instanceof RetryableError ||
-                             (error instanceof Error && error.name === 'TypeError');
+         const isRetryable =
+           error instanceof RetryableError ||
+           (error instanceof Error && error.name === "TypeError");
 
          if (!isRetryable || retries >= maxRetries) {
            throw error;
@@ -380,12 +397,12 @@ This binding establishes clear requirements for async code patterns in TypeScrip
    class RetryableError extends Error {
      constructor(message: string) {
        super(message);
-       this.name = 'RetryableError';
+       this.name = "RetryableError";
      }
    }
 
    function sleep(ms: number): Promise<void> {
-     return new Promise(resolve => setTimeout(resolve, ms));
+     return new Promise((resolve) => setTimeout(resolve, ms));
    }
    ```
 
@@ -395,16 +412,16 @@ This binding establishes clear requirements for async code patterns in TypeScrip
    // ✅ GOOD: Properly structured async tests
 
    // Jest example
-   describe('UserService', () => {
-     test('fetchUserData returns user data for valid ID', async () => {
+   describe("UserService", () => {
+     test("fetchUserData returns user data for valid ID", async () => {
        // Arrange
-       const userId = '123';
-       const mockUserData = { id: userId, name: 'Test User' };
+       const userId = "123";
+       const mockUserData = { id: userId, name: "Test User" };
 
        // Mock the fetch API
        global.fetch = jest.fn().mockResolvedValue({
          ok: true,
-         json: jest.fn().mockResolvedValue(mockUserData)
+         json: jest.fn().mockResolvedValue(mockUserData),
        });
 
        // Act
@@ -416,19 +433,19 @@ This binding establishes clear requirements for async code patterns in TypeScrip
        expect(global.fetch).toHaveBeenCalledWith(`/api/users/${userId}`);
      });
 
-     test('fetchUserData throws for network errors', async () => {
+     test("fetchUserData throws for network errors", async () => {
        // Arrange
-       const userId = '123';
-       const errorMessage = 'Network error';
+       const userId = "123";
+       const errorMessage = "Network error";
 
        // Mock the fetch API to reject
        global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
 
        // Act & Assert
        const userService = new UserService();
-       await expect(userService.fetchUserData(userId))
-         .rejects
-         .toThrow(`Error fetching user ${userId}: ${errorMessage}`);
+       await expect(userService.fetchUserData(userId)).rejects.toThrow(
+         `Error fetching user ${userId}: ${errorMessage}`,
+       );
      });
    });
    ```
@@ -442,35 +459,35 @@ This binding establishes clear requirements for async code patterns in TypeScrip
      // other ESLint configuration
      rules: {
        // Prevent missing await on async function calls
-       'require-await': 'error',
+       "require-await": "error",
 
        // Require Promise rejection handling
-       '@typescript-eslint/no-floating-promises': 'error',
+       "@typescript-eslint/no-floating-promises": "error",
 
        // Prevent misuse of Promise.race and Promise.all
-       '@typescript-eslint/no-misused-promises': 'error',
+       "@typescript-eslint/no-misused-promises": "error",
 
        // Disallow unnecessary awaits
-       'no-return-await': 'error',
+       "no-return-await": "error",
 
        // Encourage catching rejected promises
-       'promise/catch-or-return': 'error',
+       "promise/catch-or-return": "error",
 
        // Ensure promises are properly handled
-       'promise/always-return': 'error',
+       "promise/always-return": "error",
 
        // Prevent callback mixing
-       'promise/no-callback-in-promise': 'warn',
+       "promise/no-callback-in-promise": "warn",
 
        // Prevent nesting promises
-       'promise/no-nesting': 'warn',
+       "promise/no-nesting": "warn",
 
        // Prevent creating new promises unnecessarily
-       'promise/no-new-statics': 'error',
+       "promise/no-new-statics": "error",
 
        // Prevent promise executor functions from having async function signatures
-       'promise/no-promise-executor-return': 'error',
-     }
+       "promise/no-promise-executor-return": "error",
+     },
    };
    ```
 
@@ -481,21 +498,21 @@ This binding establishes clear requirements for async code patterns in TypeScrip
 function fetchUserAndOrders(userId, callback) {
   fetchUser(userId, (userError, user) => {
     if (userError) {
-      console.error('Error fetching user:', userError);
+      console.error("Error fetching user:", userError);
       callback(userError, null);
       return;
     }
 
     fetchOrders(user.id, (ordersError, orders) => {
       if (ordersError) {
-        console.error('Error fetching orders:', ordersError);
+        console.error("Error fetching orders:", ordersError);
         callback(ordersError, null);
         return;
       }
 
       fetchOrderDetails(orders, (detailsError, details) => {
         if (detailsError) {
-          console.error('Error fetching order details:', detailsError);
+          console.error("Error fetching order details:", detailsError);
           callback(detailsError, null);
           return;
         }
@@ -504,8 +521,8 @@ function fetchUserAndOrders(userId, callback) {
           user,
           orders: orders.map((order, index) => ({
             ...order,
-            details: details[index]
-          }))
+            details: details[index],
+          })),
         };
 
         callback(null, result);
@@ -527,7 +544,7 @@ async function fetchUserAndOrders(userId: string): Promise<UserWithOrders> {
 
     // Fetch all order details in parallel
     const details = await Promise.all(
-      orders.map(order => fetchOrderDetails(order.id))
+      orders.map((order) => fetchOrderDetails(order.id)),
     );
 
     // Combine the data
@@ -535,22 +552,25 @@ async function fetchUserAndOrders(userId: string): Promise<UserWithOrders> {
       user,
       orders: orders.map((order, index) => ({
         ...order,
-        details: details[index]
-      }))
+        details: details[index],
+      })),
     };
   } catch (error) {
     // Add context to help with debugging
     throw new AppError(
       `Failed to fetch user ${userId} with orders: ${error instanceof Error ? error.message : String(error)}`,
-      error instanceof Error ? error : undefined
+      error instanceof Error ? error : undefined,
     );
   }
 }
 
 class AppError extends Error {
-  constructor(message: string, public cause?: Error) {
+  constructor(
+    message: string,
+    public cause?: Error,
+  ) {
     super(message);
-    this.name = 'AppError';
+    this.name = "AppError";
   }
 }
 ```
@@ -558,9 +578,9 @@ class AppError extends Error {
 ```typescript
 // ❌ BAD: Unhandled promise rejections and missing types
 function loadData() {
-  fetch('/api/data')
-    .then(response => response.json())
-    .then(data => {
+  fetch("/api/data")
+    .then((response) => response.json())
+    .then((data) => {
       // No error handling for the fetch or JSON parsing
       processData(data);
     });
@@ -576,17 +596,20 @@ loadData();
 // ✅ GOOD: Properly typed async function with error handling
 async function loadData(): Promise<ProcessedData> {
   try {
-    const response = await fetch('/api/data');
+    const response = await fetch("/api/data");
 
     if (!response.ok) {
-      throw new ApiError(`Failed to fetch data: ${response.statusText}`, response.status);
+      throw new ApiError(
+        `Failed to fetch data: ${response.statusText}`,
+        response.status,
+      );
     }
 
     const data = await response.json();
     return processData(data);
   } catch (error) {
     // Log the error before rethrowing
-    console.error('Error loading data:', error);
+    console.error("Error loading data:", error);
     throw error;
   }
 }
@@ -604,7 +627,7 @@ try {
 // ❌ BAD: Improper concurrency management leading to resource exhaustion
 async function processAllItems(items: Item[]): Promise<Result[]> {
   // Launches ALL requests at once, potentially thousands
-  return Promise.all(items.map(item => processItem(item)));
+  return Promise.all(items.map((item) => processItem(item)));
 }
 ```
 
@@ -617,7 +640,9 @@ async function processAllItems(items: Item[]): Promise<Result[]> {
 
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
-    const batchResults = await Promise.all(batch.map(item => processItem(item)));
+    const batchResults = await Promise.all(
+      batch.map((item) => processItem(item)),
+    );
     results.push(...batchResults);
   }
 

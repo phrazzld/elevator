@@ -1,8 +1,9 @@
 ---
 id: no-secret-suppression
-last_modified: '2025-05-08'
-version: '0.1.0'
+last_modified: "2025-05-08"
+version: "0.1.0"
 ---
+
 # Tenet: Confront Issues, Don't Suppress Warnings
 
 Never disable or bypass quality safeguards without clear, documented justification.

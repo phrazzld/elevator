@@ -1,10 +1,11 @@
 ---
 derived_from: automation
 id: automate-changelog
-last_modified: '2025-05-14'
-version: '0.1.0'
+last_modified: "2025-05-14"
+version: "0.1.0"
 enforced_by: code review & style guides
 ---
+
 # Binding: Automate Changelog Generation from Structured Commits
 
 All projects must automatically generate changelogs using structured commit messages.
@@ -119,7 +120,7 @@ Here are concrete strategies for implementing automated changelog generation:
    on:
      push:
        tags:
-         - 'v*'
+         - "v*"
 
    jobs:
      release:
@@ -132,7 +133,7 @@ Here are concrete strategies for implementing automated changelog generation:
          - name: Set up Node.js
            uses: actions/setup-node@v2
            with:
-             node-version: '16'
+             node-version: "16"
 
          - name: Install dependencies
            run: npm ci
@@ -200,7 +201,7 @@ Here are concrete strategies for implementing automated changelog generation:
          - name: Set up build environment
            uses: actions/setup-node@v2
            with:
-             node-version: '16'
+             node-version: "16"
 
          - name: Install dependencies
            run: |

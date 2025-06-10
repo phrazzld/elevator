@@ -1,10 +1,11 @@
 ---
 id: normalized-data-design
-last_modified: '2025-06-02'
-version: '0.1.0'
+last_modified: "2025-06-02"
+version: "0.1.0"
 derived_from: dry-dont-repeat-yourself
-enforced_by: 'Database design review, schema validation, data modeling tools'
+enforced_by: "Database design review, schema validation, data modeling tools"
 ---
+
 # Binding: Design Normalized Data Structures
 
 Structure data to eliminate redundancy and ensure that each piece of information is stored in exactly one place. This creates a single source of truth for each data element and prevents inconsistencies that arise from duplicated information.
@@ -32,12 +33,14 @@ Normalized data design must follow these structural principles:
 - **Maintain Referential Integrity**: Implement constraints and validation that ensure references between data entities remain valid and consistent.
 
 **Normalization Levels:**
+
 - **First Normal Form (1NF)**: Eliminate repeating groups and ensure atomic values
 - **Second Normal Form (2NF)**: Eliminate partial dependencies on composite keys
 - **Third Normal Form (3NF)**: Eliminate transitive dependencies between non-key attributes
 - **Higher Normal Forms**: Apply Boyce-Codd Normal Form (BCNF) and beyond for complex scenarios
 
 **Controlled Denormalization:**
+
 - Performance optimization based on measured bottlenecks
 - Read-heavy scenarios where query performance is critical
 - Derived values that are expensive to calculate
@@ -188,9 +191,9 @@ const blogPosts = [
       name: "John Doe",
       email: "john@example.com",
       bio: "John is a senior developer with 10 years experience...",
-      avatar: "https://example.com/avatars/john.jpg"
+      avatar: "https://example.com/avatars/john.jpg",
     },
-    publishedAt: "2023-01-15T10:00:00Z"
+    publishedAt: "2023-01-15T10:00:00Z",
   },
   {
     id: 2,
@@ -198,12 +201,12 @@ const blogPosts = [
     content: "In this post we'll explore advanced patterns...",
     author: {
       id: 101,
-      name: "John Doe",           // Duplicated
-      email: "john@example.com",  // Duplicated
+      name: "John Doe", // Duplicated
+      email: "john@example.com", // Duplicated
       bio: "John is a senior developer with 10 years experience...", // Duplicated
-      avatar: "https://example.com/avatars/john.jpg" // Duplicated
+      avatar: "https://example.com/avatars/john.jpg", // Duplicated
     },
-    publishedAt: "2023-01-20T14:30:00Z"
+    publishedAt: "2023-01-20T14:30:00Z",
   },
   {
     id: 3,
@@ -214,10 +217,10 @@ const blogPosts = [
       name: "Jane Smith",
       email: "jane@example.com",
       bio: "Jane specializes in React and frontend development...",
-      avatar: "https://example.com/avatars/jane.jpg"
+      avatar: "https://example.com/avatars/jane.jpg",
     },
-    publishedAt: "2023-01-25T09:15:00Z"
-  }
+    publishedAt: "2023-01-25T09:15:00Z",
+  },
 ];
 
 // Problems:
@@ -229,31 +232,37 @@ const blogPosts = [
 // ✅ GOOD: Normalized data structure with references
 // Single source of truth for authors
 const authors = new Map([
-  [101, {
-    id: 101,
-    name: "John Doe",
-    email: "john@example.com",
-    bio: "John is a senior developer with 10 years experience in JavaScript, Node.js, and React. He enjoys mentoring junior developers and contributing to open source projects.",
-    avatar: "https://example.com/avatars/john.jpg",
-    socialLinks: {
-      twitter: "@johndoe",
-      github: "johndoe",
-      linkedin: "john-doe-dev"
+  [
+    101,
+    {
+      id: 101,
+      name: "John Doe",
+      email: "john@example.com",
+      bio: "John is a senior developer with 10 years experience in JavaScript, Node.js, and React. He enjoys mentoring junior developers and contributing to open source projects.",
+      avatar: "https://example.com/avatars/john.jpg",
+      socialLinks: {
+        twitter: "@johndoe",
+        github: "johndoe",
+        linkedin: "john-doe-dev",
+      },
+      joinedAt: "2022-01-01T00:00:00Z",
     },
-    joinedAt: "2022-01-01T00:00:00Z"
-  }],
-  [102, {
-    id: 102,
-    name: "Jane Smith",
-    email: "jane@example.com",
-    bio: "Jane specializes in React and frontend development with a focus on user experience and performance optimization.",
-    avatar: "https://example.com/avatars/jane.jpg",
-    socialLinks: {
-      twitter: "@janesmith",
-      github: "janesmith"
+  ],
+  [
+    102,
+    {
+      id: 102,
+      name: "Jane Smith",
+      email: "jane@example.com",
+      bio: "Jane specializes in React and frontend development with a focus on user experience and performance optimization.",
+      avatar: "https://example.com/avatars/jane.jpg",
+      socialLinks: {
+        twitter: "@janesmith",
+        github: "janesmith",
+      },
+      joinedAt: "2022-03-15T00:00:00Z",
     },
-    joinedAt: "2022-03-15T00:00:00Z"
-  }]
+  ],
 ]);
 
 // Posts reference authors by ID only
@@ -265,7 +274,7 @@ const blogPosts = [
     authorId: 101, // Reference only
     publishedAt: "2023-01-15T10:00:00Z",
     tags: ["javascript", "tutorial", "beginner"],
-    readTime: 5
+    readTime: 5,
   },
   {
     id: 2,
@@ -274,7 +283,7 @@ const blogPosts = [
     authorId: 101, // Same author, no duplication
     publishedAt: "2023-01-20T14:30:00Z",
     tags: ["javascript", "advanced", "patterns"],
-    readTime: 12
+    readTime: 12,
   },
   {
     id: 3,
@@ -283,8 +292,8 @@ const blogPosts = [
     authorId: 102, // Different author
     publishedAt: "2023-01-25T09:15:00Z",
     tags: ["react", "best-practices", "frontend"],
-    readTime: 8
-  }
+    readTime: 8,
+  },
 ];
 
 // Utility functions to work with normalized data
@@ -296,13 +305,13 @@ class BlogDataManager {
 
   // Get post with author information
   getPostWithAuthor(postId) {
-    const post = this.posts.find(p => p.id === postId);
+    const post = this.posts.find((p) => p.id === postId);
     if (!post) return null;
 
     const author = this.authors.get(post.authorId);
     return {
       ...post,
-      author // Author info retrieved from single source
+      author, // Author info retrieved from single source
     };
   }
 
@@ -311,17 +320,17 @@ class BlogDataManager {
     const author = this.authors.get(authorId);
     if (!author) return [];
 
-    const authorPosts = this.posts.filter(p => p.authorId === authorId);
+    const authorPosts = this.posts.filter((p) => p.authorId === authorId);
     return {
       author,
-      posts: authorPosts
+      posts: authorPosts,
     };
   }
 
   // Update author information (affects all their posts)
   updateAuthor(authorId, updates) {
     const author = this.authors.get(authorId);
-    if (!author) throw new Error('Author not found');
+    if (!author) throw new Error("Author not found");
 
     // Single update affects all posts by this author
     this.authors.set(authorId, { ...author, ...updates });
@@ -329,14 +338,19 @@ class BlogDataManager {
 
   // Get post statistics by author
   getAuthorStats(authorId) {
-    const authorPosts = this.posts.filter(p => p.authorId === authorId);
+    const authorPosts = this.posts.filter((p) => p.authorId === authorId);
     return {
       totalPosts: authorPosts.length,
       totalReadTime: authorPosts.reduce((sum, post) => sum + post.readTime, 0),
-      avgReadTime: authorPosts.length ?
-        authorPosts.reduce((sum, post) => sum + post.readTime, 0) / authorPosts.length : 0,
-      mostRecentPost: authorPosts.reduce((latest, post) =>
-        !latest || post.publishedAt > latest.publishedAt ? post : latest, null)
+      avgReadTime: authorPosts.length
+        ? authorPosts.reduce((sum, post) => sum + post.readTime, 0) /
+          authorPosts.length
+        : 0,
+      mostRecentPost: authorPosts.reduce(
+        (latest, post) =>
+          !latest || post.publishedAt > latest.publishedAt ? post : latest,
+        null,
+      ),
     };
   }
 }
@@ -351,7 +365,7 @@ console.log(postWithAuthor.author.name); // "John Doe"
 // Update author once, affects all their posts
 blogManager.updateAuthor(101, {
   bio: "John is a senior developer and technical writer...",
-  email: "john.doe@newcompany.com"
+  email: "john.doe@newcompany.com",
 });
 
 // All posts by John now reflect the updated information
@@ -378,15 +392,15 @@ interface OrderWithDuplicatedData {
   };
   items: Array<{
     productId: string;
-    productName: string;      // Duplicated from products
+    productName: string; // Duplicated from products
     productDescription: string; // Duplicated from products
-    category: string;         // Duplicated from products
+    category: string; // Duplicated from products
     unitPrice: number;
     quantity: number;
     totalPrice: number;
   }>;
   shippingAddress: {
-    street: string;           // Potentially duplicated customer address
+    street: string; // Potentially duplicated customer address
     city: string;
     state: string;
     zipCode: string;
@@ -407,7 +421,7 @@ interface Customer {
 interface Address {
   id: string;
   customerId: string;
-  type: 'billing' | 'shipping' | 'primary';
+  type: "billing" | "shipping" | "primary";
   street: string;
   city: string;
   state: string;
@@ -435,18 +449,18 @@ interface Category {
 
 interface Order {
   id: string;
-  customerId: string;        // Reference to customer
-  billingAddressId: string;  // Reference to address
+  customerId: string; // Reference to customer
+  billingAddressId: string; // Reference to address
   shippingAddressId: string; // Reference to address
   orderDate: Date;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
   totalAmount: number;
 }
 
 interface OrderItem {
   id: string;
-  orderId: string;      // Reference to order
-  productId: string;    // Reference to product
+  orderId: string; // Reference to order
+  productId: string; // Reference to product
   quantity: number;
   unitPriceAtOrder: number; // Price at time of order (may differ from current price)
   lineTotal: number;
@@ -460,7 +474,7 @@ class NormalizedDataManager {
     private products: Map<string, Product>,
     private categories: Map<string, Category>,
     private orders: Map<string, Order>,
-    private orderItems: Map<string, OrderItem[]>
+    private orderItems: Map<string, OrderItem[]>,
   ) {}
 
   // Denormalize data for presentation when needed
@@ -473,14 +487,14 @@ class NormalizedDataManager {
     const shippingAddress = this.addresses.get(order.shippingAddressId);
     const items = this.orderItems.get(orderId) || [];
 
-    const itemsWithDetails = items.map(item => {
+    const itemsWithDetails = items.map((item) => {
       const product = this.products.get(item.productId);
       const category = product ? this.categories.get(product.categoryId) : null;
 
       return {
         ...item,
         product: product || null,
-        category: category || null
+        category: category || null,
       };
     });
 
@@ -489,19 +503,19 @@ class NormalizedDataManager {
       customer: customer || null,
       billingAddress: billingAddress || null,
       shippingAddress: shippingAddress || null,
-      items: itemsWithDetails
+      items: itemsWithDetails,
     };
   }
 
   // Update customer info once - affects all their orders
   updateCustomer(customerId: string, updates: Partial<Customer>): void {
     const customer = this.customers.get(customerId);
-    if (!customer) throw new Error('Customer not found');
+    if (!customer) throw new Error("Customer not found");
 
     this.customers.set(customerId, {
       ...customer,
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
     // All orders automatically reference updated customer info
   }
@@ -509,12 +523,12 @@ class NormalizedDataManager {
   // Update product info once - affects all order items
   updateProduct(productId: string, updates: Partial<Product>): void {
     const product = this.products.get(productId);
-    if (!product) throw new Error('Product not found');
+    if (!product) throw new Error("Product not found");
 
     this.products.set(productId, {
       ...product,
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
     // All order items automatically reference updated product info
   }
@@ -525,10 +539,12 @@ interface OrderDetails {
   customer: Customer | null;
   billingAddress: Address | null;
   shippingAddress: Address | null;
-  items: Array<OrderItem & {
-    product: Product | null;
-    category: Category | null;
-  }>;
+  items: Array<
+    OrderItem & {
+      product: Product | null;
+      category: Category | null;
+    }
+  >;
 }
 ```
 

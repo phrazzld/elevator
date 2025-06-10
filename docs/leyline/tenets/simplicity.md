@@ -1,8 +1,9 @@
 ---
 id: simplicity
-last_modified: '2025-06-02'
-version: '0.1.0'
+last_modified: "2025-06-02"
+version: "0.1.0"
 ---
+
 # Tenet: Simplicity Above All
 
 Prefer the simplest design that solves the problem completely. Complexity is the root

@@ -1,10 +1,11 @@
 ---
 id: layered-architecture
-last_modified: '2025-06-02'
-version: '0.1.0'
+last_modified: "2025-06-02"
+version: "0.1.0"
 derived_from: orthogonality
-enforced_by: 'Build system dependencies, architectural linting, code review'
+enforced_by: "Build system dependencies, architectural linting, code review"
 ---
+
 # Binding: Implement Layered Architecture with Dependency Flow Control
 
 Organize code into distinct horizontal layers with well-defined responsibilities, where higher-level layers depend on lower-level layers but never vice versa. This creates a clear hierarchy that separates concerns and enables flexible, testable, and maintainable systems.
@@ -30,6 +31,7 @@ Layered architecture must establish these structural principles:
 - **Infrastructure Layer**: Handles external concerns like databases, file systems, network communication, and third-party integrations. This layer implements interfaces defined by higher layers.
 
 **Dependency Rules:**
+
 - **Presentation** may depend on **Application** and **Domain**
 - **Application** may depend on **Domain** only
 - **Domain** depends on nothing else in the application
@@ -37,12 +39,14 @@ Layered architecture must establish these structural principles:
 - Dependencies never flow upward or sideways between peer layers
 
 **Layer Responsibilities:**
+
 - Each layer should have a single, well-defined responsibility
 - Layers should be cohesive within themselves and loosely coupled to other layers
 - Communication between layers should happen through explicit interfaces
 - Cross-cutting concerns (logging, security) should be handled through dependency injection or aspect-oriented patterns
 
 Exceptions to strict layering may be appropriate when:
+
 - Performance optimization requires direct access (with careful justification)
 - Framework constraints make pure layering impractical
 - Simple applications where layering overhead exceeds benefits
@@ -68,19 +72,19 @@ Exceptions to strict layering may be appropriate when:
 class UserRegistrationForm extends React.Component {
   async handleSubmit(formData) {
     // UI validation mixed with business rules
-    if (!formData.email.includes('@')) {
-      this.setState({ error: 'Invalid email' });
+    if (!formData.email.includes("@")) {
+      this.setState({ error: "Invalid email" });
       return;
     }
 
     // Direct database access from UI
-    const db = await MongoClient.connect('mongodb://localhost:27017');
-    const users = db.collection('users');
+    const db = await MongoClient.connect("mongodb://localhost:27017");
+    const users = db.collection("users");
 
     // Business logic in UI layer
     const existingUser = await users.findOne({ email: formData.email });
     if (existingUser) {
-      this.setState({ error: 'User already exists' });
+      this.setState({ error: "User already exists" });
       return;
     }
 
@@ -91,13 +95,13 @@ class UserRegistrationForm extends React.Component {
     const user = await users.insertOne({
       email: formData.email,
       password: hashedPassword,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     await sendgrid.send({
       to: formData.email,
-      subject: 'Welcome!',
-      html: '<h1>Welcome to our service!</h1>'
+      subject: "Welcome!",
+      html: "<h1>Welcome to our service!</h1>",
     });
 
     this.setState({ success: true });
@@ -111,7 +115,7 @@ export class User {
     public readonly id: UserId,
     public readonly email: Email,
     public readonly hashedPassword: string,
-    public readonly registeredAt: Date
+    public readonly registeredAt: Date,
   ) {}
 
   static create(email: string, plainPassword: string): User {
@@ -119,7 +123,7 @@ export class User {
       UserId.generate(),
       Email.from(email), // Value object with validation
       PasswordHash.from(plainPassword),
-      new Date()
+      new Date(),
     );
   }
 }
@@ -154,7 +158,7 @@ export class UserRegistrationService {
 export class RegisterUserCommand {
   constructor(
     public readonly email: string,
-    public readonly password: string
+    public readonly password: string,
   ) {}
 }
 
@@ -162,7 +166,7 @@ export class RegisterUserUseCase {
   constructor(
     private userService: UserRegistrationService,
     private eventPublisher: EventPublisher,
-    private transactionManager: TransactionManager
+    private transactionManager: TransactionManager,
   ) {}
 
   async execute(command: RegisterUserCommand): Promise<RegisterUserResult> {
@@ -170,7 +174,7 @@ export class RegisterUserUseCase {
       try {
         const user = await this.userService.registerUser(
           command.email,
-          command.password
+          command.password,
         );
 
         // Publish application event
@@ -179,7 +183,7 @@ export class RegisterUserUseCase {
         return RegisterUserResult.success(user);
       } catch (error) {
         if (error instanceof UserAlreadyExistsError) {
-          return RegisterUserResult.failure('Email already registered');
+          return RegisterUserResult.failure("Email already registered");
         }
         throw error;
       }
@@ -193,15 +197,15 @@ export class PostgresUserRepository implements UserRepository {
 
   async save(user: User): Promise<void> {
     await this.database.query(
-      'INSERT INTO users (id, email, password_hash, registered_at) VALUES ($1, $2, $3, $4)',
-      [user.id.value, user.email.value, user.hashedPassword, user.registeredAt]
+      "INSERT INTO users (id, email, password_hash, registered_at) VALUES ($1, $2, $3, $4)",
+      [user.id.value, user.email.value, user.hashedPassword, user.registeredAt],
     );
   }
 
   async findByEmail(email: Email): Promise<User | null> {
     const rows = await this.database.query(
-      'SELECT id, email, password_hash, registered_at FROM users WHERE email = $1',
-      [email.value]
+      "SELECT id, email, password_hash, registered_at FROM users WHERE email = $1",
+      [email.value],
     );
 
     if (rows.length === 0) return null;
@@ -211,7 +215,7 @@ export class PostgresUserRepository implements UserRepository {
       new UserId(row.id),
       new Email(row.email),
       row.password_hash,
-      row.registered_at
+      row.registered_at,
     );
   }
 }
@@ -222,9 +226,9 @@ export class EmailNotificationHandler {
   async handle(event: UserRegisteredEvent): Promise<void> {
     await this.emailService.send({
       to: event.user.email.value,
-      subject: 'Welcome!',
-      template: 'welcome',
-      data: { userName: event.user.email.value }
+      subject: "Welcome!",
+      template: "welcome",
+      data: { userName: event.user.email.value },
     });
   }
 }
@@ -239,7 +243,7 @@ export class UserRegistrationController {
 
       // Input validation
       if (!email || !password) {
-        return HttpResponse.badRequest('Email and password required');
+        return HttpResponse.badRequest("Email and password required");
       }
 
       const command = new RegisterUserCommand(email, password);
@@ -248,13 +252,13 @@ export class UserRegistrationController {
       if (result.isSuccess()) {
         return HttpResponse.created({
           userId: result.user.id.value,
-          message: 'User registered successfully'
+          message: "User registered successfully",
         });
       } else {
         return HttpResponse.badRequest(result.errorMessage);
       }
     } catch (error) {
-      return HttpResponse.internalServerError('Registration failed');
+      return HttpResponse.internalServerError("Registration failed");
     }
   }
 }
@@ -275,8 +279,8 @@ export class ApplicationCompositionRoot {
 
     // Event handlers
     eventBus.subscribe(
-      'UserRegistered',
-      new EmailNotificationHandler(emailService)
+      "UserRegistered",
+      new EmailNotificationHandler(emailService),
     );
 
     // Application services
@@ -284,7 +288,7 @@ export class ApplicationCompositionRoot {
     const registerUserUseCase = new RegisterUserUseCase(
       userService,
       eventBus,
-      transactionManager
+      transactionManager,
     );
 
     // Controllers

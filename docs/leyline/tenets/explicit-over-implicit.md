@@ -1,8 +1,9 @@
 ---
 id: explicit-over-implicit
-last_modified: '2025-06-02'
-version: '0.1.0'
+last_modified: "2025-06-02"
+version: "0.1.0"
 ---
+
 # Tenet: Explicit is Better than Implicit
 
 Make code behavior obvious by clearly expressing dependencies, data flow, control flow,

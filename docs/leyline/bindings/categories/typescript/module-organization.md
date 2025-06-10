@@ -2,9 +2,10 @@
 derived_from: modularity
 enforced_by: code review & project linting rules
 id: module-organization
-last_modified: '2025-05-14'
-version: '0.1.0'
+last_modified: "2025-05-14"
+version: "0.1.0"
 ---
+
 # Binding: Organize TypeScript Code Into Feature-Focused Modules
 
 Structure TypeScript code into cohesive modules organized by features or domains rather
@@ -151,16 +152,16 @@ This binding establishes clear requirements for organizing TypeScript code into 
    // features/user/index.ts - Controls the public API of the user module
 
    // Re-export public types
-   export type { User, UserRole, UserPreferences } from './types';
+   export type { User, UserRole, UserPreferences } from "./types";
 
    // Re-export the service as the primary API
-   export { UserService } from './user.service';
+   export { UserService } from "./user.service";
 
    // Export the repository interface but not the implementation
-   export type { UserRepository } from './user.repository';
+   export type { UserRepository } from "./user.repository";
 
    // Re-export factory function to create the service
-   export { createUserService } from './user.factory';
+   export { createUserService } from "./user.factory";
 
    // Note: Internal implementations like user.repository.impl.ts
    // are NOT exported, keeping them as implementation details
@@ -185,9 +186,9 @@ This binding establishes clear requirements for organizing TypeScript code into 
          "@features/*": ["features/*"],
          "@shared/*": ["shared/*"],
          "@utils/*": ["shared/utils/*"],
-         "@types/*": ["shared/types/*"]
-       }
-     }
+         "@types/*": ["shared/types/*"],
+       },
+     },
    }
    ```
 
@@ -195,12 +196,12 @@ This binding establishes clear requirements for organizing TypeScript code into 
 
    ```typescript
    // Instead of:
-   import { User } from '../../../features/user/types';
-   import { formatDate } from '../../../shared/utils/date/format';
+   import { User } from "../../../features/user/types";
+   import { formatDate } from "../../../shared/utils/date/format";
 
    // Use:
-   import { User } from '@features/user';
-   import { formatDate } from '@utils/date/format';
+   import { User } from "@features/user";
+   import { formatDate } from "@utils/date/format";
    ```
 
    This approach:
@@ -215,8 +216,8 @@ This binding establishes clear requirements for organizing TypeScript code into 
 
    ```typescript
    // features/order/types.ts
-   import type { User } from '@features/user';
-   import type { Product } from '@features/product';
+   import type { User } from "@features/user";
+   import type { Product } from "@features/product";
 
    export interface Order {
      id: string;
@@ -230,17 +231,21 @@ This binding establishes clear requirements for organizing TypeScript code into 
    }
 
    export enum OrderStatus {
-     Pending = 'PENDING',
-     Processing = 'PROCESSING',
-     Shipped = 'SHIPPED',
-     Delivered = 'DELIVERED',
-     Cancelled = 'CANCELLED'
+     Pending = "PENDING",
+     Processing = "PROCESSING",
+     Shipped = "SHIPPED",
+     Delivered = "DELIVERED",
+     Cancelled = "CANCELLED",
    }
 
    // Define interface for user operations needed by orders
    export interface UserService {
      canPlaceOrder(userId: string): Promise<boolean>;
-     notifyOrderStatus(userId: string, orderId: string, status: OrderStatus): Promise<void>;
+     notifyOrderStatus(
+       userId: string,
+       orderId: string,
+       status: OrderStatus,
+     ): Promise<void>;
    }
 
    // Define interface for product operations needed by orders
@@ -252,31 +257,36 @@ This binding establishes clear requirements for organizing TypeScript code into 
 
    ```typescript
    // features/order/order.service.ts
-   import { OrderRepository } from './order.repository';
-   import { Order, OrderStatus, UserService, ProductService } from './types';
+   import { OrderRepository } from "./order.repository";
+   import { Order, OrderStatus, UserService, ProductService } from "./types";
 
    export class OrderService {
      constructor(
        private orderRepo: OrderRepository,
        private userService: UserService,
-       private productService: ProductService
+       private productService: ProductService,
      ) {}
 
-     async createOrder(userId: string, productItems: Array<{productId: string, quantity: number}>): Promise<Order> {
+     async createOrder(
+       userId: string,
+       productItems: Array<{ productId: string; quantity: number }>,
+     ): Promise<Order> {
        // Check if user can place order
        const canPlace = await this.userService.canPlaceOrder(userId);
        if (!canPlace) {
-         throw new Error('User cannot place order');
+         throw new Error("User cannot place order");
        }
 
        // Check all products availability
        for (const item of productItems) {
          const isAvailable = await this.productService.checkAvailability(
            item.productId,
-           item.quantity
+           item.quantity,
          );
          if (!isAvailable) {
-           throw new Error(`Product ${item.productId} not available in requested quantity`);
+           throw new Error(
+             `Product ${item.productId} not available in requested quantity`,
+           );
          }
        }
 
@@ -301,46 +311,49 @@ This binding establishes clear requirements for organizing TypeScript code into 
      // other ESLint configuration
      plugins: [
        // other plugins
-       'import',
-       'boundaries',
+       "import",
+       "boundaries",
      ],
      rules: {
        // Prevent circular dependencies
-       'import/no-cycle': 'error',
+       "import/no-cycle": "error",
 
        // Ensure correct import order
-       'import/order': ['error', {
-         'groups': [
-           'builtin',
-           'external',
-           'internal',
-           ['parent', 'sibling'],
-           'index'
-         ],
-         'newlines-between': 'always'
-       }],
+       "import/order": [
+         "error",
+         {
+           groups: [
+             "builtin",
+             "external",
+             "internal",
+             ["parent", "sibling"],
+             "index",
+           ],
+           "newlines-between": "always",
+         },
+       ],
 
        // Set up module boundary rules
-       'boundaries/element-types': [
-         'error',
+       "boundaries/element-types": [
+         "error",
          {
-           default: 'allow',
-           message: 'Dependency violates module boundaries',
+           default: "allow",
+           message: "Dependency violates module boundaries",
            rules: [
              {
-               from: 'features',
-               disallow: ['app', 'main'],
-               message: 'Features cannot import from app entry points'
+               from: "features",
+               disallow: ["app", "main"],
+               message: "Features cannot import from app entry points",
              },
              {
-               from: 'shared',
-               disallow: ['features'],
-               message: 'Shared utilities cannot import from feature modules'
-             }
-           ]
-         }
-       ]
-     }
+               from: "shared",
+               disallow: ["features"],
+               message: "Shared utilities cannot import from feature modules",
+             },
+           ],
+         },
+       ],
+     },
    };
    ```
 
@@ -403,38 +416,66 @@ src/
 ```typescript
 // ❌ BAD: Giant "utils" module with mixed responsibilities
 // shared/utils.ts
-export function formatDate(date: Date): string { /* ... */ }
-export function validateEmail(email: string): boolean { /* ... */ }
-export function calculateTax(amount: number, rate: number): number { /* ... */ }
-export function capitalizeString(str: string): string { /* ... */ }
-export function fetchData(url: string): Promise<any> { /* ... */ }
-export function generateId(): string { /* ... */ }
-export function parseCSV(data: string): Array<any> { /* ... */ }
+export function formatDate(date: Date): string {
+  /* ... */
+}
+export function validateEmail(email: string): boolean {
+  /* ... */
+}
+export function calculateTax(amount: number, rate: number): number {
+  /* ... */
+}
+export function capitalizeString(str: string): string {
+  /* ... */
+}
+export function fetchData(url: string): Promise<any> {
+  /* ... */
+}
+export function generateId(): string {
+  /* ... */
+}
+export function parseCSV(data: string): Array<any> {
+  /* ... */
+}
 // ...50 more unrelated functions
 ```
 
 ```typescript
 // ✅ GOOD: Purpose-specific utility modules
 // shared/date/format.ts
-export function formatDate(date: Date, format?: string): string { /* ... */ }
-export function parseDate(dateString: string): Date { /* ... */ }
+export function formatDate(date: Date, format?: string): string {
+  /* ... */
+}
+export function parseDate(dateString: string): Date {
+  /* ... */
+}
 
 // shared/validation/email.ts
-export function validateEmail(email: string): boolean { /* ... */ }
-export function normalizeEmail(email: string): string { /* ... */ }
+export function validateEmail(email: string): boolean {
+  /* ... */
+}
+export function normalizeEmail(email: string): string {
+  /* ... */
+}
 
 // shared/formatting/string.ts
-export function capitalize(str: string): string { /* ... */ }
-export function truncate(str: string, maxLength: number): string { /* ... */ }
+export function capitalize(str: string): string {
+  /* ... */
+}
+export function truncate(str: string, maxLength: number): string {
+  /* ... */
+}
 
 // features/tax/tax.service.ts (domain-specific logic belongs with its feature)
-export function calculateTax(amount: number, rate: number): number { /* ... */ }
+export function calculateTax(amount: number, rate: number): number {
+  /* ... */
+}
 ```
 
 ```typescript
 // ❌ BAD: Circular dependencies between modules
 // features/user/user.service.ts
-import { OrderService } from '@features/order/order.service';
+import { OrderService } from "@features/order/order.service";
 
 export class UserService {
   constructor(private orderService: OrderService) {}
@@ -445,7 +486,7 @@ export class UserService {
 }
 
 // features/order/order.service.ts
-import { UserService } from '@features/user/user.service';
+import { UserService } from "@features/user/user.service";
 
 export class OrderService {
   constructor(private userService: UserService) {}
@@ -454,7 +495,7 @@ export class OrderService {
     // First verify the user exists
     const user = await this.userService.getUserById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
     // Get orders
     // ...
@@ -473,11 +514,13 @@ export interface User {
 
 // Interfaces for order operations needed by user module
 export interface OrderOperations {
-  getOrdersByUserId(userId: string): Promise<Array<{id: string, total: number}>>;
+  getOrdersByUserId(
+    userId: string,
+  ): Promise<Array<{ id: string; total: number }>>;
 }
 
 // features/user/user.service.ts
-import { User, OrderOperations } from './types';
+import { User, OrderOperations } from "./types";
 
 export class UserService {
   constructor(private orderOps: OrderOperations) {}
@@ -492,8 +535,8 @@ export class UserService {
 }
 
 // features/order/order.service.ts
-import { User } from '@features/user/types';
-import { OrderOperations } from '@features/user/types';
+import { User } from "@features/user/types";
+import { OrderOperations } from "@features/user/types";
 
 export class OrderService implements OrderOperations {
   async getOrdersByUserId(userId: string) {
@@ -502,8 +545,8 @@ export class OrderService implements OrderOperations {
 }
 
 // app/di-container.ts (wiring them up)
-import { UserService } from '@features/user/user.service';
-import { OrderService } from '@features/order/order.service';
+import { UserService } from "@features/user/user.service";
+import { OrderService } from "@features/order/order.service";
 
 // Order service is created first
 const orderService = new OrderService();

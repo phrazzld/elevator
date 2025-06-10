@@ -2,9 +2,10 @@
 derived_from: modularity
 enforced_by: Code review, Storybook organization
 id: component-architecture
-last_modified: '2025-05-14'
-version: '0.1.0'
+last_modified: "2025-05-14"
+version: "0.1.0"
 ---
+
 # Binding: Component Architecture
 
 Structure UI components using Atomic Design principles, organizing elements into a
@@ -158,7 +159,9 @@ function UserCard({ user, onEdit, onDelete, expanded, onToggleExpand }) {
         )}
       </div>
       <div className="actions">
-        <button onClick={onToggleExpand}>{expanded ? 'Show Less' : 'Show More'}</button>
+        <button onClick={onToggleExpand}>
+          {expanded ? "Show Less" : "Show More"}
+        </button>
         <button onClick={onEdit}>Edit</button>
         <button onClick={onDelete}>Delete</button>
       </div>
@@ -168,12 +171,12 @@ function UserCard({ user, onEdit, onDelete, expanded, onToggleExpand }) {
 
 // ✅ GOOD: Atomic design with clear component hierarchy and composition
 // Atom
-function Avatar({ src, alt, size = 'md' }) {
+function Avatar({ src, alt, size = "md" }) {
   return <img src={src} alt={alt} className={`avatar avatar-${size}`} />;
 }
 
 // Atom
-function Button({ children, variant = 'primary', onClick }) {
+function Button({ children, variant = "primary", onClick }) {
   return (
     <button className={`btn btn-${variant}`} onClick={onClick}>
       {children}
@@ -195,9 +198,15 @@ function UserInfo({ name, email }) {
 function UserActions({ onEdit, onDelete, expanded, onToggleExpand }) {
   return (
     <div className="actions">
-      <Button onClick={onToggleExpand}>{expanded ? 'Show Less' : 'Show More'}</Button>
-      <Button variant="secondary" onClick={onEdit}>Edit</Button>
-      <Button variant="danger" onClick={onDelete}>Delete</Button>
+      <Button onClick={onToggleExpand}>
+        {expanded ? "Show Less" : "Show More"}
+      </Button>
+      <Button variant="secondary" onClick={onEdit}>
+        Edit
+      </Button>
+      <Button variant="danger" onClick={onDelete}>
+        Delete
+      </Button>
     </div>
   );
 }
@@ -246,13 +255,13 @@ function Button({
   className,
   ...props
 }) {
-  let buttonClass = 'btn';
+  let buttonClass = "btn";
   buttonClass += ` btn-${size}`;
   buttonClass += ` btn-${color}`;
   buttonClass += ` btn-${variant}`;
-  if (rounded) buttonClass += ' btn-rounded';
-  if (outlined) buttonClass += ' btn-outlined';
-  if (fullWidth) buttonClass += ' btn-fullWidth';
+  if (rounded) buttonClass += " btn-rounded";
+  if (outlined) buttonClass += " btn-outlined";
+  if (fullWidth) buttonClass += " btn-fullWidth";
   if (className) buttonClass += ` ${className}`;
 
   return (
@@ -264,9 +273,9 @@ function Button({
       {...props}
     >
       {loading && <Spinner />}
-      {icon && iconPosition === 'left' && <Icon name={icon} />}
+      {icon && iconPosition === "left" && <Icon name={icon} />}
       {children}
-      {icon && iconPosition === 'right' && <Icon name={icon} />}
+      {icon && iconPosition === "right" && <Icon name={icon} />}
     </button>
   );
 }
@@ -276,7 +285,7 @@ function Button({
 function Button({ children, disabled, onClick, className, ...props }) {
   return (
     <button
-      className={`btn ${className || ''}`}
+      className={`btn ${className || ""}`}
       disabled={disabled}
       onClick={onClick}
       {...props}
@@ -295,12 +304,12 @@ function SecondaryButton(props) {
   return <Button className="btn-secondary" {...props} />;
 }
 
-function IconButton({ icon, children, iconPosition = 'left', ...props }) {
+function IconButton({ icon, children, iconPosition = "left", ...props }) {
   return (
     <Button {...props}>
-      {iconPosition === 'left' && <Icon name={icon} />}
+      {iconPosition === "left" && <Icon name={icon} />}
       {children}
-      {iconPosition === 'right' && <Icon name={icon} />}
+      {iconPosition === "right" && <Icon name={icon} />}
     </Button>
   );
 }
@@ -317,18 +326,19 @@ function LoadingButton({ loading, children, ...props }) {
 ```jsx
 // ❌ BAD: Form with tight coupling between presentation and logic
 function ContactForm() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function validate() {
     const newErrors = {};
-    if (!name) newErrors.name = 'Name is required';
-    if (!email) newErrors.email = 'Email is required';
-    else if (!/^\S+@\S+\.\S+$/.test(email)) newErrors.email = 'Email is invalid';
-    if (!message) newErrors.message = 'Message is required';
+    if (!name) newErrors.name = "Name is required";
+    if (!email) newErrors.email = "Email is required";
+    else if (!/^\S+@\S+\.\S+$/.test(email))
+      newErrors.email = "Email is invalid";
+    if (!message) newErrors.message = "Message is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -340,12 +350,12 @@ function ContactForm() {
     setIsSubmitting(true);
     try {
       await submitContactForm({ name, email, message });
-      alert('Form submitted successfully!');
-      setName('');
-      setEmail('');
-      setMessage('');
+      alert("Form submitted successfully!");
+      setName("");
+      setEmail("");
+      setMessage("");
     } catch (error) {
-      alert('Error submitting form: ' + error.message);
+      alert("Error submitting form: " + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -359,7 +369,7 @@ function ContactForm() {
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className={errors.name ? 'error' : ''}
+          className={errors.name ? "error" : ""}
         />
         {errors.name && <span className="error-message">{errors.name}</span>}
       </div>
@@ -371,7 +381,7 @@ function ContactForm() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className={errors.email ? 'error' : ''}
+          className={errors.email ? "error" : ""}
         />
         {errors.email && <span className="error-message">{errors.email}</span>}
       </div>
@@ -382,13 +392,15 @@ function ContactForm() {
           id="message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className={errors.message ? 'error' : ''}
+          className={errors.message ? "error" : ""}
         />
-        {errors.message && <span className="error-message">{errors.message}</span>}
+        {errors.message && (
+          <span className="error-message">{errors.message}</span>
+        )}
       </div>
 
       <button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? 'Submitting...' : 'Submit'}
+        {isSubmitting ? "Submitting..." : "Submit"}
       </button>
     </form>
   );
@@ -400,11 +412,7 @@ function Input({ id, label, error, ...props }) {
   return (
     <div className="form-field">
       <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        className={error ? 'input-error' : 'input'}
-        {...props}
-      />
+      <input id={id} className={error ? "input-error" : "input"} {...props} />
       {error && <span className="error-text">{error}</span>}
     </div>
   );
@@ -417,7 +425,7 @@ function TextArea({ id, label, error, ...props }) {
       <label htmlFor={id}>{label}</label>
       <textarea
         id={id}
-        className={error ? 'textarea-error' : 'textarea'}
+        className={error ? "textarea-error" : "textarea"}
         {...props}
       />
       {error && <span className="error-text">{error}</span>}
@@ -427,15 +435,20 @@ function TextArea({ id, label, error, ...props }) {
 
 // Organism (with React Hook Form for logic)
 function ContactForm() {
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm();
 
   const onSubmit = async (data) => {
     try {
       await submitContactForm(data);
-      toast.success('Form submitted successfully!');
+      toast.success("Form submitted successfully!");
       reset();
     } catch (error) {
-      toast.error('Error submitting form: ' + error.message);
+      toast.error("Error submitting form: " + error.message);
     }
   };
 
@@ -445,7 +458,7 @@ function ContactForm() {
         id="name"
         label="Name"
         error={errors.name?.message}
-        {...register('name', { required: 'Name is required' })}
+        {...register("name", { required: "Name is required" })}
       />
 
       <Input
@@ -453,12 +466,12 @@ function ContactForm() {
         type="email"
         label="Email"
         error={errors.email?.message}
-        {...register('email', {
-          required: 'Email is required',
+        {...register("email", {
+          required: "Email is required",
           pattern: {
             value: /^\S+@\S+\.\S+$/,
-            message: 'Email is invalid'
-          }
+            message: "Email is invalid",
+          },
         })}
       />
 
@@ -467,11 +480,11 @@ function ContactForm() {
         label="Message"
         error={errors.message?.message}
         rows={5}
-        {...register('message', { required: 'Message is required' })}
+        {...register("message", { required: "Message is required" })}
       />
 
       <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? 'Submitting...' : 'Submit'}
+        {isSubmitting ? "Submitting..." : "Submit"}
       </Button>
     </form>
   );
