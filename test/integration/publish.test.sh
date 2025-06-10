@@ -71,7 +71,8 @@ main() {
     
     # Create package and capture the filename
     npm pack > /dev/null
-    PACKAGE_FILE="${PACKAGE_NAME}-1.0.0.tgz"
+    PACKAGE_VERSION=$(node -p "require('./package.json').version")
+    PACKAGE_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}.tgz"
     
     if [[ ! -f "$PACKAGE_FILE" ]]; then
         error "Failed to create package file: $PACKAGE_FILE"
