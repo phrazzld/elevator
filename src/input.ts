@@ -12,14 +12,6 @@ import { Readable } from "node:stream";
 import { setTimeout, clearTimeout } from "node:timers";
 
 /**
- * Options for input handling, matching CLI options
- */
-export interface InputOptions {
-  /** Enable raw output mode (no formatting) */
-  raw?: boolean;
-}
-
-/**
  * Get input from command-line arguments or stdin
  *
  * @param args - Command-line arguments
@@ -117,6 +109,17 @@ async function readInteractiveInput(): Promise<string> {
   console.log();
 
   return new Promise((resolve, reject) => {
+    let isResolved = false;
+
+    // Ensure cleanup happens exactly once
+    const cleanup = () => {
+      try {
+        rl.close();
+      } catch {
+        // Interface may already be closed, ignore errors
+      }
+    };
+
     // Collect lines
     rl.on("line", (line) => {
       lines.push(line);
@@ -124,6 +127,10 @@ async function readInteractiveInput(): Promise<string> {
 
     // Handle Ctrl+D (EOF)
     rl.on("close", () => {
+      // Avoid double resolution if error occurred first
+      if (isResolved) return;
+      isResolved = true;
+
       const input = lines.join("\n").trim();
 
       if (!input) {
@@ -136,9 +143,44 @@ async function readInteractiveInput(): Promise<string> {
 
     // Handle Ctrl+C (SIGINT)
     rl.on("SIGINT", () => {
+      if (isResolved) return;
+      isResolved = true;
+
       console.log("\nOperation cancelled");
-      rl.close();
+      cleanup();
       reject(new Error("Operation cancelled by user"));
     });
+
+    // Handle stream errors that might prevent proper closure
+    rl.on("error", (error: Error) => {
+      if (isResolved) return;
+      isResolved = true;
+
+      cleanup();
+      reject(new Error(`Readline interface error: ${error.message}`));
+    });
+
+    // Handle errors from underlying input stream (stdin)
+    // Access the input stream through the readline interface options
+    if (process.stdin && typeof process.stdin.on === "function") {
+      process.stdin.on("error", (error: Error) => {
+        if (isResolved) return;
+        isResolved = true;
+
+        cleanup();
+        reject(new Error(`Input stream error: ${error.message}`));
+      });
+    }
+
+    // Handle errors from underlying output stream (stdout)
+    if (process.stdout && typeof process.stdout.on === "function") {
+      process.stdout.on("error", (error: Error) => {
+        if (isResolved) return;
+        isResolved = true;
+
+        cleanup();
+        reject(new Error(`Output stream error: ${error.message}`));
+      });
+    }
   });
 }

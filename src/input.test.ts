@@ -143,6 +143,232 @@ describe("getInput", () => {
 
       consoleLogSpy.mockRestore();
     });
+
+    it("should handle SIGINT (Ctrl+C) cancellation properly", async () => {
+      const args: string[] = [];
+
+      // Ensure TTY mode for interactive input
+      Object.defineProperty(process, "stdin", {
+        value: { isTTY: true },
+        configurable: true,
+      });
+
+      const mockRl = {
+        on: vi.fn(),
+        close: vi.fn(),
+      };
+      vi.mocked(readline.createInterface).mockReturnValue(mockRl as never);
+
+      // Mock console.log to avoid output in tests
+      const consoleLogSpy = vi
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
+
+      // Setup readline event handlers to simulate SIGINT
+      mockRl.on.mockImplementation((event: string, callback: () => void) => {
+        if (event === "SIGINT") {
+          // Immediately trigger SIGINT to simulate Ctrl+C
+          setTimeout(() => callback(), 0);
+        }
+        return mockRl;
+      });
+
+      // Test that getInput rejects with correct error message
+      await expect(getInput(args)).rejects.toThrow(
+        "Operation cancelled by user",
+      );
+
+      // Verify that readline interface was properly closed
+      expect(mockRl.close).toHaveBeenCalled();
+
+      consoleLogSpy.mockRestore();
+    });
+
+    it("should handle readline interface errors properly", async () => {
+      const args: string[] = [];
+
+      // Ensure TTY mode for interactive input
+      Object.defineProperty(process, "stdin", {
+        value: { isTTY: true, on: vi.fn() },
+        configurable: true,
+      });
+
+      Object.defineProperty(process, "stdout", {
+        value: { on: vi.fn() },
+        configurable: true,
+      });
+
+      const mockRl = {
+        on: vi.fn(),
+        close: vi.fn(),
+      };
+      vi.mocked(readline.createInterface).mockReturnValue(mockRl as never);
+
+      // Mock console.log to avoid output in tests
+      const consoleLogSpy = vi
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
+
+      // Setup readline event handlers to simulate error
+      mockRl.on.mockImplementation(
+        (event: string, callback: (error?: Error) => void) => {
+          if (event === "error") {
+            // Immediately trigger error
+            setTimeout(() => callback(new Error("Readline error")), 0);
+          }
+          return mockRl;
+        },
+      );
+
+      // Test that getInput rejects with correct error message
+      await expect(getInput(args)).rejects.toThrow(
+        "Readline interface error: Readline error",
+      );
+
+      // Verify that readline interface was properly closed
+      expect(mockRl.close).toHaveBeenCalled();
+
+      consoleLogSpy.mockRestore();
+    });
+
+    it("should handle stdin stream errors properly", async () => {
+      const args: string[] = [];
+
+      // Ensure TTY mode for interactive input
+      const mockStdin = {
+        isTTY: true,
+        on: vi.fn(),
+      };
+
+      Object.defineProperty(process, "stdin", {
+        value: mockStdin,
+        configurable: true,
+      });
+
+      Object.defineProperty(process, "stdout", {
+        value: { on: vi.fn() },
+        configurable: true,
+      });
+
+      const mockRl = {
+        on: vi.fn(),
+        close: vi.fn(),
+      };
+      vi.mocked(readline.createInterface).mockReturnValue(mockRl as never);
+
+      // Mock console.log to avoid output in tests
+      const consoleLogSpy = vi
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
+
+      // Setup stdin error handler
+      mockStdin.on.mockImplementation(
+        (event: string, callback: (error?: Error) => void) => {
+          if (event === "error") {
+            // Immediately trigger error
+            setTimeout(() => callback(new Error("Stdin error")), 0);
+          }
+          return mockStdin;
+        },
+      );
+
+      // Test that getInput rejects with correct error message
+      await expect(getInput(args)).rejects.toThrow(
+        "Input stream error: Stdin error",
+      );
+
+      // Verify that readline interface was properly closed
+      expect(mockRl.close).toHaveBeenCalled();
+
+      consoleLogSpy.mockRestore();
+    });
+
+    it("should handle successful multiline input", async () => {
+      const args: string[] = [];
+
+      // Ensure TTY mode for interactive input
+      Object.defineProperty(process, "stdin", {
+        value: { isTTY: true, on: vi.fn() },
+        configurable: true,
+      });
+
+      Object.defineProperty(process, "stdout", {
+        value: { on: vi.fn() },
+        configurable: true,
+      });
+
+      const mockRl = {
+        on: vi.fn(),
+        close: vi.fn(),
+      };
+      vi.mocked(readline.createInterface).mockReturnValue(mockRl as never);
+
+      // Mock console.log to avoid output in tests
+      const consoleLogSpy = vi
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
+
+      // Setup readline event handlers to simulate successful input
+      const testLines = ["first line", "second line", "third line"];
+      mockRl.on.mockImplementation(
+        (event: string, callback: (line?: string) => void) => {
+          if (event === "line") {
+            // Simulate multiple lines being entered
+            setTimeout(() => {
+              testLines.forEach((line) => callback(line));
+            }, 0);
+          } else if (event === "close") {
+            // Simulate Ctrl+D after lines are entered
+            setTimeout(() => callback(), 10);
+          }
+          return mockRl;
+        },
+      );
+
+      const result = await getInput(args);
+      expect(result).toBe("first line\nsecond line\nthird line");
+
+      consoleLogSpy.mockRestore();
+    });
+
+    it("should handle empty interactive input", async () => {
+      const args: string[] = [];
+
+      // Ensure TTY mode for interactive input
+      Object.defineProperty(process, "stdin", {
+        value: { isTTY: true, on: vi.fn() },
+        configurable: true,
+      });
+
+      Object.defineProperty(process, "stdout", {
+        value: { on: vi.fn() },
+        configurable: true,
+      });
+
+      const mockRl = {
+        on: vi.fn(),
+        close: vi.fn(),
+      };
+      vi.mocked(readline.createInterface).mockReturnValue(mockRl as never);
+
+      // Mock console.log to avoid output in tests
+      const consoleLogSpy = vi
+        .spyOn(console, "log")
+        .mockImplementation(() => {});
+
+      // Setup readline event handlers to simulate empty input
+      mockRl.on.mockImplementation((event: string, callback: () => void) => {
+        if (event === "close") {
+          // Simulate Ctrl+D without any lines entered
+          setTimeout(() => callback(), 0);
+        }
+        return mockRl;
+      });
+
+      await expect(getInput(args)).rejects.toThrow("No input provided");
+
+      consoleLogSpy.mockRestore();
+    });
   });
 
   describe("input validation", () => {
