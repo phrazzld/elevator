@@ -44,11 +44,13 @@ export async function getInput(args: string[]): Promise<string> {
  */
 async function readMultilineInput(): Promise<string> {
   // Check if input is piped (non-TTY)
+  // When stdin.isTTY is false, input is coming from pipes, files, or redirects
   if (!process.stdin.isTTY) {
     return readStreamToEnd(process.stdin);
   }
 
-  // Interactive multiline input
+  // Interactive multiline input with readline interface
+  // User can type multiple lines and press Ctrl+D to submit
   return readInteractiveInput();
 }
 

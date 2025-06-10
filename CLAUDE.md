@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**elevator** is a lightweight CLI that continuously accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash. Built with Node.js 18+ and TypeScript.
+**elevator** is a lightweight CLI that transforms natural-language prompts into more sophisticated, technically precise articulations using Google Gemini 2.5 Flash. Supports multiple input modes including single-line arguments, multiline interactive input, and piped input. Built with Node.js 18+ and TypeScript.
 
 ## Development Commands
 
@@ -50,9 +50,9 @@ This project strictly adheres to the principles outlined in `docs/DEVELOPMENT_PH
 The codebase follows a feature-based organization:
 
 - `src/cli.ts` - Entry point and command-line interface setup
-- `src/core/` - Pure business logic (prompt processing, validation)
-- `src/adapters/` - Infrastructure adapters (Gemini API, formatters)
-- `src/config.ts` - Configuration management
+- `src/input.ts` - Input handling module (arguments, interactive mode, piped input)
+- `src/api.ts` - Direct Gemini API integration with structured logging
+- `test/` - Integration tests for end-to-end CLI functionality
 
 ### TypeScript Configuration
 
@@ -79,15 +79,30 @@ The codebase follows a feature-based organization:
 ### Environment Variables
 
 - `GEMINI_API_KEY` - Required for Gemini API access
-- `GEMINI_MODEL_ID` - Optional, defaults to `gemini-2.5-flash-preview-05-20`
-- `GEMINI_TEMPERATURE` - Optional, defaults to `0.7`
+
+### Usage Modes
+
+The CLI supports multiple input methods:
+
+1. **Single-line arguments**: `elevator "prompt text"`
+2. **Multiline interactive**: `elevator` (then type multiple lines, Ctrl+D to submit)
+3. **Piped input**: `echo "prompt" | elevator` or `elevator < file.txt`
+4. **Raw output**: Add `--raw` flag for unformatted output (useful in scripts)
 
 ### Current Implementation Status
 
-The project is in early development phase. Key tasks from TODO.md include:
+The project has completed its core multiline input implementation:
 
-- Setting up strict TypeScript and ESLint configuration
-- Implementing core domain logic as pure functions
-- Creating infrastructure adapters following dependency inversion
-- Setting up comprehensive testing with Vitest
-- Configuring mandatory automation (pre-commit hooks, CI pipeline)
+- ✅ **Multiline Input**: Interactive mode with Ctrl+D termination
+- ✅ **Piped Input**: Full support for echo, heredoc, and file input
+- ✅ **Backward Compatibility**: Existing single-argument usage preserved
+- ✅ **Testing**: Comprehensive unit and integration test coverage
+- ✅ **Error Handling**: Timeout protection, input validation, graceful failures
+- ✅ **Documentation**: Complete usage examples and troubleshooting guides
+
+### Testing Notes
+
+- Run `pnpm test` for unit tests (fast, mocked external dependencies)
+- Run `pnpm test test/cli.integration.test.ts` for integration tests (requires GEMINI_API_KEY)
+- Integration tests are skipped automatically if no API key is available
+- All tests include proper cleanup and error handling

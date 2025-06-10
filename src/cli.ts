@@ -106,6 +106,8 @@ async function main(): Promise<void> {
     const args = program.args;
 
     // Get input from arguments or stdin (multiline mode)
+    // If args are provided, uses first argument
+    // If no args, enters multiline mode (TTY) or reads piped input (non-TTY)
     const prompt = await getInput(args);
 
     await processPrompt(prompt, options);
