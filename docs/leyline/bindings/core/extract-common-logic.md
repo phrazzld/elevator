@@ -1,10 +1,11 @@
 ---
 id: extract-common-logic
-last_modified: '2025-06-02'
-version: '0.1.0'
+last_modified: "2025-06-02"
+version: "0.1.0"
 derived_from: dry-dont-repeat-yourself
-enforced_by: 'Code review, static analysis, refactoring tools'
+enforced_by: "Code review, static analysis, refactoring tools"
 ---
+
 # Binding: Extract and Centralize Common Logic
 
 Identify recurring patterns, algorithms, and business rules in your codebase and extract them into reusable abstractions. This creates a single authoritative implementation that can be maintained, tested, and evolved in one place rather than scattered across multiple locations.
@@ -32,6 +33,7 @@ Common logic extraction must follow these identification and implementation prin
 - **Handle Variations Explicitly**: When logic has slight variations across use cases, design the extraction to handle these variations through parameters or strategy patterns rather than duplicating the core logic.
 
 **Extraction Candidates:**
+
 - Business rules and validation logic
 - Data transformation and formatting algorithms
 - Mathematical calculations and formulas
@@ -40,6 +42,7 @@ Common logic extraction must follow these identification and implementation prin
 - Error handling and recovery logic
 
 **When NOT to Extract:**
+
 - Code that coincidentally looks similar but serves different business purposes
 - Logic that is likely to diverge in the future due to different evolution paths
 - Simple operations where the extraction would be more complex than the duplication
@@ -68,10 +71,12 @@ class UserRegistrationForm {
   }
 
   validatePassword(password: string): boolean {
-    return password.length >= 8 &&
-           /[A-Z]/.test(password) &&
-           /[a-z]/.test(password) &&
-           /[0-9]/.test(password);
+    return (
+      password.length >= 8 &&
+      /[A-Z]/.test(password) &&
+      /[a-z]/.test(password) &&
+      /[0-9]/.test(password)
+    );
   }
 }
 
@@ -84,10 +89,12 @@ class UserProfileForm {
 
   validatePassword(password: string): boolean {
     // Same logic duplicated
-    return password.length >= 8 &&
-           /[A-Z]/.test(password) &&
-           /[a-z]/.test(password) &&
-           /[0-9]/.test(password);
+    return (
+      password.length >= 8 &&
+      /[A-Z]/.test(password) &&
+      /[a-z]/.test(password) &&
+      /[0-9]/.test(password)
+    );
   }
 }
 
@@ -108,8 +115,11 @@ export interface ValidationResult {
 }
 
 export class ValidationError extends Error {
-  constructor(public field: string, public violations: string[]) {
-    super(`Validation failed for ${field}: ${violations.join(', ')}`);
+  constructor(
+    public field: string,
+    public violations: string[],
+  ) {
+    super(`Validation failed for ${field}: ${violations.join(", ")}`);
   }
 }
 
@@ -122,12 +132,12 @@ export class EmailValidator {
     const errors: string[] = [];
 
     if (!email) {
-      errors.push('Email is required');
+      errors.push("Email is required");
       return { isValid: false, errors };
     }
 
     if (!this.EMAIL_REGEX.test(email)) {
-      errors.push('Email format is invalid');
+      errors.push("Email format is invalid");
     }
 
     if (email.length > this.MAX_LENGTH) {
@@ -136,14 +146,14 @@ export class EmailValidator {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
   static validateOrThrow(email: string): void {
     const result = this.validate(email);
     if (!result.isValid) {
-      throw new ValidationError('email', result.errors);
+      throw new ValidationError("email", result.errors);
     }
   }
 }
@@ -163,43 +173,48 @@ export class PasswordValidator {
     requireUppercase: true,
     requireLowercase: true,
     requireNumbers: true,
-    requireSpecialChars: false
+    requireSpecialChars: false,
   };
 
   static validate(
     password: string,
-    requirements: PasswordRequirements = this.DEFAULT_REQUIREMENTS
+    requirements: PasswordRequirements = this.DEFAULT_REQUIREMENTS,
   ): ValidationResult {
     const errors: string[] = [];
 
     if (!password) {
-      errors.push('Password is required');
+      errors.push("Password is required");
       return { isValid: false, errors };
     }
 
     if (password.length < requirements.minLength) {
-      errors.push(`Password must be at least ${requirements.minLength} characters`);
+      errors.push(
+        `Password must be at least ${requirements.minLength} characters`,
+      );
     }
 
     if (requirements.requireUppercase && !/[A-Z]/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter');
+      errors.push("Password must contain at least one uppercase letter");
     }
 
     if (requirements.requireLowercase && !/[a-z]/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter');
+      errors.push("Password must contain at least one lowercase letter");
     }
 
     if (requirements.requireNumbers && !/[0-9]/.test(password)) {
-      errors.push('Password must contain at least one number');
+      errors.push("Password must contain at least one number");
     }
 
-    if (requirements.requireSpecialChars && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      errors.push('Password must contain at least one special character');
+    if (
+      requirements.requireSpecialChars &&
+      !/[!@#$%^&*(),.?":{}|<>]/.test(password)
+    ) {
+      errors.push("Password must contain at least one special character");
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }
@@ -212,7 +227,7 @@ class UserRegistrationForm {
 
     return {
       isValid: emailResult.isValid && passwordResult.isValid,
-      errors: [...emailResult.errors, ...passwordResult.errors]
+      errors: [...emailResult.errors, ...passwordResult.errors],
     };
   }
 }
@@ -228,7 +243,7 @@ class UserProfileForm {
 
     return {
       isValid: emailResult.isValid && passwordResult.isValid,
-      errors: [...emailResult.errors, ...passwordResult.errors]
+      errors: [...emailResult.errors, ...passwordResult.errors],
     };
   }
 }

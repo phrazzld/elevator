@@ -2,9 +2,10 @@
 derived_from: no-secret-suppression
 enforced_by: code review & custom linters
 id: no-lint-suppression
-last_modified: '2025-05-14'
-version: '0.1.0'
+last_modified: "2025-05-14"
+version: "0.1.0"
 ---
+
 # Binding: Document Why You're Silencing Warnings
 
 Never disable or suppress linter warnings, static analysis errors, or type checking
@@ -90,14 +91,14 @@ Here are concrete strategies for handling suppressions responsibly:
    ```typescript
    // ❌ BAD: No explanation
    // eslint-disable-next-line no-console
-   console.log('User logged in');
+   console.log("User logged in");
 
    // ✅ GOOD: Clear explanation
    // eslint-disable-next-line no-console
    // Intentionally using console.log for login events to provide visibility in production
    // logs that can be filtered by monitoring tools. Preferred over our usual logger
    // for these specific events per discussion in ARCH-2023-05.
-   console.log('User logged in', { userId, timestamp });
+   console.log("User logged in", { userId, timestamp });
    ```
 
    The explanation should include enough context for someone unfamiliar with the code to
@@ -150,6 +151,7 @@ Here are concrete strategies for handling suppressions responsibly:
    // eslint-disable-next-line react-hooks/exhaustive-deps
    // Intentionally omitting 'user' as a dependency to prevent re-fetching
    // when only user metadata changes. Only want to refresh when userId changes.
+   ```
    ````
 
    This approach reduces the need for each developer to reinvent justifications and
@@ -184,7 +186,7 @@ function initializeApi(config: Config) {
 // ✅ GOOD: Justified assertion with validation
 function initializeApi(config: Config) {
   if (!config.endpoint) {
-    throw new Error('API endpoint is required');
+    throw new Error("API endpoint is required");
   }
   // Type assertion no longer needed after validation
   fetch(config.endpoint);

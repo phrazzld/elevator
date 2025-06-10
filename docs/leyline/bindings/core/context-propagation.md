@@ -2,9 +2,10 @@
 derived_from: explicit-over-implicit
 enforced_by: code review & integration tests
 id: context-propagation
-last_modified: '2025-05-14'
-version: '0.1.0'
+last_modified: "2025-05-14"
+version: "0.1.0"
 ---
+
 # Binding: Propagate Request Context Across Service Boundaries
 
 All services must propagate context information across process boundaries to maintain
@@ -109,8 +110,8 @@ Here are concrete strategies for implementing context propagation effectively:
 
    ```typescript
    // TypeScript Express middleware for context propagation
-   import { v4 as uuidv4 } from 'uuid';
-   import { Request, Response, NextFunction } from 'express';
+   import { v4 as uuidv4 } from "uuid";
+   import { Request, Response, NextFunction } from "express";
 
    // Context interface
    interface RequestContext {
@@ -124,19 +125,21 @@ Here are concrete strategies for implementing context propagation effectively:
    }
 
    // Header names for context propagation
-   const HEADER_CORRELATION_ID = 'X-Correlation-ID';
-   const HEADER_REQUEST_ID = 'X-Request-ID';
-   const HEADER_TENANT_ID = 'X-Tenant-ID';
-   const HEADER_USER_ID = 'X-User-ID';
-   const HEADER_SESSION_ID = 'X-Session-ID';
-   const HEADER_ORIGIN = 'X-Origin-Service';
-   const HEADER_TIMESTAMP = 'X-Request-Timestamp';
+   const HEADER_CORRELATION_ID = "X-Correlation-ID";
+   const HEADER_REQUEST_ID = "X-Request-ID";
+   const HEADER_TENANT_ID = "X-Tenant-ID";
+   const HEADER_USER_ID = "X-User-ID";
+   const HEADER_SESSION_ID = "X-Session-ID";
+   const HEADER_ORIGIN = "X-Origin-Service";
+   const HEADER_TIMESTAMP = "X-Request-Timestamp";
 
    // Middleware to extract or create context
    export function contextMiddleware(serviceName: string) {
      return (req: Request, res: Response, next: NextFunction) => {
        // Extract or generate correlation ID
-       const correlationId = req.headers[HEADER_CORRELATION_ID.toLowerCase()] as string || uuidv4();
+       const correlationId =
+         (req.headers[HEADER_CORRELATION_ID.toLowerCase()] as string) ||
+         uuidv4();
 
        // Always generate a new request ID for this specific request
        const requestId = uuidv4();
@@ -145,8 +148,11 @@ Here are concrete strategies for implementing context propagation effectively:
        const tenantId = req.headers[HEADER_TENANT_ID.toLowerCase()] as string;
        const userId = req.headers[HEADER_USER_ID.toLowerCase()] as string;
        const sessionId = req.headers[HEADER_SESSION_ID.toLowerCase()] as string;
-       const originService = req.headers[HEADER_ORIGIN.toLowerCase()] as string || 'unknown';
-       const timestamp = req.headers[HEADER_TIMESTAMP.toLowerCase()] as string || new Date().toISOString();
+       const originService =
+         (req.headers[HEADER_ORIGIN.toLowerCase()] as string) || "unknown";
+       const timestamp =
+         (req.headers[HEADER_TIMESTAMP.toLowerCase()] as string) ||
+         new Date().toISOString();
 
        // Create context object
        const context: RequestContext = {
@@ -156,7 +162,7 @@ Here are concrete strategies for implementing context propagation effectively:
          userId,
          sessionId,
          originService,
-         requestTimestamp: timestamp
+         requestTimestamp: timestamp,
        };
 
        // Attach to request object
@@ -175,7 +181,7 @@ Here are concrete strategies for implementing context propagation effectively:
      const client = axios.create({ baseURL });
 
      // Add request interceptor to inject context headers
-     client.interceptors.request.use(config => {
+     client.interceptors.request.use((config) => {
        const context = getActiveContext();
 
        if (context) {
@@ -183,9 +189,11 @@ Here are concrete strategies for implementing context propagation effectively:
          config.headers[HEADER_CORRELATION_ID] = context.correlationId;
          config.headers[HEADER_REQUEST_ID] = uuidv4(); // New request ID for this specific call
 
-         if (context.tenantId) config.headers[HEADER_TENANT_ID] = context.tenantId;
+         if (context.tenantId)
+           config.headers[HEADER_TENANT_ID] = context.tenantId;
          if (context.userId) config.headers[HEADER_USER_ID] = context.userId;
-         if (context.sessionId) config.headers[HEADER_SESSION_ID] = context.sessionId;
+         if (context.sessionId)
+           config.headers[HEADER_SESSION_ID] = context.sessionId;
 
          config.headers[HEADER_ORIGIN] = serviceName;
          config.headers[HEADER_TIMESTAMP] = context.requestTimestamp;
@@ -243,18 +251,18 @@ Here are concrete strategies for implementing context propagation effectively:
            messageId: uuidv4(),
            causality: {
              parentId: context?.requestId,
-             rootId: context?.correlationId || uuidv4()
+             rootId: context?.correlationId || uuidv4(),
            },
            origin: {
              service: this.serviceName,
-             timestamp: new Date().toISOString()
+             timestamp: new Date().toISOString(),
            },
            context: {
              tenantId: context?.tenantId,
              userId: context?.userId,
-             sessionId: context?.sessionId
-           }
-         }
+             sessionId: context?.sessionId,
+           },
+         },
        };
 
        await this.client.send(topic, message);
@@ -269,7 +277,10 @@ Here are concrete strategies for implementing context propagation effectively:
        this.serviceName = serviceName;
      }
 
-     async processMessage<T>(message: Message<T>, handler: (payload: T) => Promise<void>): Promise<void> {
+     async processMessage<T>(
+       message: Message<T>,
+       handler: (payload: T) => Promise<void>,
+     ): Promise<void> {
        // Extract context from message
        const metadata = message.metadata;
 
@@ -281,7 +292,7 @@ Here are concrete strategies for implementing context propagation effectively:
          userId: metadata.context.userId,
          sessionId: metadata.context.sessionId,
          originService: metadata.origin.service,
-         requestTimestamp: metadata.origin.timestamp
+         requestTimestamp: metadata.origin.timestamp,
        };
 
        // Set active context for this async operation
@@ -303,7 +314,7 @@ Here are concrete strategies for implementing context propagation effectively:
 
    ```typescript
    // Using AsyncLocalStorage in Node.js for request context
-   import { AsyncLocalStorage } from 'async_hooks';
+   import { AsyncLocalStorage } from "async_hooks";
 
    const contextStorage = new AsyncLocalStorage<RequestContext>();
 
@@ -452,7 +463,7 @@ Here are concrete strategies for implementing context propagation effectively:
    interface JobRecord {
      id: string;
      type: string;
-     status: 'pending' | 'processing' | 'completed' | 'failed';
+     status: "pending" | "processing" | "completed" | "failed";
      payload: any;
      result?: any;
      error?: string;
@@ -477,7 +488,7 @@ Here are concrete strategies for implementing context propagation effectively:
      const job: JobRecord = {
        id: uuidv4(),
        type,
-       status: 'pending',
+       status: "pending",
        payload,
        created_at: new Date(),
        updated_at: new Date(),
@@ -488,18 +499,18 @@ Here are concrete strategies for implementing context propagation effectively:
          request_id: context?.requestId || uuidv4(),
          tenant_id: context?.tenantId,
          user_id: context?.userId,
-         origin_service: context?.originService || 'unknown',
-         created_timestamp: new Date().toISOString()
-       }
+         origin_service: context?.originService || "unknown",
+         created_timestamp: new Date().toISOString(),
+       },
      };
 
-     await db.collection('jobs').insertOne(job);
+     await db.collection("jobs").insertOne(job);
      return job.id;
    }
 
    // When processing a job, restore the context
    async function processJob(jobId: string): Promise<void> {
-     const job = await db.collection('jobs').findOne({ id: jobId });
+     const job = await db.collection("jobs").findOne({ id: jobId });
 
      if (!job) {
        throw new Error(`Job ${jobId} not found`);
@@ -512,24 +523,33 @@ Here are concrete strategies for implementing context propagation effectively:
        tenantId: job.context.tenant_id,
        userId: job.context.user_id,
        originService: job.context.origin_service,
-       requestTimestamp: job.context.created_timestamp
+       requestTimestamp: job.context.created_timestamp,
      };
 
      // Run job processing with the restored context
      await withContext(context, async () => {
        try {
          // Process the job...
-         job.status = 'completed';
-         job.result = { /* job result */ };
+         job.status = "completed";
+         job.result = {
+           /* job result */
+         };
        } catch (error) {
-         job.status = 'failed';
+         job.status = "failed";
          job.error = error.message;
          throw error;
        } finally {
          job.updated_at = new Date();
-         await db.collection('jobs').updateOne(
+         await db.collection("jobs").updateOne(
            { id: job.id },
-           { $set: { status: job.status, result: job.result, error: job.error, updated_at: job.updated_at } }
+           {
+             $set: {
+               status: job.status,
+               result: job.result,
+               error: job.error,
+               updated_at: job.updated_at,
+             },
+           },
          );
        }
      });
@@ -541,12 +561,12 @@ Here are concrete strategies for implementing context propagation effectively:
 ```typescript
 // ❌ BAD: No context propagation between services
 // Service A
-app.post('/orders', async (req, res) => {
+app.post("/orders", async (req, res) => {
   const order = await createOrder(req.body);
 
   // Make call to inventory service without context
-  await axios.post('http://inventory-service/reserve', {
-    items: order.items
+  await axios.post("http://inventory-service/reserve", {
+    items: order.items,
   });
 
   // Log without context
@@ -556,12 +576,12 @@ app.post('/orders', async (req, res) => {
 });
 
 // Service B (inventory)
-app.post('/reserve', (req, res) => {
+app.post("/reserve", (req, res) => {
   // No context about which order triggered this
   const result = reserveInventory(req.body.items);
 
   // Log without context
-  console.log('Reserved inventory');
+  console.log("Reserved inventory");
 
   res.json(result);
 });
@@ -570,42 +590,51 @@ app.post('/reserve', (req, res) => {
 ```typescript
 // ✅ GOOD: Context propagated between services
 // Service A
-app.post('/orders', contextMiddleware('order-service'), async (req, res) => {
+app.post("/orders", contextMiddleware("order-service"), async (req, res) => {
   const context = req.context;
   const order = await createOrder(req.body);
 
   // Log with context
-  logger.info({
-    event: 'order_created',
-    order_id: order.id,
-    correlation_id: context.correlationId,
-    request_id: context.requestId,
-    tenant_id: context.tenantId
-  }, 'Order created successfully');
+  logger.info(
+    {
+      event: "order_created",
+      order_id: order.id,
+      correlation_id: context.correlationId,
+      request_id: context.requestId,
+      tenant_id: context.tenantId,
+    },
+    "Order created successfully",
+  );
 
   // Make call to inventory service with context
-  const httpClient = createHttpClient('http://inventory-service', 'order-service');
-  await httpClient.post('/reserve', {
+  const httpClient = createHttpClient(
+    "http://inventory-service",
+    "order-service",
+  );
+  await httpClient.post("/reserve", {
     items: order.items,
-    order_id: order.id
+    order_id: order.id,
   });
 
   res.json(order);
 });
 
 // Service B (inventory)
-app.post('/reserve', contextMiddleware('inventory-service'), (req, res) => {
+app.post("/reserve", contextMiddleware("inventory-service"), (req, res) => {
   const context = req.context;
 
   // Log with propagated context
-  logger.info({
-    event: 'inventory_reservation_started',
-    order_id: req.body.order_id,
-    item_count: req.body.items.length,
-    correlation_id: context.correlationId,
-    request_id: context.requestId,
-    tenant_id: context.tenantId
-  }, 'Starting inventory reservation');
+  logger.info(
+    {
+      event: "inventory_reservation_started",
+      order_id: req.body.order_id,
+      item_count: req.body.items.length,
+      correlation_id: context.correlationId,
+      request_id: context.requestId,
+      tenant_id: context.tenantId,
+    },
+    "Starting inventory reservation",
+  );
 
   const result = reserveInventory(req.body.items);
 
@@ -670,10 +699,10 @@ func ProcessOrders() {
 ```typescript
 // ❌ BAD: Event publishing without context
 async function publishOrderEvent(event: string, data: any) {
-  await eventBus.publish('orders', {
+  await eventBus.publish("orders", {
     event,
     timestamp: new Date().toISOString(),
-    data
+    data,
   });
 }
 ```
@@ -683,7 +712,7 @@ async function publishOrderEvent(event: string, data: any) {
 async function publishOrderEvent(event: string, data: any) {
   const context = getActiveContext();
 
-  await eventBus.publish('orders', {
+  await eventBus.publish("orders", {
     event,
     timestamp: new Date().toISOString(),
     data,
@@ -691,12 +720,12 @@ async function publishOrderEvent(event: string, data: any) {
       correlation_id: context?.correlationId || uuidv4(),
       event_id: uuidv4(),
       origin: {
-        service: 'order-service',
-        request_id: context?.requestId
+        service: "order-service",
+        request_id: context?.requestId,
       },
       tenant_id: context?.tenantId,
-      user_id: context?.userId
-    }
+      user_id: context?.userId,
+    },
   });
 }
 ```

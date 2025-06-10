@@ -6,8 +6,10 @@ A lightweight CLI that transforms natural-language prompts into more sophisticat
 
 - ⚡ **Direct API Integration**: Simple, fast prompt elevation using native fetch
 - 🎯 **Technical Enhancement**: Converts casual prompts into professional technical language
+- 📝 **Multiline Input Support**: Interactive mode with Ctrl+D termination for complex prompts
+- 🔄 **Flexible Input Methods**: Command-line arguments, piped input, file input, and interactive mode
 - 🔒 **Security First**: Environment-based API key management
-- 📝 **Structured Logging**: JSON-formatted logs with correlation IDs
+- 📊 **Structured Logging**: JSON-formatted logs with correlation IDs
 - 🚀 **Minimal Dependencies**: Lightweight with only essential dependencies
 
 ## Installation
@@ -49,39 +51,121 @@ export GEMINI_API_KEY="your-api-key-here"
 ### 3. Start Using
 
 ```bash
-# Run a prompt through the built CLI
+# Single-line prompt (classic usage)
 node dist/cli.js "make a todo app"
 
-# Or with raw output (no formatting)
-node dist/cli.js --raw "explain REST APIs"
+# Multiline interactive mode
+node dist/cli.js
+# Enter your prompt (press Ctrl+D when done):
+# Create a web application that:
+# - Has user authentication
+# - Supports file uploads
+# - Uses a modern framework
+# ^D
+
+# Piped input
+echo "build a REST API" | node dist/cli.js
+
+# Raw output (no formatting)
+node dist/cli.js --raw "explain microservices"
 ```
 
 ## Usage
 
-### Basic Usage
+elevator supports multiple input methods to fit different workflows:
 
-Process a single prompt and get an elevated, technical version:
+### Single-Line Arguments (Classic Mode)
+
+Process a single prompt directly from the command line:
 
 ```bash
 node dist/cli.js "Your prompt here"
 ```
 
-**Examples:**
+### Multiline Interactive Mode
+
+For complex prompts that span multiple lines, run elevator without arguments:
 
 ```bash
-# Basic prompt elevation
-node dist/cli.js "make a website"
+node dist/cli.js
+```
 
-# Raw output (no formatting)
+This enters interactive mode where you can:
+
+- Type multiple lines
+- Include code blocks and formatting
+- Press **Ctrl+D** (Unix/Linux/macOS) or **Ctrl+Z** (Windows) to submit
+
+### Piped Input
+
+Perfect for automation and scripting:
+
+```bash
+# From echo
+echo "Create a microservice architecture" | node dist/cli.js
+
+# From heredoc
+node dist/cli.js << 'EOF'
+Build a React component that:
+- Accepts props for configuration
+- Has proper TypeScript types
+- Includes comprehensive tests
+EOF
+
+# From file
+node dist/cli.js < prompt.txt
+
+# In a pipeline
+cat requirements.txt | node dist/cli.js --raw > technical-specs.txt
+```
+
+### Examples by Input Method
+
+**Single-Line:**
+
+```bash
+node dist/cli.js "make a website"
 node dist/cli.js --raw "build a calculator app"
+```
+
+**Multiline Interactive:**
+
+````bash
+node dist/cli.js
+# Enter your prompt (press Ctrl+D when done):
+#
+# There's a bug in our authentication system:
+# ```
+# Error: Invalid token signature
+# ```
+#
+# Please investigate and provide a solution.
+# ^D
+````
+
+**Piped/File Input:**
+
+```bash
+echo "refactor this legacy code" | node dist/cli.js
+node dist/cli.js < complex-prompt.txt
 ```
 
 ### CLI Options
 
-| Option       | Description                         | Default |
-| ------------ | ----------------------------------- | ------- |
-| `--raw`      | Output raw response (no formatting) | `false` |
-| `-h, --help` | Show help information               | -       |
+| Option       | Description                                           | Default |
+| ------------ | ----------------------------------------------------- | ------- |
+| `[prompt]`   | Optional prompt (if omitted, enters interactive mode) | -       |
+| `--raw`      | Output raw response (no formatting)                   | `false` |
+| `-h, --help` | Show help information with usage examples             | -       |
+
+### Input Methods Summary
+
+| Method          | When to Use                      | Example                           |
+| --------------- | -------------------------------- | --------------------------------- |
+| **Arguments**   | Quick, single-line prompts       | `elevator "build an API"`         |
+| **Interactive** | Complex, multiline prompts       | `elevator` → type → Ctrl+D        |
+| **Piped**       | Automation, files, preprocessing | `echo "..." \| elevator`          |
+| **Raw Mode**    | Scripting, saving to files       | `elevator --raw "..." > file.txt` |
 
 ## Configuration
 
@@ -112,7 +196,7 @@ source ~/.bashrc
 
 ## Examples
 
-### Basic Prompt Elevation
+### Single-Line Prompt Elevation
 
 ```bash
 node dist/cli.js "make a todo app"
@@ -121,25 +205,80 @@ node dist/cli.js "make a todo app"
 **Output:**
 
 ```
+✨ Enhanced prompt:
 Develop a comprehensive task management application with full CRUD operations, user authentication, persistent data storage, and an intuitive user interface for creating, organizing, and tracking personal productivity tasks.
 ```
 
-### Technical Enhancement
+### Multiline Interactive Example
 
 ```bash
-node dist/cli.js "build an API"
+node dist/cli.js
+```
+
+**Input:**
+
+```
+Enter your prompt (press Ctrl+D when done):
+
+Our React app has performance issues:
+- Slow initial load times
+- Laggy user interactions
+- High memory usage
+
+Please analyze and optimize the codebase.
+^D
 ```
 
 **Output:**
 
 ```
-Design and implement a RESTful API architecture with proper HTTP methods, status codes, authentication middleware, data validation, error handling, and comprehensive documentation following OpenAPI specifications.
+✨ Enhanced prompt:
+Conduct a comprehensive performance audit and optimization of the React application, focusing on bundle size reduction, code splitting implementation, memory leak identification, component rendering optimization, lazy loading strategies, and implementation of performance monitoring tools to address slow initial load times, laggy user interactions, and excessive memory consumption.
+```
+
+### Piped Input Examples
+
+```bash
+# Simple piping
+echo "write unit tests" | node dist/cli.js
+
+# From a file
+node dist/cli.js < requirements.txt
+
+# Complex pipeline
+cat user-story.md | node dist/cli.js --raw | tee technical-requirements.txt
 ```
 
 ### Raw Output for Scripting
 
 ```bash
-node dist/cli.js --raw "write tests" > enhanced-prompt.txt
+node dist/cli.js --raw "implement OAuth" > enhanced-prompt.txt
+```
+
+### Real-World Workflow Examples
+
+**Bug Report Enhancement:**
+
+```bash
+node dist/cli.js << 'EOF'
+There's a memory leak in our Node.js service:
+- Memory usage grows over time
+- Eventually crashes with OOM
+- Happens under high load
+- Started after the recent deployment
+EOF
+```
+
+**Feature Request Processing:**
+
+```bash
+echo "Add dark mode to the dashboard" | node dist/cli.js --raw
+```
+
+**Documentation Generation:**
+
+```bash
+cat api-endpoints.txt | node dist/cli.js > technical-documentation.md
 ```
 
 ## Troubleshooting
@@ -163,6 +302,15 @@ API error: 401 Unauthorized - Invalid API key. Verify your GEMINI_API_KEY
 - **Solution**: Verify your API key at [Google AI Studio](https://aistudio.google.com/app/apikey)
 - **Solution**: Ensure no extra spaces or characters in your API key
 
+**No Input Provided**
+
+```
+Error: No input provided
+```
+
+- **Solution**: Provide a prompt as an argument or enter text in interactive mode
+- **Solution**: When using piped input, ensure the input isn't empty
+
 **Network Timeout**
 
 ```
@@ -179,6 +327,38 @@ API error: 429 Too Many Requests - Rate limit exceeded. Please try again later
 ```
 
 - **Solution**: Wait a moment and try again
+
+### Multiline Input Tips
+
+**Submitting Your Prompt:**
+
+- **Unix/Linux/macOS**: Press `Ctrl+D` to submit
+- **Windows**: Press `Ctrl+Z` then Enter to submit
+
+**Canceling Input:**
+
+- Press `Ctrl+C` to cancel and exit
+
+**Working with Code Blocks:**
+
+````bash
+node dist/cli.js
+# Enter your prompt (press Ctrl+D when done):
+#
+# Fix this TypeScript error:
+# ```typescript
+# function example(data: any) {
+#   return data.someProperty;
+# }
+# ```
+# ^D
+````
+
+**Best Practices:**
+
+- Use multiline mode for complex prompts with code, lists, or detailed requirements
+- Use piped input for automation and file processing
+- Use raw mode (`--raw`) when saving output to files or using in scripts
 
 ### Getting Help
 

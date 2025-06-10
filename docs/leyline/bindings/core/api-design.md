@@ -2,9 +2,10 @@
 derived_from: explicit-over-implicit
 enforced_by: code review & style guides
 id: api-design
-last_modified: '2025-05-14'
-version: '0.1.0'
+last_modified: "2025-05-14"
+version: "0.1.0"
 ---
+
 # Binding: Design Clear, Explicit API Contracts
 
 Design APIs with clear, explicit contracts that fully communicate their behavior,
@@ -98,7 +99,7 @@ scope.
      name: string;
      email: string;
      preferences?: {
-       theme: 'light' | 'dark';
+       theme: "light" | "dark";
        notifications: boolean;
      };
    }
@@ -267,7 +268,7 @@ scope.
      // Operations with side effects are clearly named
      async sendPasswordResetEmail(email) {
        // Implementation
-     }
+     },
    };
    ```
 
@@ -312,7 +313,7 @@ interface MessageContent {
 
 interface SendMessageOptions {
   recipient: string;
-  priority?: 'normal' | 'high';
+  priority?: "normal" | "high";
   broadcast?: boolean;
 }
 
@@ -324,25 +325,31 @@ interface CommandOptions {
 class MessagingService {
   constructor(
     private readonly currentUser: User,
-    private readonly activityLogger: ActivityLogger
+    private readonly activityLogger: ActivityLogger,
   ) {}
 
   // Regular message sending with clear contract
-  async sendMessage(content: MessageContent, options: SendMessageOptions): Promise<MessageDeliveryResult> {
+  async sendMessage(
+    content: MessageContent,
+    options: SendMessageOptions,
+  ): Promise<MessageDeliveryResult> {
     // Implementation with explicit dependencies
     this.activityLogger.recordActivity({
-      type: 'message_sent',
+      type: "message_sent",
       user: this.currentUser.id,
-      details: { recipient: options.recipient }
+      details: { recipient: options.recipient },
     });
 
     return this.deliveryService.send(content, options);
   }
 
   // Separate function for fundamentally different behavior
-  async executeCommand(command: string, options: CommandOptions): Promise<CommandResult> {
+  async executeCommand(
+    command: string,
+    options: CommandOptions,
+  ): Promise<CommandResult> {
     if (!command) {
-      throw new Error('Command cannot be empty');
+      throw new Error("Command cannot be empty");
     }
 
     // Implementation
@@ -354,13 +361,10 @@ const messagingService = new MessagingService(currentUser, activityLogger);
 
 await messagingService.sendMessage(
   { text: "Hello world" },
-  { recipient: "user123" }
+  { recipient: "user123" },
 );
 
-await messagingService.executeCommand(
-  "status",
-  { broadcast: true }
-);
+await messagingService.executeCommand("status", { broadcast: true });
 ```
 
 ```go
@@ -467,17 +471,17 @@ function handleCommand(args) {
   // Implicit parsing of unstructured args
   const command = args[0];
 
-  if (command === 'deploy') {
+  if (command === "deploy") {
     // Undocumented arg positions
-    const environment = args[1] || 'dev';  // Default not communicated
-    const version = args[2] || 'latest';   // Default not communicated
+    const environment = args[1] || "dev"; // Default not communicated
+    const version = args[2] || "latest"; // Default not communicated
 
     // Hidden requirement of environment variable
-    const apiKey = process.env.API_KEY;  // Will silently fail if missing
+    const apiKey = process.env.API_KEY; // Will silently fail if missing
 
     // Implementation continues with confusing silent failures
     // ...
-  } else if (command === 'config') {
+  } else if (command === "config") {
     // Completely different argument structure for this command
     const action = args[1];
     const key = args[2];
@@ -491,55 +495,55 @@ function handleCommand(args) {
 
 ```typescript
 // ✅ GOOD: CLI interface with explicit contracts
-import { Command } from 'commander';
+import { Command } from "commander";
 
 // Define explicit command structure
 const program = new Command();
 
 program
-  .name('app')
-  .description('CLI tool for managing application deployments')
-  .version('1.0.0');
+  .name("app")
+  .description("CLI tool for managing application deployments")
+  .version("1.0.0");
 
 // Each command has explicit options and documentation
 program
-  .command('deploy')
-  .description('Deploy the application to the specified environment')
-  .argument('<environment>', 'Target environment (dev, staging, prod)')
-  .option('-v, --version <version>', 'Version to deploy', 'latest')
-  .option('-f, --force', 'Force deployment even if validation fails')
-  .requiredOption('-k, --api-key <key>', 'API key for deployment service')
+  .command("deploy")
+  .description("Deploy the application to the specified environment")
+  .argument("<environment>", "Target environment (dev, staging, prod)")
+  .option("-v, --version <version>", "Version to deploy", "latest")
+  .option("-f, --force", "Force deployment even if validation fails")
+  .requiredOption("-k, --api-key <key>", "API key for deployment service")
   .action((environment, options) => {
     // Implementation with reliable, typed arguments
     deployService.deploy({
       environment,
       version: options.version,
       force: options.force === true,
-      apiKey: options.apiKey
+      apiKey: options.apiKey,
     });
   });
 
 // Separate command with its own options
 program
-  .command('config')
-  .description('Manage configuration settings')
+  .command("config")
+  .description("Manage configuration settings")
   .addCommand(
-    new Command('set')
-      .description('Set a configuration value')
-      .argument('<key>', 'Configuration key')
-      .argument('<value>', 'Configuration value')
+    new Command("set")
+      .description("Set a configuration value")
+      .argument("<key>", "Configuration key")
+      .argument("<value>", "Configuration value")
       .action((key, value) => {
         configService.set(key, value);
-      })
+      }),
   )
   .addCommand(
-    new Command('get')
-      .description('Get a configuration value')
-      .argument('<key>', 'Configuration key')
+    new Command("get")
+      .description("Get a configuration value")
+      .argument("<key>", "Configuration key")
       .action((key) => {
         const value = configService.get(key);
         console.log(value);
-      })
+      }),
   );
 
 // Parse with helpful error handling

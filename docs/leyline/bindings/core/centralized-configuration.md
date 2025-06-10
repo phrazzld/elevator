@@ -1,10 +1,11 @@
 ---
 id: centralized-configuration
-last_modified: '2025-06-02'
-version: '0.1.0'
+last_modified: "2025-06-02"
+version: "0.1.0"
 derived_from: dry-dont-repeat-yourself
-enforced_by: 'Configuration management tools, environment validation, deployment scripts'
+enforced_by: "Configuration management tools, environment validation, deployment scripts"
 ---
+
 # Binding: Centralize Configuration and Settings Management
 
 Establish a single, authoritative source for all configuration data, environment variables, feature flags, and application settings. This eliminates duplication of configuration knowledge and ensures consistent behavior across all parts of the system.
@@ -34,6 +35,7 @@ Centralized configuration must establish these organizational principles:
 - **Secret Management**: Handle sensitive configuration (API keys, database passwords) separately from non-sensitive settings using appropriate security measures.
 
 **Configuration Categories:**
+
 - Application behavior settings (timeouts, retry counts, feature flags)
 - External service endpoints and credentials
 - Database connection parameters
@@ -42,6 +44,7 @@ Centralized configuration must establish these organizational principles:
 - Business rules and thresholds
 
 **Anti-Patterns to Avoid:**
+
 - Hardcoding configuration values in source code
 - Duplicating the same setting in multiple configuration files
 - Using different configuration formats or locations across services
@@ -65,38 +68,38 @@ Centralized configuration must establish these organizational principles:
 // ❌ BAD: Configuration scattered and duplicated throughout codebase
 // Database connection duplicated in multiple files
 const userService = new UserService({
-  host: 'localhost',
+  host: "localhost",
   port: 5432,
-  database: 'myapp',
-  username: 'user',
-  password: 'password'
+  database: "myapp",
+  username: "user",
+  password: "password",
 });
 
 const orderService = new OrderService({
-  host: 'localhost',        // Duplicated
-  port: 5432,              // Duplicated
-  database: 'myapp',       // Duplicated
-  username: 'user',        // Duplicated
-  password: 'password'     // Duplicated - and insecure!
+  host: "localhost", // Duplicated
+  port: 5432, // Duplicated
+  database: "myapp", // Duplicated
+  username: "user", // Duplicated
+  password: "password", // Duplicated - and insecure!
 });
 
 // API endpoints hardcoded in different components
 class PaymentService {
   async processPayment(amount: number) {
-    const response = await fetch('https://api.stripe.com/v1/charges', {
+    const response = await fetch("https://api.stripe.com/v1/charges", {
       headers: {
-        'Authorization': 'Bearer sk_test_hardcoded_key'  // Hardcoded secret!
-      }
+        Authorization: "Bearer sk_test_hardcoded_key", // Hardcoded secret!
+      },
     });
   }
 }
 
 class EmailService {
   async sendEmail(to: string, subject: string) {
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
       headers: {
-        'Authorization': 'Bearer SG.hardcoded_key'  // Different hardcoded secret!
-      }
+        Authorization: "Bearer SG.hardcoded_key", // Different hardcoded secret!
+      },
     });
   }
 }
@@ -145,8 +148,8 @@ interface ApplicationConfig {
     enableAnalytics: boolean;
   };
   logging: {
-    level: 'debug' | 'info' | 'warn' | 'error';
-    destination: 'console' | 'file' | 'remote';
+    level: "debug" | "info" | "warn" | "error";
+    destination: "console" | "file" | "remote";
     enableStructuredLogging: boolean;
   };
 }
@@ -181,45 +184,54 @@ class ConfigurationManager {
     const defaults: ApplicationConfig = {
       server: {
         port: 3000,
-        host: 'localhost',
-        corsOrigins: ['http://localhost:3000']
+        host: "localhost",
+        corsOrigins: ["http://localhost:3000"],
       },
       database: {
-        host: 'localhost',
+        host: "localhost",
         port: 5432,
-        database: 'myapp',
-        username: 'postgres',
-        password: '',
+        database: "myapp",
+        username: "postgres",
+        password: "",
         maxConnections: 10,
-        connectionTimeout: 30000
+        connectionTimeout: 30000,
       },
       externalServices: {
         stripe: {
-          apiKey: this.requireEnv('STRIPE_API_KEY'),
-          webhookSecret: this.requireEnv('STRIPE_WEBHOOK_SECRET'),
-          apiVersion: '2023-10-16'
+          apiKey: this.requireEnv("STRIPE_API_KEY"),
+          webhookSecret: this.requireEnv("STRIPE_WEBHOOK_SECRET"),
+          apiVersion: "2023-10-16",
         },
         sendgrid: {
-          apiKey: this.requireEnv('SENDGRID_API_KEY'),
-          fromEmail: this.requireEnv('FROM_EMAIL'),
-          replyToEmail: this.getEnv('REPLY_TO_EMAIL', 'noreply@example.com')
+          apiKey: this.requireEnv("SENDGRID_API_KEY"),
+          fromEmail: this.requireEnv("FROM_EMAIL"),
+          replyToEmail: this.getEnv("REPLY_TO_EMAIL", "noreply@example.com"),
         },
         redis: {
-          url: this.getEnv('REDIS_URL', 'redis://localhost:6379'),
-          keyPrefix: 'myapp:',
-          ttlSeconds: 3600
-        }
+          url: this.getEnv("REDIS_URL", "redis://localhost:6379"),
+          keyPrefix: "myapp:",
+          ttlSeconds: 3600,
+        },
       },
       features: {
-        enableEmailNotifications: this.getBoolEnv('ENABLE_EMAIL_NOTIFICATIONS', true),
-        enablePaymentProcessing: this.getBoolEnv('ENABLE_PAYMENT_PROCESSING', true),
-        enableAnalytics: this.getBoolEnv('ENABLE_ANALYTICS', false)
+        enableEmailNotifications: this.getBoolEnv(
+          "ENABLE_EMAIL_NOTIFICATIONS",
+          true,
+        ),
+        enablePaymentProcessing: this.getBoolEnv(
+          "ENABLE_PAYMENT_PROCESSING",
+          true,
+        ),
+        enableAnalytics: this.getBoolEnv("ENABLE_ANALYTICS", false),
       },
       logging: {
-        level: this.getEnv('LOG_LEVEL', 'info') as any,
-        destination: this.getEnv('LOG_DESTINATION', 'console') as any,
-        enableStructuredLogging: this.getBoolEnv('ENABLE_STRUCTURED_LOGGING', true)
-      }
+        level: this.getEnv("LOG_LEVEL", "info") as any,
+        destination: this.getEnv("LOG_DESTINATION", "console") as any,
+        enableStructuredLogging: this.getBoolEnv(
+          "ENABLE_STRUCTURED_LOGGING",
+          true,
+        ),
+      },
     };
 
     // Override with environment-specific values
@@ -229,10 +241,10 @@ class ConfigurationManager {
   private validateConfiguration(): void {
     // Validate required fields
     const required = [
-      'STRIPE_API_KEY',
-      'STRIPE_WEBHOOK_SECRET',
-      'SENDGRID_API_KEY',
-      'FROM_EMAIL'
+      "STRIPE_API_KEY",
+      "STRIPE_WEBHOOK_SECRET",
+      "SENDGRID_API_KEY",
+      "FROM_EMAIL",
     ];
 
     for (const key of required) {
@@ -243,17 +255,17 @@ class ConfigurationManager {
 
     // Validate ranges and formats
     if (this.config.server.port < 1 || this.config.server.port > 65535) {
-      throw new Error('Server port must be between 1 and 65535');
+      throw new Error("Server port must be between 1 and 65535");
     }
 
     if (this.config.database.maxConnections < 1) {
-      throw new Error('Database max connections must be at least 1');
+      throw new Error("Database max connections must be at least 1");
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(this.config.externalServices.sendgrid.fromEmail)) {
-      throw new Error('FROM_EMAIL must be a valid email address');
+      throw new Error("FROM_EMAIL must be a valid email address");
     }
   }
 
@@ -272,7 +284,7 @@ class ConfigurationManager {
   private getBoolEnv(key: string, defaultValue: boolean): boolean {
     const value = process.env[key];
     if (!value) return defaultValue;
-    return value.toLowerCase() === 'true';
+    return value.toLowerCase() === "true";
   }
 }
 
@@ -291,31 +303,32 @@ class UserService {
       database: this.dbConfig.database,
       username: this.dbConfig.username,
       password: this.dbConfig.password,
-      maxConnections: this.dbConfig.maxConnections
+      maxConnections: this.dbConfig.maxConnections,
     });
   }
 }
 
 class PaymentService {
-  private stripeConfig: ExternalServicesConfig['stripe'];
+  private stripeConfig: ExternalServicesConfig["stripe"];
 
   constructor() {
-    this.stripeConfig = ConfigurationManager.getInstance().getConfig().externalServices.stripe;
+    this.stripeConfig =
+      ConfigurationManager.getInstance().getConfig().externalServices.stripe;
   }
 
   async processPayment(amount: number) {
-    const response = await fetch('https://api.stripe.com/v1/charges', {
+    const response = await fetch("https://api.stripe.com/v1/charges", {
       headers: {
-        'Authorization': `Bearer ${this.stripeConfig.apiKey}`,
-        'Stripe-Version': this.stripeConfig.apiVersion
-      }
+        Authorization: `Bearer ${this.stripeConfig.apiKey}`,
+        "Stripe-Version": this.stripeConfig.apiVersion,
+      },
     });
   }
 }
 
 class EmailService {
-  private sendgridConfig: ExternalServicesConfig['sendgrid'];
-  private featuresConfig: ApplicationConfig['features'];
+  private sendgridConfig: ExternalServicesConfig["sendgrid"];
+  private featuresConfig: ApplicationConfig["features"];
 
   constructor() {
     const config = ConfigurationManager.getInstance().getConfig();
@@ -326,22 +339,22 @@ class EmailService {
   async sendEmail(to: string, subject: string, body: string) {
     // Feature flag check using centralized configuration
     if (!this.featuresConfig.enableEmailNotifications) {
-      console.log('Email notifications disabled, skipping send');
+      console.log("Email notifications disabled, skipping send");
       return;
     }
 
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
       headers: {
-        'Authorization': `Bearer ${this.sendgridConfig.apiKey}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${this.sendgridConfig.apiKey}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         personalizations: [{ to: [{ email: to }] }],
         from: { email: this.sendgridConfig.fromEmail },
         reply_to: { email: this.sendgridConfig.replyToEmail },
         subject,
-        content: [{ type: 'text/html', value: body }]
-      })
+        content: [{ type: "text/html", value: body }],
+      }),
     });
   }
 }

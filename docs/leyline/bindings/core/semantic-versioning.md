@@ -2,9 +2,10 @@
 derived_from: explicit-over-implicit
 enforced_by: version checking tools & CI validation
 id: semantic-versioning
-last_modified: '2025-05-14'
-version: '0.1.0'
+last_modified: "2025-05-14"
+version: "0.1.0"
 ---
+
 # Binding: Make Breaking Changes Explicit with Semantic Versioning
 
 All projects must follow Semantic Versioning (SemVer) for release numbering, making

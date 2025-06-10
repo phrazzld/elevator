@@ -1,8 +1,9 @@
 ---
 id: adaptability-and-reversibility
-last_modified: '2025-06-02'
-version: '0.1.0'
+last_modified: "2025-06-02"
+version: "0.1.0"
 ---
+
 # Tenet: There Are No Final Decisions
 
 Design your systems and make your decisions with the understanding that requirements

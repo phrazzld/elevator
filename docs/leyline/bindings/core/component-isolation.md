@@ -1,10 +1,11 @@
 ---
 id: component-isolation
-last_modified: '2025-06-02'
-version: '0.1.0'
+last_modified: "2025-06-02"
+version: "0.1.0"
 derived_from: orthogonality
-enforced_by: 'Code review, architectural guidelines'
+enforced_by: "Code review, architectural guidelines"
 ---
+
 # Binding: Design Independent, Self-Contained Components
 
 Create components that operate independently without requiring knowledge of or dependencies on unrelated components. Each component should encapsulate its own state, behavior, and data, allowing it to be understood, tested, and modified in isolation.
@@ -34,6 +35,7 @@ Component isolation requires adherence to these core principles:
 - **Stateless When Possible**: Prefer stateless components that transform inputs to outputs without maintaining internal state. When state is necessary, manage it explicitly and locally.
 
 Exceptions to these rules may be appropriate when:
+
 - Performance profiling demonstrates a genuine need for direct communication
 - Legacy integration requires temporary coupling during migration
 - Framework constraints make perfect isolation impractical
@@ -62,13 +64,13 @@ class UserService {
     const user = await PostgresDB.users.create(userData);
 
     // Hidden dependency on specific email service
-    await SendgridEmail.send(user.email, 'Welcome!');
+    await SendgridEmail.send(user.email, "Welcome!");
 
     // Hidden dependency on specific logger
     AppLogger.info(`User created: ${user.id}`);
 
     // Direct access to unrelated component
-    AnalyticsTracker.track('user_created', { userId: user.id });
+    AnalyticsTracker.track("user_created", { userId: user.id });
 
     return user;
   }
@@ -96,7 +98,7 @@ class UserService {
     private userRepo: UserRepository,
     private emailService: EmailService,
     private logger: Logger,
-    private eventPublisher: EventPublisher
+    private eventPublisher: EventPublisher,
   ) {}
 
   async createUser(userData: UserData): Promise<User> {
@@ -105,12 +107,12 @@ class UserService {
 
       // Each dependency is explicit and substitutable
       await this.emailService.sendWelcomeEmail(user.email);
-      this.logger.info('User created successfully', { userId: user.id });
-      this.eventPublisher.publish('user.created', { userId: user.id });
+      this.logger.info("User created successfully", { userId: user.id });
+      this.eventPublisher.publish("user.created", { userId: user.id });
 
       return user;
     } catch (error) {
-      this.logger.error('Failed to create user', { error, userData });
+      this.logger.error("Failed to create user", { error, userData });
       throw error;
     }
   }

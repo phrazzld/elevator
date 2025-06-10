@@ -10,6 +10,7 @@
 
 import { Command } from "commander";
 import { elevatePrompt } from "./api.js";
+import { getInput } from "./input.js";
 
 /**
  * CLI argument interface (simplified)
@@ -71,7 +72,19 @@ function createProgram(): Command {
       "A lightweight CLI that accepts natural-language prompts and returns richer, more technical articulations using Google Gemini 2.5 Flash",
     )
     .version("0.1.0")
-    .argument("<prompt>", "Prompt to process and elevate");
+    .argument(
+      "[prompt]",
+      "Prompt to process and elevate (optional - if not provided, multiline input mode will be used)",
+    )
+    .addHelpText(
+      "after",
+      `
+Examples:
+  $ elevator "fix this bug"                    # Single-line argument
+  $ elevator                                   # Multiline mode (Ctrl+D to submit)
+  $ echo "refactor this code" | elevator       # Piped input
+  $ elevator < prompt.txt                      # File input`,
+    );
 
   // Output options
   program
@@ -91,19 +104,32 @@ async function main(): Promise<void> {
 
     const options = program.opts<CliArgs>();
     const args = program.args;
-    const prompt = args[0];
 
-    if (!prompt || prompt.trim() === "") {
-      console.error("❌ Error: Prompt is required");
-      console.error("Usage: elevator <prompt>");
-      process.exit(1);
-    }
+    // Get input from arguments or stdin (multiline mode)
+    // If args are provided, uses first argument
+    // If no args, enters multiline mode (TTY) or reads piped input (non-TTY)
+    const prompt = await getInput(args);
 
     await processPrompt(prompt, options);
   } catch (error) {
-    console.error(
-      `❌ Unexpected error: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    // Handle input-specific errors with clearer messages
+    if (error instanceof Error) {
+      if (error.message === "Operation cancelled by user") {
+        console.error("❌ Operation cancelled");
+        process.exit(130); // Standard exit code for Ctrl+C
+      } else if (error.message === "No input provided") {
+        console.error("❌ Error: No input provided");
+        console.error(
+          "Usage: elevator [prompt] or enter multiline mode without arguments",
+        );
+      } else if (error.message.includes("timeout")) {
+        console.error("❌ Error: Input timeout - no data received");
+      } else {
+        console.error(`❌ Error: ${error.message}`);
+      }
+    } else {
+      console.error(`❌ Unexpected error: ${String(error)}`);
+    }
     process.exit(1);
   }
 }
