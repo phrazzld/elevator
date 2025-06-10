@@ -26,11 +26,13 @@ interface CliResult {
  *
  * @param args Command line arguments to pass to CLI
  * @param env Environment variables to set
+ * @param stdin Optional stdin input for piped input tests
  * @returns Promise resolving to execution result
  */
 async function executeCli(
   args: string[],
   env: Record<string, string> = {},
+  stdin?: string,
 ): Promise<CliResult> {
   return new Promise((resolve) => {
     const child = spawn("node", ["dist/cli.js", ...args], {
@@ -48,6 +50,12 @@ async function executeCli(
     child.stderr?.on("data", (data) => {
       stderr += data.toString();
     });
+
+    // If stdin input is provided, write it and close stdin
+    if (stdin !== undefined) {
+      child.stdin?.write(stdin);
+      child.stdin?.end();
+    }
 
     child.on("close", (exitCode) => {
       resolve({
@@ -99,13 +107,19 @@ describe("CLI Subprocess Integration Tests", () => {
     expect(result.stdout).toBe("");
   });
 
-  it("should exit with code 1 when prompt is empty", async () => {
-    const result = await executeCli([""], {
-      GEMINI_API_KEY: process.env["GEMINI_API_KEY"] || "test-key",
-    });
+  it("should exit with code 1 when prompt is empty string argument", async () => {
+    // When providing empty string as argument, it should enter multiline mode
+    // and hang waiting for input, so we test with empty piped input instead
+    const result = await executeCli(
+      [""],
+      {
+        GEMINI_API_KEY: process.env["GEMINI_API_KEY"] || "test-key",
+      },
+      "",
+    ); // Empty stdin
 
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain("Prompt is required");
+    expect(result.stderr).toContain("No input provided");
   });
 
   it("should exit with code 0 and return elevated prompt when API key is valid", async () => {
@@ -150,4 +164,119 @@ describe("CLI Subprocess Integration Tests", () => {
     // With --raw flag, output should not contain formatting prefixes
     expect(result.stdout).not.toContain("✨ Enhanced prompt:");
   }, 30000); // 30-second timeout for API call
+
+  describe("multiline input support", () => {
+    it("should handle piped input from echo", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const testPrompt = "fix this bug\nit's not working properly";
+      const result = await executeCli(
+        [],
+        {
+          GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+        },
+        testPrompt,
+      );
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBeTruthy();
+      expect(result.stdout.length).toBeGreaterThan(0);
+      expect(result.stderr).toBe("");
+
+      // The output should be different from the input (elevated)
+      expect(result.stdout).not.toBe(testPrompt);
+      expect(result.stdout.length).toBeGreaterThan(testPrompt.length);
+    }, 30000);
+
+    it("should handle multiline input with --raw flag", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const testPrompt = "create a component\nwith TypeScript\nand tests";
+      const result = await executeCli(
+        ["--raw"],
+        {
+          GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+        },
+        testPrompt,
+      );
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBeTruthy();
+      expect(result.stderr).toBe("");
+
+      // With --raw flag, output should not contain formatting prefixes
+      expect(result.stdout).not.toContain("✨ Enhanced prompt:");
+    }, 30000);
+
+    it("should handle empty piped input gracefully", async () => {
+      const result = await executeCli(
+        [],
+        {
+          GEMINI_API_KEY: process.env["GEMINI_API_KEY"] || "test-key",
+        },
+        "",
+      );
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain("No input provided");
+    });
+
+    it("should handle unicode characters in piped input", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const testPrompt = "Create a 🚀 app with 世界 support";
+      const result = await executeCli(
+        [],
+        {
+          GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+        },
+        testPrompt,
+      );
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBeTruthy();
+      expect(result.stderr).toBe("");
+    }, 30000);
+
+    it("should maintain backward compatibility with single argument", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const testPrompt = "build a simple API";
+      const result = await executeCli([testPrompt], {
+        GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBeTruthy();
+      expect(result.stderr).toBe("");
+
+      // The output should be different from the input (elevated)
+      expect(result.stdout).not.toBe(testPrompt);
+      expect(result.stdout.length).toBeGreaterThan(testPrompt.length);
+    }, 30000);
+  });
 });
