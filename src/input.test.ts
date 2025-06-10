@@ -10,6 +10,7 @@ import { getInput } from "./input.js";
 // Mock readline module
 vi.mock("node:readline", () => ({
   createInterface: vi.fn(),
+  emitKeypressEvents: vi.fn(),
 }));
 
 describe("getInput", () => {

@@ -97,11 +97,11 @@ async function readStreamToEnd(stream: Readable): Promise<string> {
 async function readInteractiveInput(): Promise<string> {
   const lines: string[] = [];
 
-  // Create readline interface with immediate EOF response and clean UX
+  // Create readline interface with terminal features
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout, // Enable output for immediate terminal response
-    terminal: true, // Enable terminal mode for immediate Ctrl+D handling
+    output: process.stdout,
+    terminal: true,
     prompt: "", // Empty prompt for clean multiline input appearance
     crlfDelay: Infinity, // Handle different line endings properly
   });
@@ -109,6 +109,12 @@ async function readInteractiveInput(): Promise<string> {
   // Suppress the initial prompt display for clean UX
   if (typeof rl.setPrompt === "function") {
     rl.setPrompt("");
+  }
+
+  // Enable keypress events for Ctrl+D detection from any position
+  // Only enable in actual runtime (not in tests)
+  if (process.stdin && typeof process.stdin.isTTY !== "undefined") {
+    readline.emitKeypressEvents(process.stdin);
   }
 
   // Display instructions
@@ -120,21 +126,51 @@ async function readInteractiveInput(): Promise<string> {
 
     // Ensure cleanup happens exactly once
     const cleanup = () => {
-      try {
-        rl.close();
-      } catch {
-        // Interface may already be closed, ignore errors
+      if (!isResolved) {
+        isResolved = true;
+        try {
+          rl.close();
+        } catch {
+          // Interface may already be closed, ignore errors
+        }
       }
     };
 
-    // Collect lines
+    // Collect lines normally through readline
     rl.on("line", (line) => {
       lines.push(line);
     });
 
-    // Handle Ctrl+D (EOF)
+    // Intercept Ctrl+D before readline processes it (works from any position)
+    // Only attach keypress listener in actual runtime (not in tests)
+    if (process.stdin && typeof process.stdin.on === "function") {
+      process.stdin.on(
+        "keypress",
+        (_str: string, key: { ctrl?: boolean; name?: string }) => {
+          if (key && key.ctrl && key.name === "d" && !isResolved) {
+            // Get current line content from readline interface
+            // Using type assertion as readline internal interface properties are not exported
+            const rlWithLine = rl as unknown as { line?: string };
+            const currentLine = rlWithLine.line || "";
+            if (currentLine.trim()) {
+              lines.push(currentLine);
+            }
+
+            const input = lines.join("\n").trim();
+            cleanup();
+
+            if (!input) {
+              reject(new Error("No input provided"));
+            } else {
+              resolve(input);
+            }
+          }
+        },
+      );
+    }
+
+    // Handle normal close events (fallback)
     rl.on("close", () => {
-      // Avoid double resolution if error occurred first
       if (isResolved) return;
       isResolved = true;
 
@@ -168,7 +204,6 @@ async function readInteractiveInput(): Promise<string> {
     });
 
     // Handle errors from underlying input stream (stdin)
-    // Access the input stream through the readline interface options
     if (process.stdin && typeof process.stdin.on === "function") {
       process.stdin.on("error", (error: Error) => {
         if (isResolved) return;
