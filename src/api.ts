@@ -5,6 +5,8 @@
  * Following radical simplification philosophy.
  */
 
+import { CORE_EXAMPLES } from "./prompting/examples.js";
+
 /**
  * Create a structured log entry with timestamp, level, and message.
  *
@@ -32,20 +34,42 @@ function logStructured(
 }
 
 /**
- * Default elevation prompt for transforming user requests.
- * Extracted from the more complex elevation prompt system.
+ * Build the enhanced CRISP-based elevation prompt dynamically.
+ * Uses proven prompt engineering techniques including structured formatting,
+ * few-shot examples from the curated library, and explicit output constraints.
  */
-const ELEVATION_PROMPT = `Transform the user's request into a more sophisticated, technically precise articulation. Output only the elevated request - no headers, explanations, or commentary.
+function buildElevationPrompt(): string {
+  const examplesSection = CORE_EXAMPLES.map(
+    (example) => `\nInput: "${example.input}"\nOutput: "${example.output}"`,
+  ).join("");
 
-**Transform the request itself**: Take the user's simple prompt and rearticulate it using specific technical language, professional terminology, and structured phrasing.
+  return `<role>Expert prompt engineer specializing in technical communication</role>
 
-**Preserve the original intent**: The elevated version must request the same outcome as the original, just expressed with greater technical sophistication.
+<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
 
-**Add technical specificity**: Replace vague terms with precise technical concepts, methodologies, and industry-standard terminology.
+<instructions>
+1. Add specific context and measurable outcomes
+2. Replace vague terms with precise technical language
+3. Structure with clear sections and constraints
+4. Include format specifications when beneficial
+5. Specify success criteria and validation methods
+</instructions>
 
-**Output format**: Provide only the elevated request. No "Original Request:" or "Technically Precise Version:" headers. Just the transformed request itself.
+<examples>${examplesSection}
+</examples>
 
-Transform the user's prompt into a technically elevated version that a subject matter expert would use to express the same request.`;
+<output_constraints>
+Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
+</output_constraints>
+
+Transform this request:`.trim();
+}
+
+/**
+ * Enhanced CRISP-based elevation prompt for transforming user requests.
+ * Dynamically constructed from curated examples to ensure consistency.
+ */
+const ELEVATION_PROMPT = buildElevationPrompt();
 
 /**
  * Elevate a user prompt using direct Gemini API call.
