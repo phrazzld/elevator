@@ -11,6 +11,7 @@
 import { Command } from "commander";
 import { elevatePrompt } from "./api.js";
 import { getInput } from "./input.js";
+import { EXIT_CODES } from "./utils/constants.js";
 
 /**
  * CLI argument interface (simplified)
@@ -35,7 +36,7 @@ async function processPrompt(prompt: string, options: CliArgs): Promise<void> {
       "💡 Get your API key from: https://aistudio.google.com/app/apikey",
     );
     console.error('   Then set it with: export GEMINI_API_KEY="your-key-here"');
-    process.exit(1);
+    process.exit(EXIT_CODES.ERROR);
   }
 
   try {
@@ -54,7 +55,7 @@ async function processPrompt(prompt: string, options: CliArgs): Promise<void> {
       "❌ Error processing prompt:",
       error instanceof Error ? error.message : String(error),
     );
-    process.exit(1);
+    process.exit(EXIT_CODES.ERROR);
   }
 }
 
@@ -116,7 +117,7 @@ async function main(): Promise<void> {
     if (error instanceof Error) {
       if (error.message === "Operation cancelled by user") {
         console.error("❌ Operation cancelled");
-        process.exit(130); // Standard exit code for Ctrl+C
+        process.exit(EXIT_CODES.INTERRUPTED); // Standard exit code for Ctrl+C
       } else if (error.message === "No input provided") {
         console.error("❌ Error: No input provided");
         console.error(
@@ -130,7 +131,7 @@ async function main(): Promise<void> {
     } else {
       console.error(`❌ Unexpected error: ${String(error)}`);
     }
-    process.exit(1);
+    process.exit(EXIT_CODES.ERROR);
   }
 }
 
@@ -139,6 +140,6 @@ async function main(): Promise<void> {
 if (require.main === module) {
   main().catch((error) => {
     console.error("Fatal error:", error);
-    process.exit(1);
+    process.exit(EXIT_CODES.ERROR);
   });
 }
