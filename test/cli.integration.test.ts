@@ -279,4 +279,259 @@ describe("CLI Subprocess Integration Tests", () => {
       expect(result.stdout.length).toBeGreaterThan(testPrompt.length);
     }, 30000);
   });
+
+  describe("Phase 1 Enhanced Prompt System - Backward Compatibility", () => {
+    /**
+     * These tests verify that the new CRISP-based prompt system maintains
+     * backward compatibility and doesn't introduce regressions in CLI behavior.
+     */
+
+    it("should maintain consistent output format with enhanced prompts", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const testPrompt = "explain REST APIs";
+      const result = await executeCli([testPrompt], {
+        GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBeTruthy();
+      expect(result.stderr).toBe("");
+
+      // Output should be formatted consistently (unless --raw flag is used)
+      expect(result.stdout).toContain("✨ Enhanced prompt:");
+
+      // The enhanced prompt should be significantly more detailed than input
+      expect(result.stdout.length).toBeGreaterThan(testPrompt.length * 2);
+
+      // Should not contain any error indicators
+      expect(result.stdout).not.toContain("Error:");
+      expect(result.stdout).not.toContain("Failed:");
+      expect(result.stdout).not.toContain("undefined");
+    }, 30000);
+
+    it("should handle complex technical prompts without crashing", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const complexPrompt =
+        "Create a microservices architecture with authentication, rate limiting, and monitoring";
+      const result = await executeCli([complexPrompt], {
+        GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBeTruthy();
+      expect(result.stderr).toBe("");
+
+      // Should transform the complex prompt into something more structured
+      const enhancedContent = result.stdout.replace(
+        "✨ Enhanced prompt:\n",
+        "",
+      );
+      expect(enhancedContent.length).toBeGreaterThan(complexPrompt.length);
+
+      // Enhanced prompt should include more specific technical details
+      expect(enhancedContent.toLowerCase()).toMatch(
+        /architecture|design|implementation|requirements|specifications/,
+      );
+    }, 30000);
+
+    it("should preserve special characters and formatting in prompts", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const specialPrompt =
+        "Debug: console.log('Hello 🌟 World'); // Why no output?";
+      const result = await executeCli([specialPrompt], {
+        GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBeTruthy();
+      expect(result.stderr).toBe("");
+
+      // Special characters and code elements should be preserved in the enhanced output
+      expect(result.stdout).toContain("🌟");
+      expect(result.stdout).toContain("console.log");
+      expect(result.stdout).toContain("Hello");
+    }, 30000);
+
+    it("should maintain performance and not timeout with enhanced prompts", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const startTime = Date.now();
+      const result = await executeCli(["optimize my database queries"], {
+        GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+      });
+      const duration = Date.now() - startTime;
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBeTruthy();
+      expect(result.stderr).toBe("");
+
+      // Should complete within reasonable time (under 30 seconds)
+      expect(duration).toBeLessThan(30000);
+
+      // Should still produce meaningful enhanced output
+      expect(result.stdout.length).toBeGreaterThan(50);
+    }, 30000);
+
+    it("should work correctly with edge case inputs", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      // Test with very short input
+      const shortResult = await executeCli(["fix"], {
+        GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+      });
+
+      expect(shortResult.exitCode).toBe(0);
+      expect(shortResult.stdout).toBeTruthy();
+      expect(shortResult.stderr).toBe("");
+      expect(shortResult.stdout.length).toBeGreaterThan("fix".length);
+
+      // Test with long input
+      const longPrompt = "a".repeat(500) + " - help me understand this";
+      const longResult = await executeCli([longPrompt], {
+        GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+      });
+
+      expect(longResult.exitCode).toBe(0);
+      expect(longResult.stdout).toBeTruthy();
+      expect(longResult.stderr).toBe("");
+    }, 45000);
+
+    it("should maintain backward compatibility with existing CLI flags", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      // Test --raw flag still works with enhanced prompts
+      const rawResult = await executeCli(["--raw", "create a function"], {
+        GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+      });
+
+      expect(rawResult.exitCode).toBe(0);
+      expect(rawResult.stdout).toBeTruthy();
+      expect(rawResult.stderr).toBe("");
+      expect(rawResult.stdout).not.toContain("✨ Enhanced prompt:");
+
+      // Test help flag still works
+      const helpResult = await executeCli(["--help"], {});
+      expect(helpResult.exitCode).toBe(0);
+      expect(helpResult.stdout).toContain("Usage:");
+    }, 30000);
+
+    it("should produce qualitatively better responses with enhanced prompts", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const vaguePrompt = "make my code better";
+      const result = await executeCli([vaguePrompt], {
+        GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBeTruthy();
+      expect(result.stderr).toBe("");
+
+      const enhancedOutput = result.stdout.replace("✨ Enhanced prompt:\n", "");
+
+      // Enhanced prompt should include more specific guidance
+      const specificityIndicators = [
+        "specific",
+        "requirements",
+        "criteria",
+        "methodology",
+        "deliverables",
+        "format",
+        "structure",
+        "analysis",
+        "implementation",
+        "validation",
+      ];
+
+      const foundIndicators = specificityIndicators.filter((indicator) =>
+        enhancedOutput.toLowerCase().includes(indicator),
+      );
+
+      // Should contain multiple specificity indicators
+      expect(foundIndicators.length).toBeGreaterThanOrEqual(2);
+
+      // Should be significantly more detailed than the original vague prompt
+      expect(enhancedOutput.length).toBeGreaterThan(vaguePrompt.length * 5);
+    }, 30000);
+
+    it("should handle multiline input with enhanced prompt system", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const multilinePrompt = `improve my React app
+it's slow and buggy
+needs better error handling`;
+
+      const result = await executeCli(
+        [],
+        {
+          GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+        },
+        multilinePrompt,
+      );
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBeTruthy();
+      expect(result.stderr).toBe("");
+
+      // Should handle multiline input correctly with enhanced prompts
+      expect(result.stdout).toContain("✨ Enhanced prompt:");
+
+      // Enhanced output should address the multiple concerns mentioned
+      const enhancedContent = result.stdout.toLowerCase();
+      expect(enhancedContent).toMatch(/performance|optimization|speed/);
+      expect(enhancedContent).toMatch(/error|handling|debugging/);
+      expect(enhancedContent).toMatch(/react|component|application/);
+    }, 30000);
+  });
 });

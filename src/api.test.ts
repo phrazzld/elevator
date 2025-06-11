@@ -50,7 +50,7 @@ describe("elevatePrompt", () => {
 
     expect(typeof result).toBe("string");
     expect(result.length).toBeGreaterThan(0);
-  });
+  }, 30000); // 30 second timeout for API call
 
   describe("HTTP error handling", () => {
     beforeEach(() => {
