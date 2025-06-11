@@ -2,11 +2,13 @@
  * Unit tests for structured stderr logging utility
  */
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any */
+
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { logToStderr, type LogLevel, type LogEntry } from "./logger.js";
 
 describe("Logger Utility", () => {
-  let stderrWriteSpy: ReturnType<typeof vi.spyOn>;
+  let stderrWriteSpy: any;
 
   beforeEach(() => {
     // Spy on stderr.write to capture log output
@@ -30,7 +32,8 @@ describe("Logger Utility", () => {
 
       expect(stderrWriteSpy).toHaveBeenCalledTimes(1);
 
-      const writtenData = stderrWriteSpy.mock.calls[0][0] as string;
+       
+      const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       expect(writtenData).toMatch(/\n$/); // Should end with newline
 
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
@@ -49,7 +52,8 @@ describe("Logger Utility", () => {
 
       expect(stderrWriteSpy).toHaveBeenCalledTimes(1);
 
-      const writtenData = stderrWriteSpy.mock.calls[0][0] as string;
+       
+      const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
 
       expect(logEntry.level).toBe("error");
@@ -62,7 +66,8 @@ describe("Logger Utility", () => {
 
       expect(stderrWriteSpy).toHaveBeenCalledTimes(1);
 
-      const writtenData = stderrWriteSpy.mock.calls[0][0] as string;
+       
+      const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
 
       expect(logEntry.metadata).toEqual({});
@@ -71,7 +76,8 @@ describe("Logger Utility", () => {
     it("should include all mandatory fields", () => {
       logToStderr("info", "Test", { key: "value" });
 
-      const writtenData = stderrWriteSpy.mock.calls[0][0] as string;
+       
+      const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
 
       // Verify all mandatory fields are present
@@ -92,7 +98,8 @@ describe("Logger Utility", () => {
       logToStderr("info", "Timestamp test");
       const afterTime = new Date();
 
-      const writtenData = stderrWriteSpy.mock.calls[0][0] as string;
+       
+      const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
 
       const logTime = new Date(logEntry.timestamp);
@@ -111,7 +118,8 @@ describe("Logger Utility", () => {
 
       logToStderr("info", "Complex metadata", complexMetadata);
 
-      const writtenData = stderrWriteSpy.mock.calls[0][0] as string;
+       
+      const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
 
       expect(logEntry.metadata).toEqual(complexMetadata);
@@ -139,7 +147,8 @@ describe("Logger Utility", () => {
 
       logToStderr("info", specialMessage, specialMetadata);
 
-      const writtenData = stderrWriteSpy.mock.calls[0][0] as string;
+       
+      const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
 
       // Should not throw when parsing
       expect(() => JSON.parse(writtenData.trim()) as unknown).not.toThrow();

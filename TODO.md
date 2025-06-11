@@ -25,7 +25,7 @@
     - **Depends‑on:** none
 
 ## api
-- [ ] **T003 · Refactor · P1: integrate stderr logger and add observability logs**
+- [x] **T003 · Refactor · P1: integrate stderr logger and add observability logs**
     - **Context:** PLAN.md → Phase 1: Logging Infrastructure & Logging & Observability
     - **Action:**
         1. In `api.ts`, replace all `console.log` calls for structured logs with the new `logToStderr` utility.
