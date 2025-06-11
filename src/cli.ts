@@ -27,35 +27,15 @@ interface CliArgs {
  * @param options - CLI options
  */
 async function processPrompt(prompt: string, options: CliArgs): Promise<void> {
-  // Validate API key
-  const apiKey = process.env["GEMINI_API_KEY"];
-  if (!apiKey) {
-    console.error("❌ Error: GEMINI_API_KEY environment variable is required");
-    console.error("");
-    console.error(
-      "💡 Get your API key from: https://aistudio.google.com/app/apikey",
-    );
-    console.error('   Then set it with: export GEMINI_API_KEY="your-key-here"');
-    process.exit(EXIT_CODES.ERROR);
-  }
+  // Make direct API call (elevatePrompt will handle API key validation)
+  const result = await elevatePrompt(prompt);
 
-  try {
-    // Make direct API call
-    const result = await elevatePrompt(prompt);
-
-    // Output result
-    if (options.raw) {
-      console.log(result);
-    } else {
-      console.log("✨ Enhanced prompt:");
-      console.log(result);
-    }
-  } catch (error) {
-    console.error(
-      "❌ Error processing prompt:",
-      error instanceof Error ? error.message : String(error),
-    );
-    process.exit(EXIT_CODES.ERROR);
+  // Output result
+  if (options.raw) {
+    console.log(result);
+  } else {
+    console.log("✨ Enhanced prompt:");
+    console.log(result);
   }
 }
 
@@ -123,8 +103,38 @@ async function main(): Promise<void> {
         console.error(
           "Usage: elevator [prompt] or enter multiline mode without arguments",
         );
+      } else if (error.message === "GEMINI_API_KEY required") {
+        // Enhanced API key error guidance
+        console.error(
+          "❌ Error: GEMINI_API_KEY environment variable is required",
+        );
+        console.error("");
+        console.error("💡 To get started:");
+        console.error(
+          "   1. Get your API key from: https://aistudio.google.com/app/apikey",
+        );
+        console.error("   2. Set the environment variable:");
+        console.error('      export GEMINI_API_KEY="your-key-here"');
+        console.error("");
+        console.error(
+          "📖 For more help, see: https://github.com/phrazzld/elevator#setup",
+        );
       } else if (error.message.includes("timeout")) {
         console.error("❌ Error: Input timeout - no data received");
+      } else if (error.message.includes("API error:")) {
+        // Handle API-related errors (401, 403, etc.)
+        console.error(`❌ ${error.message}`);
+        if (
+          error.message.includes("401") ||
+          error.message.includes("Invalid API key")
+        ) {
+          console.error("");
+          console.error("💡 Check your API key:");
+          console.error("   1. Verify your GEMINI_API_KEY is correct");
+          console.error(
+            "   2. Get a new key from: https://aistudio.google.com/app/apikey",
+          );
+        }
       } else {
         console.error(`❌ Error: ${error.message}`);
       }
