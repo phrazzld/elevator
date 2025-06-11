@@ -98,7 +98,7 @@
         1. Test passes on Linux & macOS CI runners.
     - **Depends‑on:** [T003]
 
-- [ ] **T010 · Test · P1: add test to verify structured logs on stderr**
+- [x] **T010 · Test · P1: add test to verify structured logs on stderr**
     - **Context:** PLAN.md → Phase 4: Test `elevator "test" 2>&1 >/dev/null`
     - **Action:**
         1. Create an end-to-end test that runs the CLI with argument input, redirecting `stdout` to `/dev/null`.

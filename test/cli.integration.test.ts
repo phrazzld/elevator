@@ -635,4 +635,178 @@ needs better error handling`;
       );
     }, 30000);
   });
+
+  describe("structured logging on stderr", () => {
+    it("should output valid JSON structured logs to stderr while redirecting stdout", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const testPrompt = "create a simple function";
+      const result = await executeCli([testPrompt], {
+        GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+      });
+
+      expect(result.exitCode).toBe(0);
+
+      // stderr should contain structured JSON logs
+      expect(result.stderr).toBeTruthy();
+      expect(result.stderr.length).toBeGreaterThan(0);
+
+      // Split stderr into individual log lines
+      const logLines = result.stderr.split("\n").filter((line) => line.trim());
+      expect(logLines.length).toBeGreaterThan(0);
+
+      // Each line should be valid JSON with required structured log fields
+      let foundStartLog = false;
+      let foundCompletionLog = false;
+
+      for (const line of logLines) {
+        const logEntry = JSON.parse(line); // Should not throw
+
+        // Verify required structured log fields
+        expect(logEntry).toHaveProperty("timestamp");
+        expect(logEntry).toHaveProperty("level");
+        expect(logEntry).toHaveProperty("message");
+        expect(logEntry).toHaveProperty("metadata");
+
+        // Verify timestamp format (ISO 8601)
+        expect(logEntry.timestamp).toMatch(
+          /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+        );
+
+        // Verify level is valid
+        expect(["info", "error", "warn", "debug"]).toContain(logEntry.level);
+
+        // Verify metadata contains required API operation fields
+        if (logEntry.message.includes("API request")) {
+          expect(logEntry.metadata).toHaveProperty("component", "api");
+          expect(logEntry.metadata).toHaveProperty(
+            "operation",
+            "elevatePrompt",
+          );
+          expect(logEntry.metadata).toHaveProperty("promptLength");
+          expect(typeof logEntry.metadata.promptLength).toBe("number");
+
+          if (logEntry.message === "API request started") {
+            foundStartLog = true;
+          } else if (
+            logEntry.message === "API request completed successfully"
+          ) {
+            foundCompletionLog = true;
+            expect(logEntry.metadata).toHaveProperty("responseLength");
+            expect(logEntry.metadata).toHaveProperty("durationMs");
+            expect(typeof logEntry.metadata.responseLength).toBe("number");
+            expect(typeof logEntry.metadata.durationMs).toBe("number");
+          }
+        }
+      }
+
+      // Verify we found the expected lifecycle logs
+      expect(foundStartLog).toBe(true);
+      expect(foundCompletionLog).toBe(true);
+    }, 30000);
+
+    it("should log API errors with proper structure and context", async () => {
+      const testPrompt = "test error logging";
+      const result = await executeCli([testPrompt], {
+        // Use invalid API key to trigger error
+        GEMINI_API_KEY: "invalid-key-for-testing",
+      });
+
+      expect(result.exitCode).toBe(1);
+
+      // stderr should contain structured error logs
+      expect(result.stderr).toBeTruthy();
+      const logLines = result.stderr.split("\n").filter((line) => line.trim());
+
+      let foundErrorLog = false;
+
+      for (const line of logLines) {
+        // Skip non-JSON lines (user-facing error messages)
+        if (!line.startsWith("{")) {
+          continue;
+        }
+
+        try {
+          const logEntry = JSON.parse(line);
+
+          if (
+            logEntry.level === "error" &&
+            logEntry.message === "API request failed"
+          ) {
+            foundErrorLog = true;
+
+            // Verify error log structure
+            expect(logEntry.metadata).toHaveProperty("component", "api");
+            expect(logEntry.metadata).toHaveProperty(
+              "operation",
+              "elevatePrompt",
+            );
+            expect(logEntry.metadata).toHaveProperty("error");
+            expect(logEntry.metadata).toHaveProperty("promptLength");
+            expect(logEntry.metadata).toHaveProperty("durationMs");
+
+            // Verify error message contains meaningful information
+            expect(logEntry.metadata.error).toContain("API error:");
+            expect(typeof logEntry.metadata.promptLength).toBe("number");
+            expect(typeof logEntry.metadata.durationMs).toBe("number");
+
+            // Should have HTTP status for API errors
+            if (logEntry.metadata.httpStatus) {
+              expect(typeof logEntry.metadata.httpStatus).toBe("number");
+            }
+          }
+        } catch (parseError) {
+          // Skip lines that aren't valid JSON (user-facing messages)
+          continue;
+        }
+      }
+
+      expect(foundErrorLog).toBe(true);
+    }, 30000);
+
+    it("should never log sensitive information like API keys", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const testPrompt = "security test prompt";
+      const testApiKey = process.env["GEMINI_API_KEY"];
+      const result = await executeCli([testPrompt], {
+        GEMINI_API_KEY: testApiKey,
+      });
+
+      expect(result.exitCode).toBe(0);
+
+      // Check both stdout and stderr for API key leakage
+      expect(result.stdout).not.toContain(testApiKey);
+      expect(result.stderr).not.toContain(testApiKey);
+
+      // Parse each log entry to ensure no sensitive data is logged
+      const logLines = result.stderr.split("\n").filter((line) => line.trim());
+
+      for (const line of logLines) {
+        const logEntry = JSON.parse(line);
+
+        // Convert entire log entry to string and check for API key
+        const logString = JSON.stringify(logEntry);
+        expect(logString).not.toContain(testApiKey);
+
+        // Ensure no generic API key patterns are present
+        expect(logString).not.toMatch(/[a-zA-Z0-9]{32,}/); // No long alphanumeric strings that could be keys
+        expect(logString).not.toContain("GEMINI_API_KEY");
+        expect(logString).not.toContain("api_key");
+        expect(logString).not.toContain("apiKey");
+      }
+    }, 30000);
+  });
 });
