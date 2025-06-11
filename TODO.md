@@ -44,7 +44,7 @@
     - **Depends‑on:** [T003]
 
 ## cli
-- [ ] **T005 · Refactor · P1: update cli exit points to use standardized codes**
+- [x] **T005 · Refactor · P1: update cli exit points to use standardized codes**
     - **Context:** PLAN.md → Phase 2: Exit Code Standardization, step 2
     - **Action:**
         1. In `cli.ts`, replace all hard-coded `process.exit()` numbers with the corresponding values from `EXIT_CODES`.
@@ -54,7 +54,7 @@
         2. A forced error exits with code 1.
     - **Depends‑on:** [T002]
 
-- [ ] **T006 · Feature · P1: improve api key error message and guidance**
+- [x] **T006 · Feature · P1: improve api key error message and guidance**
     - **Context:** PLAN.md → Phase 3: Error Message Enhancement, step 1
     - **Action:**
         1. In the CLI's error handler, specifically catch missing/invalid API key errors.
@@ -65,7 +65,7 @@
         1. Unset the API key and run the CLI; confirm the new error message is displayed.
     - **Depends‑on:** [T005]
 
-- [ ] **T007 · Feature · P2: enhance help text with pipe usage examples**
+- [x] **T007 · Feature · P2: enhance help text with pipe usage examples**
     - **Context:** PLAN.md → Phase 3: Error Message Enhancement, step 2
     - **Action:**
         1. Append examples for common pipe scenarios (e.g., `echo`, `cat`) and heredoc usage to the `cli --help` output.
@@ -77,7 +77,7 @@
         1. Run `node dist/cli.js --help` and review the output for clarity.
     - **Depends‑on:** none
 
-- [ ] **T008 · Feature · P1: implement 1mb input size limit**
+- [x] **T008 · Feature · P1: implement 1mb input size limit**
     - **Context:** PLAN.md → Security Considerations & Open Question #3
     - **Action:**
         1. In the stdin handling logic, track the size of the incoming data stream.
@@ -89,7 +89,7 @@
     - **Depends‑on:** [T005]
 
 ## tests
-- [ ] **T009 · Test · P1: add test for clean stdout pipe compatibility**
+- [x] **T009 · Test · P1: add test for clean stdout pipe compatibility**
     - **Context:** PLAN.md → Phase 4: Comprehensive Testing, Test `echo "test" | elevator --raw`
     - **Action:**
         1. Create an end-to-end test that spawns the CLI via a child process with piped stdin.

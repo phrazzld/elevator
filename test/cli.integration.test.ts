@@ -534,4 +534,105 @@ needs better error handling`;
       expect(enhancedContent).toMatch(/react|component|application/);
     }, 30000);
   });
+
+  describe("stdout pipe compatibility", () => {
+    it("should output only API response to stdout when using --raw with piped input", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const testPrompt = "explain APIs";
+      const result = await executeCli(
+        ["--raw"],
+        {
+          GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+        },
+        testPrompt,
+      );
+
+      expect(result.exitCode).toBe(0);
+
+      // stdout should contain only the API response content - no formatting, logs, or extra text
+      expect(result.stdout).toBeTruthy();
+      expect(result.stdout.length).toBeGreaterThan(0);
+
+      // stdout should NOT contain any CLI formatting or metadata
+      expect(result.stdout).not.toContain("✨ Enhanced prompt:");
+      expect(result.stdout).not.toContain("Error:");
+      expect(result.stdout).not.toContain("API request");
+
+      // Check for JSON log structure patterns, not individual words that could appear in responses
+      expect(result.stdout).not.toMatch(/"timestamp":/);
+      expect(result.stdout).not.toMatch(/"level":/);
+      expect(result.stdout).not.toMatch(/"component":/);
+      expect(result.stdout).not.toMatch(/"operation":/);
+      expect(result.stdout).not.toMatch(/"metadata":/);
+      expect(result.stdout).not.toMatch(/"message":/);
+      expect(result.stdout).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/); // ISO timestamp pattern
+
+      // stdout should be pure API response - no JSON log entries
+      expect(() => JSON.parse(result.stdout)).toThrow(); // Should not be valid JSON log
+
+      // All logging should go to stderr, not stdout
+      expect(result.stderr).not.toBe(""); // stderr should contain logs
+
+      // Verify stderr contains structured logs (but stdout doesn't)
+      const stderrLines = result.stderr
+        .split("\n")
+        .filter((line) => line.trim());
+      expect(stderrLines.length).toBeGreaterThan(0);
+
+      // Each stderr line should be valid JSON log entry
+      for (const line of stderrLines) {
+        expect(() => {
+          const logEntry = JSON.parse(line);
+          expect(logEntry).toHaveProperty("timestamp");
+          expect(logEntry).toHaveProperty("level");
+          expect(logEntry).toHaveProperty("message");
+          expect(logEntry).toHaveProperty("metadata");
+        }).not.toThrow();
+      }
+    }, 30000);
+
+    it("should be fully compatible with shell pipes and redirects", async () => {
+      // Skip this test if no API key is available
+      if (!process.env["GEMINI_API_KEY"]) {
+        console.log(
+          "⏭️  Skipping CLI subprocess test - GEMINI_API_KEY not set",
+        );
+        return;
+      }
+
+      const testPrompt = "create a function";
+      const result = await executeCli(
+        ["--raw"],
+        {
+          GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
+        },
+        testPrompt,
+      );
+
+      expect(result.exitCode).toBe(0);
+
+      // The stdout should be suitable for piping to other commands
+      // This means it should be plain text without control characters or formatting
+      expect(result.stdout).not.toMatch(/\x1b\[[0-9;]*m/); // No ANSI color codes
+      expect(result.stdout).not.toContain("\r"); // No carriage returns
+      expect(result.stdout.trim()).toBe(result.stdout.trim()); // No unexpected whitespace
+
+      // Should be single response, not multiple lines of logs
+      expect(result.stdout).not.toContain('\n{"timestamp"'); // No JSON logs in stdout
+      expect(result.stdout).not.toContain('\n{"level"'); // No JSON logs in stdout
+
+      // stderr should contain all the logging information
+      expect(result.stderr).toContain('"message":"API request started"');
+      expect(result.stderr).toContain(
+        '"message":"API request completed successfully"',
+      );
+    }, 30000);
+  });
 });
