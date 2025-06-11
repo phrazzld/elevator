@@ -94,7 +94,6 @@ export async function elevatePrompt(prompt: string): Promise<string> {
           },
         ],
       }),
-      signal: AbortSignal.timeout(30000), // 30-second timeout
     });
 
     // Check for HTTP errors with detailed messages
@@ -196,34 +195,6 @@ export async function elevatePrompt(prompt: string): Promise<string> {
 
     return result;
   } catch (error) {
-    // Handle timeout errors specifically
-    if (error instanceof Error && error.name === "TimeoutError") {
-      const errorMessage = "Request timeout - API call exceeded 30 seconds";
-      logToStderr("error", "API request failed", {
-        component: "api",
-        operation: "elevatePrompt",
-        error: errorMessage,
-        errorType: "timeout",
-        promptLength: prompt.length,
-        durationMs: globalThis.performance.now() - startTime,
-      });
-      throw new Error(errorMessage);
-    }
-
-    // Handle AbortError (also related to timeout in some environments)
-    if (error instanceof Error && error.name === "AbortError") {
-      const errorMessage = "Request timeout - API call exceeded 30 seconds";
-      logToStderr("error", "API request failed", {
-        component: "api",
-        operation: "elevatePrompt",
-        error: errorMessage,
-        errorType: "abort",
-        promptLength: prompt.length,
-        durationMs: globalThis.performance.now() - startTime,
-      });
-      throw new Error(errorMessage);
-    }
-
     // Handle other errors (network errors, etc.) - only log if not already logged
     if (error instanceof Error) {
       // Only log if this error hasn't been logged yet (i.e., network errors)

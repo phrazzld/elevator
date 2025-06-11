@@ -174,70 +174,6 @@ describe("elevatePrompt", () => {
     });
   });
 
-  describe("timeout handling", () => {
-    beforeEach(() => {
-      // Set API key for timeout tests
-      process.env["GEMINI_API_KEY"] = "test-key";
-    });
-
-    it("should handle TimeoutError and throw descriptive message", async () => {
-      const timeoutError = new Error("Request timeout");
-      timeoutError.name = "TimeoutError";
-
-      const mockFetch = vi.fn().mockRejectedValue(timeoutError);
-      vi.stubGlobal("fetch", mockFetch);
-
-      await expect(elevatePrompt("test")).rejects.toThrow(
-        "Request timeout - API call exceeded 30 seconds",
-      );
-
-      vi.unstubAllGlobals();
-    });
-
-    it("should handle AbortError and throw descriptive message", async () => {
-      const abortError = new Error("Request aborted");
-      abortError.name = "AbortError";
-
-      const mockFetch = vi.fn().mockRejectedValue(abortError);
-      vi.stubGlobal("fetch", mockFetch);
-
-      await expect(elevatePrompt("test")).rejects.toThrow(
-        "Request timeout - API call exceeded 30 seconds",
-      );
-
-      vi.unstubAllGlobals();
-    });
-
-    it("should include timeout signal in fetch call", async () => {
-      // Mock fetch to capture the arguments
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({
-          candidates: [
-            {
-              content: {
-                parts: [{ text: "test response" }],
-              },
-            },
-          ],
-        }),
-      });
-      vi.stubGlobal("fetch", mockFetch);
-
-      await elevatePrompt("test");
-
-      // Verify fetch was called with signal parameter
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      const [, options] = mockFetch.mock.calls[0] as [
-        string,
-        { signal?: AbortSignal },
-      ];
-      expect(options.signal).toBeDefined();
-
-      vi.unstubAllGlobals();
-    });
-  });
-
   describe("structured logging", () => {
     interface LogEntry {
       timestamp: string;
@@ -250,7 +186,6 @@ describe("elevatePrompt", () => {
         responseLength?: number;
         error?: string;
         httpStatus?: number;
-        errorType?: string;
         durationMs: number;
       };
     }
@@ -291,9 +226,8 @@ describe("elevatePrompt", () => {
 
       // Verify start log was called
       expect(stderrWriteSpy).toHaveBeenCalled();
-       
+
       const startLogCall = stderrWriteSpy.mock.calls.find((call: any) => {
-         
         const logEntry = JSON.parse((call[0] as string).trim()) as {
           message: string;
         };
@@ -301,7 +235,6 @@ describe("elevatePrompt", () => {
       });
       expect(startLogCall).toBeDefined();
 
-       
       const startLog = JSON.parse(
         (startLogCall![0] as string).trim(),
       ) as LogEntry;
@@ -336,9 +269,8 @@ describe("elevatePrompt", () => {
 
       // Verify success log was called
       expect(stderrWriteSpy).toHaveBeenCalled();
-       
+
       const successLogCall = stderrWriteSpy.mock.calls.find((call: any) => {
-         
         const logEntry = JSON.parse((call[0] as string).trim()) as {
           message: string;
         };
@@ -346,7 +278,6 @@ describe("elevatePrompt", () => {
       });
       expect(successLogCall).toBeDefined();
 
-       
       const successLog = JSON.parse(
         (successLogCall![0] as string).trim(),
       ) as LogEntry;
@@ -376,16 +307,15 @@ describe("elevatePrompt", () => {
 
       // Verify error log was called
       expect(stderrWriteSpy).toHaveBeenCalled();
-       
+
       const errorLogCall = stderrWriteSpy.mock.calls.find((call: any) => {
-         
         const logEntry = JSON.parse((call[0] as string).trim()) as {
           message: string;
         };
         return logEntry.message.includes("API request failed");
       });
       expect(errorLogCall).toBeDefined();
-       
+
       const errorLog = JSON.parse(
         (errorLogCall![0] as string).trim(),
       ) as LogEntry;
@@ -405,48 +335,6 @@ describe("elevatePrompt", () => {
       vi.unstubAllGlobals();
     });
 
-    it("should log timeout errors with structured format", async () => {
-      const timeoutError = new Error("Request timeout");
-      timeoutError.name = "TimeoutError";
-
-      const mockFetch = vi.fn().mockRejectedValue(timeoutError);
-      vi.stubGlobal("fetch", mockFetch);
-
-      await expect(elevatePrompt("test")).rejects.toThrow();
-
-      // Verify error log was called
-      expect(stderrWriteSpy).toHaveBeenCalled();
-       
-      const errorLogCall = stderrWriteSpy.mock.calls.find((call: any) => {
-         
-        const logEntry = JSON.parse((call[0] as string).trim()) as {
-          message: string;
-        };
-        return logEntry.message.includes("API request failed");
-      });
-      expect(errorLogCall).toBeDefined();
-       
-      const errorLog = JSON.parse(
-        (errorLogCall![0] as string).trim(),
-      ) as LogEntry;
-
-      expect(errorLog.timestamp).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
-      );
-      expect(errorLog.level).toBe("error");
-      expect(errorLog.message).toBe("API request failed");
-      expect(errorLog.metadata.component).toBe("api");
-      expect(errorLog.metadata.operation).toBe("elevatePrompt");
-      expect(errorLog.metadata.error).toBe(
-        "Request timeout - API call exceeded 30 seconds",
-      );
-      expect(errorLog.metadata.errorType).toBe("timeout");
-      expect(errorLog.metadata.promptLength).toBe(4);
-      expect(errorLog.metadata.durationMs).toBeTypeOf("number");
-
-      vi.unstubAllGlobals();
-    });
-
     it("should log JSON parsing errors with structured format", async () => {
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
@@ -458,16 +346,15 @@ describe("elevatePrompt", () => {
 
       // Verify error log was called
       expect(stderrWriteSpy).toHaveBeenCalled();
-       
+
       const errorLogCall = stderrWriteSpy.mock.calls.find((call: any) => {
-         
         const logEntry = JSON.parse((call[0] as string).trim()) as {
           message: string;
         };
         return logEntry.message.includes("API request failed");
       });
       expect(errorLogCall).toBeDefined();
-       
+
       const errorLog = JSON.parse(
         (errorLogCall![0] as string).trim(),
       ) as LogEntry;
@@ -506,10 +393,9 @@ describe("elevatePrompt", () => {
       await elevatePrompt("test");
 
       // Check all log calls to ensure no API key is present
-       
+
       const allLogCalls = stderrWriteSpy.mock.calls;
       for (const call of allLogCalls) {
-         
         const logEntry = (call[0] as string).trim();
         expect(logEntry).not.toContain("test-key");
         expect(logEntry).not.toContain("GEMINI_API_KEY");

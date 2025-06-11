@@ -38,14 +38,9 @@
         1. Run `node dist/cli.js "ping" 2>&1 >/dev/null | jq -e '.message'` returns a value.
     - **Depends‑on:** [T001]
 
-- [ ] **T004 · Feature · P1: implement 30s timeout for api calls**
-    - **Context:** PLAN.md → Security Considerations & Open Question #4
-    - **Action:**
-        1. Wrap the API call in `api.ts` with a mechanism that aborts the request after a 30-second timeout.
-        2. On timeout, throw a specific error that can be caught by the CLI to provide a clear user message.
-    - **Done‑when:**
-        1. A mocked API call exceeding 30s is correctly aborted.
-        2. A user-friendly timeout error is logged to stderr.
+- [x] **T004 · Feature · P1: implement 30s timeout for api calls** *(CANCELLED)*
+    - **Context:** PLAN.md → Security Considerations & Open Question #4 - User feedback: API calls can take over a minute, timeouts not wanted
+    - **Action:** *(Cancelled - timeout removed from implementation)*
     - **Depends‑on:** [T003]
 
 ## cli
