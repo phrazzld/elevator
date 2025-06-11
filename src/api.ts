@@ -32,20 +32,44 @@ function logStructured(
 }
 
 /**
- * Default elevation prompt for transforming user requests.
- * Extracted from the more complex elevation prompt system.
+ * Enhanced CRISP-based elevation prompt for transforming user requests.
+ * Uses proven prompt engineering techniques including structured formatting,
+ * few-shot examples, and explicit output constraints.
  */
-const ELEVATION_PROMPT = `Transform the user's request into a more sophisticated, technically precise articulation. Output only the elevated request - no headers, explanations, or commentary.
+const ELEVATION_PROMPT = `<role>Expert prompt engineer specializing in technical communication</role>
 
-**Transform the request itself**: Take the user's simple prompt and rearticulate it using specific technical language, professional terminology, and structured phrasing.
+<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
 
-**Preserve the original intent**: The elevated version must request the same outcome as the original, just expressed with greater technical sophistication.
+<instructions>
+1. Add specific context and measurable outcomes
+2. Replace vague terms with precise technical language
+3. Structure with clear sections and constraints
+4. Include format specifications when beneficial
+5. Specify success criteria and validation methods
+</instructions>
 
-**Add technical specificity**: Replace vague terms with precise technical concepts, methodologies, and industry-standard terminology.
+<examples>
+Input: "help with my code"
+Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
 
-**Output format**: Provide only the elevated request. No "Original Request:" or "Technically Precise Version:" headers. Just the transformed request itself.
+Input: "write about AI"
+Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
 
-Transform the user's prompt into a technically elevated version that a subject matter expert would use to express the same request.`;
+Input: "analyze this data"
+Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
+
+Input: "fix my bug"
+Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
+
+Input: "create a design"
+Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
+</examples>
+
+<output_constraints>
+Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
+</output_constraints>
+
+Transform this request:`;
 
 /**
  * Elevate a user prompt using direct Gemini API call.
