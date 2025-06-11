@@ -61,10 +61,36 @@ function createProgram(): Command {
       "after",
       `
 Examples:
-  $ elevator "fix this bug"                    # Single-line argument
-  $ elevator                                   # Multiline mode (Ctrl+D to submit)
-  $ echo "refactor this code" | elevator       # Piped input
-  $ elevator < prompt.txt                      # File input`,
+  Single-line prompts:
+    $ elevator "fix this bug"                  # Direct argument
+    $ elevator "optimize this function"        # Technical requests
+
+  Multiline interactive mode:
+    $ elevator                                 # Enter multiline mode
+    # Type multiple lines, press Ctrl+D to submit
+
+  Piped input (great for scripts):
+    $ echo "refactor this code" | elevator     # Echo command
+    $ cat prompt.txt | elevator               # File contents
+    $ elevator < prompt.txt                    # File redirect
+    $ printf "Line 1\\nLine 2" | elevator      # Multiline via printf
+
+  Raw output (for scripts):
+    $ echo "explain APIs" | elevator --raw     # No formatting
+    $ elevator "document this" --raw | tee output.txt
+
+  Heredoc examples:
+    $ elevator << 'EOF'
+    Please review this code for:
+    - Performance issues
+    - Security vulnerabilities
+    - Best practices
+    EOF
+
+Input modes:
+  - Direct argument: Single-line prompt as command argument
+  - Multiline: Interactive mode for complex prompts (Ctrl+D to submit)
+  - Piped: Read from stdin, perfect for automation and scripts`,
     );
 
   // Output options
