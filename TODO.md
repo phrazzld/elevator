@@ -15,7 +15,7 @@
     - **Depends‑on:** none
 
 ## utils/constants
-- [ ] **T002 · Feature · P0: define standardized exit codes**
+- [x] **T002 · Feature · P0: define standardized exit codes**
     - **Context:** PLAN.md → Phase 2: Exit Code Standardization, step 1
     - **Action:**
         1. Create `utils/constants.ts` exporting `EXIT_CODES` enum: `{ SUCCESS: 0, ERROR: 1, INTERRUPTED: 130 }`.
