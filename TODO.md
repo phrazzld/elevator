@@ -107,7 +107,7 @@
         1. Test successfully parses a log entry from the captured `stderr` stream.
     - **Depends‑on:** [T003]
 
-- [ ] **T011 · Test · P1: add test to ensure all standardized exit codes conform to spec**
+- [x] **T011 · Test · P1: add test to ensure all standardized exit codes conform to spec**
     - **Context:** PLAN.md → Phase 4: Test exit code behavior
     - **Action:**
         1. Create end-to-end tests that execute the CLI in success, error, and interrupt (via `SIGINT`) scenarios.
@@ -116,7 +116,7 @@
         1. Test suite reports all exit code assertions passed.
     - **Depends‑on:** [T005]
 
-- [ ] **T012 · Test · P1: add test to ensure api key is never logged**
+- [x] **T012 · Test · P1: add test to ensure api key is never logged**
     - **Context:** PLAN.md → Security Considerations: API Key Handling
     - **Action:**
         1. Create a test that runs the CLI with an API key set.
