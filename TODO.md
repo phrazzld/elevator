@@ -134,7 +134,7 @@
         1. Test coverage for the CLI's core logic path is ≥95%.
     - **Depends‑on:** [T004, T006, T008, T012]
 
-- [ ] **T014 · Test · P3: add performance benchmarks**
+- [x] **T014 · Test · P3: add performance benchmarks**
     - **Context:** PLAN.md → Phase 4: Performance testing
     - **Action:**
         1. Create a benchmark script that measures CLI startup time and memory usage for a typical operation.
