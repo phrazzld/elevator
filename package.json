@@ -31,6 +31,8 @@
     "test:coverage": "vitest --coverage",
     "test:coverage:ci": "vitest run --coverage --reporter=default",
     "coverage:report": "vitest run --coverage --reporter=json --reporter=html",
+    "benchmark:cli": "node scripts/benchmark-cli.js",
+    "benchmark:cli:ci": "node scripts/benchmark-cli.js --ci",
     "prepare": "husky",
     "prepublishOnly": "npm run build && npm run lint && npm run typecheck && npm run test:coverage:ci",
     "prepack": "npm run build",

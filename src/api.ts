@@ -6,32 +6,7 @@
  */
 
 import { CORE_EXAMPLES } from "./prompting/examples.js";
-
-/**
- * Create a structured log entry with timestamp, level, and message.
- *
- * @param level Log level (info, error)
- * @param message Log message
- * @param metadata Additional metadata to include
- */
-function logStructured(
-  level: "info" | "error",
-  message: string,
-  metadata: Record<string, unknown> = {},
-): void {
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    level,
-    message,
-    ...metadata,
-  };
-
-  if (level === "error") {
-    console.error(JSON.stringify(logEntry));
-  } else {
-    console.log(JSON.stringify(logEntry));
-  }
-}
+import { logToStderr } from "./utils/logger.js";
 
 /**
  * Build the enhanced CRISP-based elevation prompt dynamically.
@@ -89,8 +64,11 @@ export async function elevatePrompt(prompt: string): Promise<string> {
   const url =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent";
 
+  // Track performance for API latency metrics
+  const startTime = globalThis.performance.now();
+
   // Log API request start
-  logStructured("info", "API request started", {
+  logToStderr("info", "API request started", {
     component: "api",
     operation: "elevatePrompt",
     promptLength: prompt.length,
@@ -116,7 +94,6 @@ export async function elevatePrompt(prompt: string): Promise<string> {
           },
         ],
       }),
-      signal: AbortSignal.timeout(30000), // 30-second timeout
     });
 
     // Check for HTTP errors with detailed messages
@@ -145,12 +122,13 @@ export async function elevatePrompt(prompt: string): Promise<string> {
           break;
       }
 
-      logStructured("error", "API request failed", {
+      logToStderr("error", "API request failed", {
         component: "api",
         operation: "elevatePrompt",
         error: errorMessage,
         httpStatus: response.status,
         promptLength: prompt.length,
+        durationMs: globalThis.performance.now() - startTime,
       });
 
       throw new Error(errorMessage);
@@ -180,11 +158,12 @@ export async function elevatePrompt(prompt: string): Promise<string> {
     } catch {
       const errorMessage =
         "Invalid JSON response from API - response may be corrupted";
-      logStructured("error", "API request failed", {
+      logToStderr("error", "API request failed", {
         component: "api",
         operation: "elevatePrompt",
         error: errorMessage,
         promptLength: prompt.length,
+        durationMs: globalThis.performance.now() - startTime,
       });
       throw new Error(errorMessage);
     }
@@ -192,53 +171,30 @@ export async function elevatePrompt(prompt: string): Promise<string> {
     // Extract generated content
     if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
       const errorMessage = "Invalid API response structure";
-      logStructured("error", "API request failed", {
+      logToStderr("error", "API request failed", {
         component: "api",
         operation: "elevatePrompt",
         error: errorMessage,
         promptLength: prompt.length,
+        durationMs: globalThis.performance.now() - startTime,
       });
       throw new Error(errorMessage);
     }
 
     const result = data.candidates[0].content.parts[0].text;
 
-    // Log successful completion
-    logStructured("info", "API request completed successfully", {
+    // Log successful completion with performance metrics
+    const durationMs = globalThis.performance.now() - startTime;
+    logToStderr("info", "API request completed successfully", {
       component: "api",
       operation: "elevatePrompt",
       promptLength: prompt.length,
       responseLength: result.length,
+      durationMs,
     });
 
     return result;
   } catch (error) {
-    // Handle timeout errors specifically
-    if (error instanceof Error && error.name === "TimeoutError") {
-      const errorMessage = "Request timeout - API call exceeded 30 seconds";
-      logStructured("error", "API request failed", {
-        component: "api",
-        operation: "elevatePrompt",
-        error: errorMessage,
-        errorType: "timeout",
-        promptLength: prompt.length,
-      });
-      throw new Error(errorMessage);
-    }
-
-    // Handle AbortError (also related to timeout in some environments)
-    if (error instanceof Error && error.name === "AbortError") {
-      const errorMessage = "Request timeout - API call exceeded 30 seconds";
-      logStructured("error", "API request failed", {
-        component: "api",
-        operation: "elevatePrompt",
-        error: errorMessage,
-        errorType: "abort",
-        promptLength: prompt.length,
-      });
-      throw new Error(errorMessage);
-    }
-
     // Handle other errors (network errors, etc.) - only log if not already logged
     if (error instanceof Error) {
       // Only log if this error hasn't been logged yet (i.e., network errors)
@@ -247,24 +203,26 @@ export async function elevatePrompt(prompt: string): Promise<string> {
         !error.message.includes("Invalid JSON response") &&
         !error.message.includes("Invalid API response structure")
       ) {
-        logStructured("error", "API request failed", {
+        logToStderr("error", "API request failed", {
           component: "api",
           operation: "elevatePrompt",
           error: error.message,
           errorType: "network",
           promptLength: prompt.length,
+          durationMs: globalThis.performance.now() - startTime,
         });
       }
       throw error;
     }
 
     const errorMessage = `Unexpected error: ${String(error)}`;
-    logStructured("error", "API request failed", {
+    logToStderr("error", "API request failed", {
       component: "api",
       operation: "elevatePrompt",
       error: errorMessage,
       errorType: "unexpected",
       promptLength: prompt.length,
+      durationMs: globalThis.performance.now() - startTime,
     });
     throw new Error(errorMessage);
   }

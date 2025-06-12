@@ -11,11 +11,12 @@
 import { Command } from "commander";
 import { elevatePrompt } from "./api.js";
 import { getInput } from "./input.js";
+import { EXIT_CODES } from "./utils/constants.js";
 
 /**
  * CLI argument interface (simplified)
  */
-interface CliArgs {
+export interface CliArgs {
   raw?: boolean;
 }
 
@@ -25,36 +26,19 @@ interface CliArgs {
  * @param prompt - The user's prompt to elevate
  * @param options - CLI options
  */
-async function processPrompt(prompt: string, options: CliArgs): Promise<void> {
-  // Validate API key
-  const apiKey = process.env["GEMINI_API_KEY"];
-  if (!apiKey) {
-    console.error("❌ Error: GEMINI_API_KEY environment variable is required");
-    console.error("");
-    console.error(
-      "💡 Get your API key from: https://aistudio.google.com/app/apikey",
-    );
-    console.error('   Then set it with: export GEMINI_API_KEY="your-key-here"');
-    process.exit(1);
-  }
+export async function processPrompt(
+  prompt: string,
+  options: CliArgs,
+): Promise<void> {
+  // Make direct API call (elevatePrompt will handle API key validation)
+  const result = await elevatePrompt(prompt);
 
-  try {
-    // Make direct API call
-    const result = await elevatePrompt(prompt);
-
-    // Output result
-    if (options.raw) {
-      console.log(result);
-    } else {
-      console.log("✨ Enhanced prompt:");
-      console.log(result);
-    }
-  } catch (error) {
-    console.error(
-      "❌ Error processing prompt:",
-      error instanceof Error ? error.message : String(error),
-    );
-    process.exit(1);
+  // Output result
+  if (options.raw) {
+    console.log(result);
+  } else {
+    console.log("✨ Enhanced prompt:");
+    console.log(result);
   }
 }
 
@@ -63,7 +47,7 @@ async function processPrompt(prompt: string, options: CliArgs): Promise<void> {
  *
  * @returns Configured commander program
  */
-function createProgram(): Command {
+export function createProgram(): Command {
   const program = new Command();
 
   program
@@ -80,10 +64,36 @@ function createProgram(): Command {
       "after",
       `
 Examples:
-  $ elevator "fix this bug"                    # Single-line argument
-  $ elevator                                   # Multiline mode (Ctrl+D to submit)
-  $ echo "refactor this code" | elevator       # Piped input
-  $ elevator < prompt.txt                      # File input`,
+  Single-line prompts:
+    $ elevator "fix this bug"                  # Direct argument
+    $ elevator "optimize this function"        # Technical requests
+
+  Multiline interactive mode:
+    $ elevator                                 # Enter multiline mode
+    # Type multiple lines, press Ctrl+D to submit
+
+  Piped input (great for scripts):
+    $ echo "refactor this code" | elevator     # Echo command
+    $ cat prompt.txt | elevator               # File contents
+    $ elevator < prompt.txt                    # File redirect
+    $ printf "Line 1\\nLine 2" | elevator      # Multiline via printf
+
+  Raw output (for scripts):
+    $ echo "explain APIs" | elevator --raw     # No formatting
+    $ elevator "document this" --raw | tee output.txt
+
+  Heredoc examples:
+    $ elevator << 'EOF'
+    Please review this code for:
+    - Performance issues
+    - Security vulnerabilities
+    - Best practices
+    EOF
+
+Input modes:
+  - Direct argument: Single-line prompt as command argument
+  - Multiline: Interactive mode for complex prompts (Ctrl+D to submit)
+  - Piped: Read from stdin, perfect for automation and scripts`,
     );
 
   // Output options
@@ -97,7 +107,7 @@ Examples:
 /**
  * Main CLI entry point.
  */
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
   try {
     const program = createProgram();
     program.parse();
@@ -116,21 +126,51 @@ async function main(): Promise<void> {
     if (error instanceof Error) {
       if (error.message === "Operation cancelled by user") {
         console.error("❌ Operation cancelled");
-        process.exit(130); // Standard exit code for Ctrl+C
+        process.exit(EXIT_CODES.INTERRUPTED); // Standard exit code for Ctrl+C
       } else if (error.message === "No input provided") {
         console.error("❌ Error: No input provided");
         console.error(
           "Usage: elevator [prompt] or enter multiline mode without arguments",
         );
+      } else if (error.message === "GEMINI_API_KEY required") {
+        // Enhanced API key error guidance
+        console.error(
+          "❌ Error: GEMINI_API_KEY environment variable is required",
+        );
+        console.error("");
+        console.error("💡 To get started:");
+        console.error(
+          "   1. Get your API key from: https://aistudio.google.com/app/apikey",
+        );
+        console.error("   2. Set the environment variable:");
+        console.error('      export GEMINI_API_KEY="your-key-here"');
+        console.error("");
+        console.error(
+          "📖 For more help, see: https://github.com/phrazzld/elevator#setup",
+        );
       } else if (error.message.includes("timeout")) {
         console.error("❌ Error: Input timeout - no data received");
+      } else if (error.message.includes("API error:")) {
+        // Handle API-related errors (401, 403, etc.)
+        console.error(`❌ ${error.message}`);
+        if (
+          error.message.includes("401") ||
+          error.message.includes("Invalid API key")
+        ) {
+          console.error("");
+          console.error("💡 Check your API key:");
+          console.error("   1. Verify your GEMINI_API_KEY is correct");
+          console.error(
+            "   2. Get a new key from: https://aistudio.google.com/app/apikey",
+          );
+        }
       } else {
         console.error(`❌ Error: ${error.message}`);
       }
     } else {
       console.error(`❌ Unexpected error: ${String(error)}`);
     }
-    process.exit(1);
+    process.exit(EXIT_CODES.ERROR);
   }
 }
 
@@ -139,6 +179,6 @@ async function main(): Promise<void> {
 if (require.main === module) {
   main().catch((error) => {
     console.error("Fatal error:", error);
-    process.exit(1);
+    process.exit(EXIT_CODES.ERROR);
   });
 }

@@ -55,6 +55,8 @@ async function readMultilineInput(): Promise<string> {
  */
 async function readStreamToEnd(stream: Readable): Promise<string> {
   const chunks: string[] = [];
+  const maxSizeBytes = 1024 * 1024; // 1MB limit
+  let totalSizeBytes = 0;
 
   // Set encoding to handle UTF-8 properly
   stream.setEncoding("utf8");
@@ -66,6 +68,19 @@ async function readStreamToEnd(stream: Readable): Promise<string> {
     }, 30000);
 
     stream.on("data", (chunk: string) => {
+      // Calculate chunk size in bytes (UTF-8 encoding)
+      const chunkSizeBytes = Buffer.byteLength(chunk, "utf8");
+      totalSizeBytes += chunkSizeBytes;
+
+      // Check if input size exceeds 1MB limit
+      if (totalSizeBytes > maxSizeBytes) {
+        clearTimeout(timeout);
+        reject(
+          new Error("Input size limit exceeded: Maximum input size is 1MB"),
+        );
+        return;
+      }
+
       chunks.push(chunk);
     });
 

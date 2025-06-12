@@ -167,6 +167,73 @@ node dist/cli.js < complex-prompt.txt
 | **Piped**       | Automation, files, preprocessing | `echo "..." \| elevator`          |
 | **Raw Mode**    | Scripting, saving to files       | `elevator --raw "..." > file.txt` |
 
+## Pipe Compatibility & Scripting
+
+elevator is designed to work seamlessly in shell pipelines and automation scripts. All structured logs go to `stderr`, keeping `stdout` clean for piping.
+
+### Raw Output Mode
+
+Use `--raw` flag for script-friendly output without formatting:
+
+```bash
+# Clean output perfect for piping
+echo "create REST API endpoints" | elevator --raw > specifications.txt
+
+# Chain with other tools
+cat requirements.txt | elevator --raw | grep -i "database" > db-requirements.txt
+
+# Save to files without formatting
+elevator --raw "implement authentication" > auth-specs.md
+```
+
+### Shell Integration Examples
+
+**Batch Processing:**
+
+```bash
+# Process multiple prompts from a file
+while IFS= read -r line; do
+    echo "$line" | elevator --raw >> enhanced-prompts.txt
+done < prompts.txt
+```
+
+**Error Handling in Scripts:**
+
+```bash
+#!/bin/bash
+if echo "build microservice" | elevator --raw > /dev/null 2>&1; then
+    echo "Success: Prompt processed"
+else
+    echo "Error: Failed to process prompt" >&2
+    exit 1
+fi
+```
+
+**Integration with CI/CD:**
+
+```bash
+# Generate technical specs from user stories
+find stories/ -name "*.txt" -exec sh -c '
+    echo "Processing: $1"
+    elevator --raw < "$1" > "specs/$(basename "$1" .txt)-technical.md"
+' _ {} \;
+```
+
+### Structured Logging
+
+All operational logs are JSON-formatted and sent to `stderr`:
+
+```bash
+# Capture only the enhanced prompt
+elevator "test prompt" > output.txt 2>/dev/null
+
+# Capture only logs for monitoring
+elevator "test prompt" >/dev/null 2> logs.json
+
+# Capture both separately
+elevator "test prompt" > output.txt 2> logs.json
+```
+
 ## Configuration
 
 ### Environment Variables
@@ -175,7 +242,44 @@ node dist/cli.js < complex-prompt.txt
 | ---------------- | -------- | ------- | ------------------- |
 | `GEMINI_API_KEY` | ✅ Yes   | -       | Your Gemini API key |
 
-The CLI uses the fixed Gemini 2.5 Flash model with a 30-second timeout and structured JSON logging.
+### Limits & Constraints
+
+| Constraint           | Value | Description                                  |
+| -------------------- | ----- | -------------------------------------------- |
+| **Input Size Limit** | 1MB   | Maximum size for prompt input (all modes)    |
+| **Model**            | Fixed | Gemini 2.5 Flash (optimized for performance) |
+
+The CLI uses structured JSON logging for all operational events.
+
+### Exit Codes
+
+elevator follows standard Unix exit code conventions for reliable scripting:
+
+| Exit Code | Name        | Description                         | When It Occurs                |
+| --------- | ----------- | ----------------------------------- | ----------------------------- |
+| `0`       | SUCCESS     | Operation completed successfully    | Prompt processed successfully |
+| `1`       | ERROR       | General error occurred              | API errors, invalid input     |
+| `130`     | INTERRUPTED | Process terminated by user (Ctrl+C) | User cancellation (SIGINT)    |
+
+**Script Usage Examples:**
+
+```bash
+# Check if command succeeded
+if elevator "test prompt" >/dev/null 2>&1; then
+    echo "Processing successful"
+fi
+
+# Handle different exit codes
+elevator "process this"
+case $? in
+    0) echo "Success" ;;
+    1) echo "Error occurred" >&2 ;;
+    130) echo "Cancelled by user" >&2 ;;
+esac
+
+# Use in conditional chains
+elevator "input" && echo "Processed" || echo "Failed"
+```
 
 ## API Key Setup
 
@@ -287,38 +391,59 @@ cat api-endpoints.txt | node dist/cli.js > technical-documentation.md
 
 **API Key Not Found**
 
-```
-Error: GEMINI_API_KEY required
-```
+When you run elevator without setting your API key, you'll see helpful guidance:
 
-- **Solution**: Set your `GEMINI_API_KEY` environment variable
+```
+❌ Error: GEMINI_API_KEY environment variable is required
+
+💡 To get started:
+   1. Get your API key from: https://aistudio.google.com/app/apikey
+   2. Set the environment variable:
+      export GEMINI_API_KEY="your-key-here"
+
+📖 For more help, see: https://github.com/phrazzld/elevator#setup
+```
 
 **API Key Invalid**
 
 ```
-API error: 401 Unauthorized - Invalid API key. Verify your GEMINI_API_KEY
+❌ API error: 401 Unauthorized - Invalid API key. Verify your GEMINI_API_KEY
+
+💡 Check your API key:
+   1. Verify your GEMINI_API_KEY is correct
+   2. Get a new key from: https://aistudio.google.com/app/apikey
 ```
 
-- **Solution**: Verify your API key at [Google AI Studio](https://aistudio.google.com/app/apikey)
+- **Solution**: Copy your API key exactly from [Google AI Studio](https://aistudio.google.com/app/apikey)
 - **Solution**: Ensure no extra spaces or characters in your API key
+- **Solution**: Re-export the environment variable in your current shell session
 
 **No Input Provided**
 
 ```
-Error: No input provided
+❌ Error: No input provided
 ```
 
 - **Solution**: Provide a prompt as an argument or enter text in interactive mode
 - **Solution**: When using piped input, ensure the input isn't empty
 
-**Network Timeout**
+**Input Size Limit Exceeded**
 
 ```
-Request timeout - API call exceeded 30 seconds
+❌ Error: Input size limit exceeded: Maximum input size is 1MB
 ```
+
+- **Solution**: Reduce the size of your input prompt or file
+- **Solution**: Split large inputs into smaller chunks for processing
+- **Note**: This limit ensures optimal performance and prevents memory issues
+
+**Network Issues**
+
+If you experience network-related errors:
 
 - **Solution**: Check your internet connection
-- **Solution**: Try again with a shorter prompt
+- **Solution**: Verify that you can access Google services
+- **Solution**: Try again after a moment
 
 **Rate Limiting**
 
