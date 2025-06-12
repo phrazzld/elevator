@@ -125,7 +125,7 @@
         1. Test passes, confirming no API key leakage in logs.
     - **Depends‑on:** [T003]
 
-- [ ] **T013 · Test · P2: implement full integration test matrix**
+- [x] **T013 · Test · P2: implement full integration test matrix**
     - **Context:** PLAN.md → Phase 4: Integration test matrix
     - **Action:**
         1. Create a comprehensive integration test suite that covers the matrix of inputs (direct args, heredoc, interactive TTY mock) and error scenarios (timeout, size limit, API key).
@@ -144,7 +144,7 @@
     - **Depends‑on:** [T013]
 
 ## docs
-- [ ] **T015 · Chore · P2: update readme with pipe compatibility and exit codes**
+- [x] **T015 · Chore · P2: update readme with pipe compatibility and exit codes**
     - **Context:** PLAN.md → Post-Implementation
     - **Action:**
         1. Add a new section to `README.md` detailing pipe usage with examples.

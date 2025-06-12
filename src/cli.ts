@@ -16,7 +16,7 @@ import { EXIT_CODES } from "./utils/constants.js";
 /**
  * CLI argument interface (simplified)
  */
-interface CliArgs {
+export interface CliArgs {
   raw?: boolean;
 }
 
@@ -26,7 +26,10 @@ interface CliArgs {
  * @param prompt - The user's prompt to elevate
  * @param options - CLI options
  */
-async function processPrompt(prompt: string, options: CliArgs): Promise<void> {
+export async function processPrompt(
+  prompt: string,
+  options: CliArgs,
+): Promise<void> {
   // Make direct API call (elevatePrompt will handle API key validation)
   const result = await elevatePrompt(prompt);
 
@@ -44,7 +47,7 @@ async function processPrompt(prompt: string, options: CliArgs): Promise<void> {
  *
  * @returns Configured commander program
  */
-function createProgram(): Command {
+export function createProgram(): Command {
   const program = new Command();
 
   program
@@ -104,7 +107,7 @@ Input modes:
 /**
  * Main CLI entry point.
  */
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
   try {
     const program = createProgram();
     program.parse();

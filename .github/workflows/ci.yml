@@ -80,7 +80,11 @@ jobs:
           path: dist/
           retention-days: 7
 
-      # Stage 9: Security Vulnerability Scan (Mandatory)
+      # Stage 9: Performance Benchmarks (Mandatory - Failure is build failure)
+      - name: Run CLI performance benchmarks
+        run: pnpm run benchmark:cli:ci
+
+      # Stage 10: Security Vulnerability Scan (Mandatory)
       - name: Run security audit
         run: pnpm audit --audit-level=high
         continue-on-error: false # Fail on high/critical vulnerabilities
