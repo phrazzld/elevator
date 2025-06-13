@@ -123,7 +123,7 @@
     - **Depends‑on:** [T022]
 
 ## Testing Updates
-- [ ] **T024 · Test · P1: update tests for new behavior**
+- [x] **T024 · Test · P1: update tests for new behavior**
     - **Context:** Tests need to reflect removal of decoration and new prompts
     - **Action:**
         1. Update CLI tests to not expect "✨ Enhanced prompt:" prefix
@@ -135,7 +135,7 @@
         2. New tests for debug and progress features pass
     - **Depends‑on:** [T016, T017, T018, T020]
 
-- [ ] **T025 · Test · P1: add test for improved prompt quality**
+- [x] **T025 · Test · P1: add test for improved prompt quality**
     - **Context:** Ensure prompts are expert-level, not corporate
     - **Action:**
         1. Create test with sample inputs

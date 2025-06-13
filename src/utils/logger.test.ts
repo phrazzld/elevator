@@ -28,11 +28,10 @@ describe("Logger Utility", () => {
       const message = "Test message";
       const metadata = { component: "test", operation: "unit-test" };
 
-      logToStderr(level, message, metadata);
+      logToStderr(level, message, metadata, true); // Enable debug logging
 
       expect(stderrWriteSpy).toHaveBeenCalledTimes(1);
 
-       
       const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       expect(writtenData).toMatch(/\n$/); // Should end with newline
 
@@ -48,11 +47,10 @@ describe("Logger Utility", () => {
     });
 
     it("should handle error level logs", () => {
-      logToStderr("error", "Error occurred", { errorCode: 500 });
+      logToStderr("error", "Error occurred", { errorCode: 500 }, true);
 
       expect(stderrWriteSpy).toHaveBeenCalledTimes(1);
 
-       
       const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
 
@@ -62,11 +60,10 @@ describe("Logger Utility", () => {
     });
 
     it("should use empty metadata when not provided", () => {
-      logToStderr("info", "Simple message");
+      logToStderr("info", "Simple message", {}, true);
 
       expect(stderrWriteSpy).toHaveBeenCalledTimes(1);
 
-       
       const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
 
@@ -74,9 +71,8 @@ describe("Logger Utility", () => {
     });
 
     it("should include all mandatory fields", () => {
-      logToStderr("info", "Test", { key: "value" });
+      logToStderr("info", "Test", { key: "value" }, true);
 
-       
       const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
 
@@ -95,10 +91,9 @@ describe("Logger Utility", () => {
 
     it("should generate ISO timestamp", () => {
       const beforeTime = new Date();
-      logToStderr("info", "Timestamp test");
+      logToStderr("info", "Timestamp test", {}, true);
       const afterTime = new Date();
 
-       
       const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
 
@@ -116,9 +111,8 @@ describe("Logger Utility", () => {
         nullValue: null,
       };
 
-      logToStderr("info", "Complex metadata", complexMetadata);
+      logToStderr("info", "Complex metadata", complexMetadata, true);
 
-       
       const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
 
@@ -128,7 +122,7 @@ describe("Logger Utility", () => {
     it("should output only to stderr, not stdout", () => {
       const stdoutWriteSpy = vi.spyOn(process.stdout, "write");
 
-      logToStderr("info", "Test message");
+      logToStderr("info", "Test message", {}, true);
 
       expect(stderrWriteSpy).toHaveBeenCalledTimes(1);
       expect(stdoutWriteSpy).not.toHaveBeenCalled();
@@ -145,9 +139,8 @@ describe("Logger Utility", () => {
         unicode: "😀",
       };
 
-      logToStderr("info", specialMessage, specialMetadata);
+      logToStderr("info", specialMessage, specialMetadata, true);
 
-       
       const writtenData = stderrWriteSpy.mock.calls[0]![0] as string;
 
       // Should not throw when parsing
@@ -156,6 +149,18 @@ describe("Logger Utility", () => {
       const logEntry = JSON.parse(writtenData.trim()) as LogEntry;
       expect(logEntry.message).toBe(specialMessage);
       expect(logEntry.metadata).toEqual(specialMetadata);
+    });
+
+    it("should not log when debug is false", () => {
+      logToStderr("info", "Test message", {}, false);
+
+      expect(stderrWriteSpy).not.toHaveBeenCalled();
+    });
+
+    it("should not log when debug parameter is omitted (defaults to false)", () => {
+      logToStderr("info", "Test message", {});
+
+      expect(stderrWriteSpy).not.toHaveBeenCalled();
     });
   });
 

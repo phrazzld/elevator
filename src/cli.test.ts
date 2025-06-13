@@ -63,39 +63,39 @@ describe("CLI Module - Unit Tests", () => {
   });
 
   describe("processPrompt function", () => {
-    it("should output formatted result when raw option is false", async () => {
+    it("should output result directly", async () => {
       const { elevatePrompt } = await import("./api.js");
       vi.mocked(elevatePrompt).mockResolvedValue("Enhanced prompt response");
 
-      const options: CliArgs = { raw: false };
+      const options: CliArgs = { raw: false, debug: false };
       await processPrompt("test prompt", options);
 
-      expect(elevatePrompt).toHaveBeenCalledWith("test prompt");
-      expect(consoleSpy.log).toHaveBeenCalledWith("✨ Enhanced prompt:");
+      expect(elevatePrompt).toHaveBeenCalledWith("test prompt", false, false);
       expect(consoleSpy.log).toHaveBeenCalledWith("Enhanced prompt response");
+      expect(consoleSpy.log).toHaveBeenCalledTimes(1);
     });
 
-    it("should output raw result when raw option is true", async () => {
+    it("should output same result in raw mode", async () => {
       const { elevatePrompt } = await import("./api.js");
       vi.mocked(elevatePrompt).mockResolvedValue("Raw response");
 
-      const options: CliArgs = { raw: true };
+      const options: CliArgs = { raw: true, debug: false };
       await processPrompt("test prompt", options);
 
-      expect(elevatePrompt).toHaveBeenCalledWith("test prompt");
+      expect(elevatePrompt).toHaveBeenCalledWith("test prompt", false, true);
       expect(consoleSpy.log).toHaveBeenCalledWith("Raw response");
-      expect(consoleSpy.log).not.toHaveBeenCalledWith("✨ Enhanced prompt:");
+      expect(consoleSpy.log).toHaveBeenCalledTimes(1);
     });
 
-    it("should handle undefined raw option as false", async () => {
+    it("should pass debug flag to elevatePrompt", async () => {
       const { elevatePrompt } = await import("./api.js");
-      vi.mocked(elevatePrompt).mockResolvedValue("Default response");
+      vi.mocked(elevatePrompt).mockResolvedValue("Debug response");
 
-      const options: CliArgs = {};
+      const options: CliArgs = { debug: true, raw: false };
       await processPrompt("test prompt", options);
 
-      expect(consoleSpy.log).toHaveBeenCalledWith("✨ Enhanced prompt:");
-      expect(consoleSpy.log).toHaveBeenCalledWith("Default response");
+      expect(elevatePrompt).toHaveBeenCalledWith("test prompt", true, false);
+      expect(consoleSpy.log).toHaveBeenCalledWith("Debug response");
     });
   });
 
@@ -307,8 +307,11 @@ describe("CLI Module - Unit Tests", () => {
       await main();
 
       expect(getInput).toHaveBeenCalledWith(["test"]);
-      expect(elevatePrompt).toHaveBeenCalledWith("test input");
-      expect(consoleSpy.log).toHaveBeenCalledWith("✨ Enhanced prompt:");
+      expect(elevatePrompt).toHaveBeenCalledWith(
+        "test input",
+        undefined,
+        undefined,
+      );
       expect(consoleSpy.log).toHaveBeenCalledWith("enhanced output");
     });
 
@@ -325,9 +328,26 @@ describe("CLI Module - Unit Tests", () => {
       await main();
 
       expect(getInput).toHaveBeenCalledWith(["test"]);
-      expect(elevatePrompt).toHaveBeenCalledWith("test input");
+      expect(elevatePrompt).toHaveBeenCalledWith("test input", undefined, true);
       expect(consoleSpy.log).toHaveBeenCalledWith("raw output");
-      expect(consoleSpy.log).not.toHaveBeenCalledWith("✨ Enhanced prompt:");
+      expect(consoleSpy.log).toHaveBeenCalledTimes(1);
+    });
+
+    it("should execute successfully with debug flag", async () => {
+      const { getInput } = await import("./input.js");
+      const { elevatePrompt } = await import("./api.js");
+
+      vi.mocked(getInput).mockResolvedValue("test input");
+      vi.mocked(elevatePrompt).mockResolvedValue("debug output");
+
+      // Mock process.argv for debug option
+      process.argv = ["node", "cli.js", "--debug", "test"];
+
+      await main();
+
+      expect(getInput).toHaveBeenCalledWith(["test"]);
+      expect(elevatePrompt).toHaveBeenCalledWith("test input", true, undefined);
+      expect(consoleSpy.log).toHaveBeenCalledWith("debug output");
     });
   });
 });
