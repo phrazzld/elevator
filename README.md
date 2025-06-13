@@ -1,15 +1,15 @@
 # elevator
 
-A lightweight CLI that transforms natural-language prompts into more sophisticated, technically precise articulations using Google Gemini 2.5 Flash.
+A lightweight CLI that transforms natural-language prompts into expert-level, domain-specific articulations using Google Gemini 2.5 Flash. Produces natural, professional language without corporate jargon or rigid templates.
 
 ## Features
 
 - ⚡ **Direct API Integration**: Simple, fast prompt elevation using native fetch
-- 🎯 **Technical Enhancement**: Converts casual prompts into professional technical language
+- 🎯 **Expert-Level Enhancement**: Transforms casual prompts into sophisticated, domain-specific articulations
 - 📝 **Multiline Input Support**: Interactive mode with Ctrl+D termination for complex prompts
 - 🔄 **Flexible Input Methods**: Command-line arguments, piped input, file input, and interactive mode
 - 🔒 **Security First**: Environment-based API key management
-- 📊 **Structured Logging**: JSON-formatted logs with correlation IDs
+- 📊 **Debug Logging**: Optional JSON-formatted logs (--debug flag)
 - 🚀 **Minimal Dependencies**: Lightweight with only essential dependencies
 
 ## Installation
@@ -68,6 +68,9 @@ echo "build a REST API" | node dist/cli.js
 
 # Raw output (no formatting)
 node dist/cli.js --raw "explain microservices"
+
+# Enable debug logging to see operational details
+node dist/cli.js --debug "build a web app"
 ```
 
 ## Usage
@@ -126,6 +129,8 @@ cat requirements.txt | node dist/cli.js --raw > technical-specs.txt
 ```bash
 node dist/cli.js "make a website"
 node dist/cli.js --raw "build a calculator app"
+node dist/cli.js --debug "analyze this code"
+node dist/cli.js --debug --raw "create microservice" > output.txt 2> logs.json
 ```
 
 **Multiline Interactive:**
@@ -156,6 +161,7 @@ node dist/cli.js < complex-prompt.txt
 | ------------ | ----------------------------------------------------- | ------- |
 | `[prompt]`   | Optional prompt (if omitted, enters interactive mode) | -       |
 | `--raw`      | Output raw response (no formatting)                   | `false` |
+| `--debug`    | Enable debug logging (shows JSON logs to stderr)      | `false` |
 | `-h, --help` | Show help information with usage examples             | -       |
 
 ### Input Methods Summary
@@ -169,7 +175,7 @@ node dist/cli.js < complex-prompt.txt
 
 ## Pipe Compatibility & Scripting
 
-elevator is designed to work seamlessly in shell pipelines and automation scripts. All structured logs go to `stderr`, keeping `stdout` clean for piping.
+elevator is designed to work seamlessly in shell pipelines and automation scripts. Debug logs (when enabled with `--debug`) go to `stderr`, keeping `stdout` clean for piping.
 
 ### Raw Output Mode
 
@@ -219,19 +225,22 @@ find stories/ -name "*.txt" -exec sh -c '
 ' _ {} \;
 ```
 
-### Structured Logging
+### Debug Logging
 
-All operational logs are JSON-formatted and sent to `stderr`:
+Operational logs are JSON-formatted and sent to `stderr` when `--debug` is enabled:
 
 ```bash
-# Capture only the enhanced prompt
-elevator "test prompt" > output.txt 2>/dev/null
+# Run with debug logging
+node dist/cli.js --debug "test prompt"
 
-# Capture only logs for monitoring
-elevator "test prompt" >/dev/null 2> logs.json
+# Capture only the enhanced prompt (no debug)
+node dist/cli.js "test prompt" > output.txt
 
-# Capture both separately
-elevator "test prompt" > output.txt 2> logs.json
+# Capture debug logs for monitoring
+node dist/cli.js --debug "test prompt" >/dev/null 2> logs.json
+
+# Capture both output and debug logs separately
+node dist/cli.js --debug "test prompt" > output.txt 2> logs.json
 ```
 
 ## Configuration
@@ -249,7 +258,7 @@ elevator "test prompt" > output.txt 2> logs.json
 | **Input Size Limit** | 1MB   | Maximum size for prompt input (all modes)    |
 | **Model**            | Fixed | Gemini 2.5 Flash (optimized for performance) |
 
-The CLI uses structured JSON logging for all operational events.
+The CLI uses structured JSON logging for operational events when `--debug` is enabled.
 
 ### Exit Codes
 
@@ -309,7 +318,6 @@ node dist/cli.js "make a todo app"
 **Output:**
 
 ```
-✨ Enhanced prompt:
 Develop a comprehensive task management application with full CRUD operations, user authentication, persistent data storage, and an intuitive user interface for creating, organizing, and tracking personal productivity tasks.
 ```
 
@@ -336,7 +344,6 @@ Please analyze and optimize the codebase.
 **Output:**
 
 ```
-✨ Enhanced prompt:
 Conduct a comprehensive performance audit and optimization of the React application, focusing on bundle size reduction, code splitting implementation, memory leak identification, component rendering optimization, lazy loading strategies, and implementation of performance monitoring tools to address slow initial load times, laggy user interactions, and excessive memory consumption.
 ```
 
