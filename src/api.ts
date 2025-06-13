@@ -5,55 +5,77 @@
  * Following radical simplification philosophy.
  */
 
-import { CORE_EXAMPLES } from "./prompting/examples.js";
 import { logToStderr } from "./utils/logger.js";
 
 /**
- * Build the enhanced CRISP-based elevation prompt dynamically.
- * Uses proven prompt engineering techniques including structured formatting,
- * few-shot examples from the curated library, and explicit output constraints.
+ * Start a progress indicator that shows "elevating..." with rotating dots.
+ *
+ * @returns Cleanup function to stop the progress indicator
  */
-function buildElevationPrompt(): string {
-  const examplesSection = CORE_EXAMPLES.map(
-    (example) => `\nInput: "${example.input}"\nOutput: "${example.output}"`,
-  ).join("");
+function startProgress(): () => void {
+  // Skip progress indicator in test environment to avoid interfering with other tests
+  if (process.env["VITEST"] === "true") {
+    return () => {}; // No-op cleanup function
+  }
 
-  return `<role>Expert prompt engineer specializing in technical communication</role>
+  // Add newlines before starting progress
+  process.stderr.write("\n\n");
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+  let dotCount = 1;
+  const interval = globalThis.setInterval(() => {
+    const dots = ".".repeat(dotCount);
+    const spaces = " ".repeat(3 - dotCount); // Pad to keep consistent width
+    process.stderr.write(`\relevating${dots}${spaces}`);
+    dotCount = (dotCount % 3) + 1; // Cycle 1 -> 2 -> 3 -> 1
+  }, 500);
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
-
-<examples>${examplesSection}
-</examples>
-
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:`.trim();
+  return () => {
+    globalThis.clearInterval(interval);
+    // Clear the progress line and add newline
+    process.stderr.write("\r" + " ".repeat(12) + "\r");
+  };
 }
 
 /**
- * Enhanced CRISP-based elevation prompt for transforming user requests.
- * Dynamically constructed from curated examples to ensure consistency.
+ * Expert prompt for generating single, high-quality technical articulations.
+ * Identifies domain expertise and provides one expert-level rearticulation.
  */
-const ELEVATION_PROMPT = buildElevationPrompt();
+const ELEVATION_PROMPT =
+  `You are an expert who rearticulates requests with domain-specific precision and expertise.
+
+First, identify the domain (software engineering, data science, design, etc.). Then provide ONE expert articulation that a seasoned professional would use, with specific technical language and actionable detail.
+
+For software engineering requests:
+- Use precise technical terminology (debug, root-cause, CI/CD, regression testing, etc.)
+- Include concrete methodologies and tools
+- Specify testing and validation approaches
+- Reference industry best practices
+
+For other domains, use equivalent domain-specific expertise.
+
+Format: Return only the single expert articulation, no explanations or headers.
+
+Examples:
+"fix this bug" → "Perform root-cause analysis, implement targeted remediation, and validate the fix through comprehensive regression testing."
+"optimize performance" → "Profile the application to identify bottlenecks, implement targeted optimizations, and benchmark the improvements against baseline metrics."
+"improve UX" → "Conduct user research to identify pain points, design evidence-based interface improvements, and validate changes through A/B testing."
+
+User request to rearticulate:`.trim();
 
 /**
  * Elevate a user prompt using direct Gemini API call.
  *
  * @param prompt The user's input prompt to elevate
+ * @param debug Whether debug logging is enabled
+ * @param raw Whether raw output mode is enabled (suppresses progress indicator)
  * @returns Promise resolving to the elevated prompt
  * @throws Error if API key is missing or API call fails
  */
-export async function elevatePrompt(prompt: string): Promise<string> {
+export async function elevatePrompt(
+  prompt: string,
+  debug: boolean = false,
+  raw: boolean = false,
+): Promise<string> {
   // Validate API key
   const apiKey = process.env["GEMINI_API_KEY"];
   if (!apiKey) {
@@ -68,11 +90,19 @@ export async function elevatePrompt(prompt: string): Promise<string> {
   const startTime = globalThis.performance.now();
 
   // Log API request start
-  logToStderr("info", "API request started", {
-    component: "api",
-    operation: "elevatePrompt",
-    promptLength: prompt.length,
-  });
+  logToStderr(
+    "info",
+    "API request started",
+    {
+      component: "api",
+      operation: "elevatePrompt",
+      promptLength: prompt.length,
+    },
+    debug,
+  );
+
+  // Start progress indicator (only in non-raw mode)
+  const stopProgress = raw ? () => {} : startProgress();
 
   try {
     // Make direct API call with 30-second timeout
@@ -122,15 +152,21 @@ export async function elevatePrompt(prompt: string): Promise<string> {
           break;
       }
 
-      logToStderr("error", "API request failed", {
-        component: "api",
-        operation: "elevatePrompt",
-        error: errorMessage,
-        httpStatus: response.status,
-        promptLength: prompt.length,
-        durationMs: globalThis.performance.now() - startTime,
-      });
+      logToStderr(
+        "error",
+        "API request failed",
+        {
+          component: "api",
+          operation: "elevatePrompt",
+          error: errorMessage,
+          httpStatus: response.status,
+          promptLength: prompt.length,
+          durationMs: globalThis.performance.now() - startTime,
+        },
+        debug,
+      );
 
+      stopProgress();
       throw new Error(errorMessage);
     }
 
@@ -158,26 +194,38 @@ export async function elevatePrompt(prompt: string): Promise<string> {
     } catch {
       const errorMessage =
         "Invalid JSON response from API - response may be corrupted";
-      logToStderr("error", "API request failed", {
-        component: "api",
-        operation: "elevatePrompt",
-        error: errorMessage,
-        promptLength: prompt.length,
-        durationMs: globalThis.performance.now() - startTime,
-      });
+      logToStderr(
+        "error",
+        "API request failed",
+        {
+          component: "api",
+          operation: "elevatePrompt",
+          error: errorMessage,
+          promptLength: prompt.length,
+          durationMs: globalThis.performance.now() - startTime,
+        },
+        debug,
+      );
+      stopProgress();
       throw new Error(errorMessage);
     }
 
     // Extract generated content
     if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
       const errorMessage = "Invalid API response structure";
-      logToStderr("error", "API request failed", {
-        component: "api",
-        operation: "elevatePrompt",
-        error: errorMessage,
-        promptLength: prompt.length,
-        durationMs: globalThis.performance.now() - startTime,
-      });
+      logToStderr(
+        "error",
+        "API request failed",
+        {
+          component: "api",
+          operation: "elevatePrompt",
+          error: errorMessage,
+          promptLength: prompt.length,
+          durationMs: globalThis.performance.now() - startTime,
+        },
+        debug,
+      );
+      stopProgress();
       throw new Error(errorMessage);
     }
 
@@ -185,14 +233,20 @@ export async function elevatePrompt(prompt: string): Promise<string> {
 
     // Log successful completion with performance metrics
     const durationMs = globalThis.performance.now() - startTime;
-    logToStderr("info", "API request completed successfully", {
-      component: "api",
-      operation: "elevatePrompt",
-      promptLength: prompt.length,
-      responseLength: result.length,
-      durationMs,
-    });
+    logToStderr(
+      "info",
+      "API request completed successfully",
+      {
+        component: "api",
+        operation: "elevatePrompt",
+        promptLength: prompt.length,
+        responseLength: result.length,
+        durationMs,
+      },
+      debug,
+    );
 
+    stopProgress();
     return result;
   } catch (error) {
     // Handle other errors (network errors, etc.) - only log if not already logged
@@ -203,27 +257,39 @@ export async function elevatePrompt(prompt: string): Promise<string> {
         !error.message.includes("Invalid JSON response") &&
         !error.message.includes("Invalid API response structure")
       ) {
-        logToStderr("error", "API request failed", {
-          component: "api",
-          operation: "elevatePrompt",
-          error: error.message,
-          errorType: "network",
-          promptLength: prompt.length,
-          durationMs: globalThis.performance.now() - startTime,
-        });
+        logToStderr(
+          "error",
+          "API request failed",
+          {
+            component: "api",
+            operation: "elevatePrompt",
+            error: error.message,
+            errorType: "network",
+            promptLength: prompt.length,
+            durationMs: globalThis.performance.now() - startTime,
+          },
+          debug,
+        );
       }
+      stopProgress();
       throw error;
     }
 
     const errorMessage = `Unexpected error: ${String(error)}`;
-    logToStderr("error", "API request failed", {
-      component: "api",
-      operation: "elevatePrompt",
-      error: errorMessage,
-      errorType: "unexpected",
-      promptLength: prompt.length,
-      durationMs: globalThis.performance.now() - startTime,
-    });
+    logToStderr(
+      "error",
+      "API request failed",
+      {
+        component: "api",
+        operation: "elevatePrompt",
+        error: errorMessage,
+        errorType: "unexpected",
+        promptLength: prompt.length,
+        durationMs: globalThis.performance.now() - startTime,
+      },
+      debug,
+    );
+    stopProgress();
     throw new Error(errorMessage);
   }
 }

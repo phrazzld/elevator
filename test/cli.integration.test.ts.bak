@@ -13,26 +13,6 @@ import { exec } from "child_process";
 const execAsync = promisify(exec);
 
 /**
- * Extract JSON logs from stderr, filtering out user-facing messages and progress dots
- */
-function extractJsonLogs(stderr: string): any[] {
-  const lines = stderr.split("\n").filter((line) => line.trim());
-  const jsonLogs: any[] = [];
-
-  for (const line of lines) {
-    if (line.startsWith("{")) {
-      try {
-        jsonLogs.push(JSON.parse(line));
-      } catch {
-        // Skip invalid JSON lines
-      }
-    }
-  }
-
-  return jsonLogs;
-}
-
-/**
  * Result of executing the CLI as a subprocess
  */
 interface CliResult {
@@ -157,8 +137,7 @@ describe("CLI Subprocess Integration Tests", () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toBeTruthy();
     expect(result.stdout.length).toBeGreaterThan(0);
-    // stderr may contain progress dots or JSON logs
-    expect(result.stderr).toBeDefined();
+    expect(result.stderr).toBe("");
 
     // The output should be different from the input (elevated)
     expect(result.stdout).not.toBe(testPrompt);
@@ -180,8 +159,7 @@ describe("CLI Subprocess Integration Tests", () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toBeTruthy();
     expect(result.stdout.length).toBeGreaterThan(0);
-    // stderr may contain progress dots or JSON logs
-    expect(result.stderr).toBeDefined();
+    expect(result.stderr).toBe("");
 
     // With --raw flag, output should be plain text without any formatting
     expect(result.stdout).toBeTruthy();
@@ -210,8 +188,7 @@ describe("CLI Subprocess Integration Tests", () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toBeTruthy();
       expect(result.stdout.length).toBeGreaterThan(0);
-      // stderr may contain progress dots or JSON logs
-      expect(result.stderr).toBeDefined();
+      expect(result.stderr).toBe("");
 
       // The output should be different from the input (elevated)
       expect(result.stdout).not.toBe(testPrompt);
@@ -238,8 +215,7 @@ describe("CLI Subprocess Integration Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toBeTruthy();
-      // stderr may contain progress dots or JSON logs
-      expect(result.stderr).toBeDefined();
+      expect(result.stderr).toBe("");
 
       // With --raw flag, output should be plain text without any formatting
       expect(result.stdout).toBeTruthy();
@@ -279,8 +255,7 @@ describe("CLI Subprocess Integration Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toBeTruthy();
-      // stderr may contain progress dots or JSON logs
-      expect(result.stderr).toBeDefined();
+      expect(result.stderr).toBe("");
     }, 30000);
 
     it("should maintain backward compatibility with single argument", async () => {
@@ -299,8 +274,7 @@ describe("CLI Subprocess Integration Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toBeTruthy();
-      // stderr may contain progress dots or JSON logs
-      expect(result.stderr).toBeDefined();
+      expect(result.stderr).toBe("");
 
       // The output should be different from the input (elevated)
       expect(result.stdout).not.toBe(testPrompt);
@@ -330,8 +304,7 @@ describe("CLI Subprocess Integration Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toBeTruthy();
-      // stderr may contain progress dots or JSON logs
-      expect(result.stderr).toBeDefined();
+      expect(result.stderr).toBe("");
 
       // Output should be the enhanced prompt directly
       expect(result.stdout).toBeTruthy();
@@ -363,16 +336,15 @@ describe("CLI Subprocess Integration Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toBeTruthy();
-      // stderr may contain progress dots or JSON logs
-      expect(result.stderr).toBeDefined();
+      expect(result.stderr).toBe("");
 
       // Should transform the complex prompt into something more structured
       const enhancedContent = result.stdout;
       expect(enhancedContent.length).toBeGreaterThan(complexPrompt.length);
 
-      // Enhanced prompt should include expert technical language
+      // Enhanced prompt should include more specific technical details
       expect(enhancedContent.toLowerCase()).toMatch(
-        /architect|microservice|authentication|deploy|implement|system|service/,
+        /architecture|design|implementation|requirements|specifications/,
       );
     }, 30000);
 
@@ -393,8 +365,7 @@ describe("CLI Subprocess Integration Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toBeTruthy();
-      // stderr may contain progress dots or JSON logs
-      expect(result.stderr).toBeDefined();
+      expect(result.stderr).toBe("");
 
       // Special characters and code elements should be preserved in the output
       expect(result.stdout).toContain("🌟");
@@ -419,8 +390,7 @@ describe("CLI Subprocess Integration Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toBeTruthy();
-      // stderr may contain progress dots or JSON logs
-      expect(result.stderr).toBeDefined();
+      expect(result.stderr).toBe("");
 
       // Should complete within reasonable time (under 30 seconds)
       expect(duration).toBeLessThan(30000);
@@ -445,8 +415,7 @@ describe("CLI Subprocess Integration Tests", () => {
 
       expect(shortResult.exitCode).toBe(0);
       expect(shortResult.stdout).toBeTruthy();
-      // stderr may contain progress dots
-      expect(shortResult.stderr).toBeDefined();
+      expect(shortResult.stderr).toBe("");
       expect(shortResult.stdout.length).toBeGreaterThan("fix".length);
 
       // Test with long input
@@ -457,8 +426,7 @@ describe("CLI Subprocess Integration Tests", () => {
 
       expect(longResult.exitCode).toBe(0);
       expect(longResult.stdout).toBeTruthy();
-      // stderr may contain progress dots
-      expect(longResult.stderr).toBeDefined();
+      expect(longResult.stderr).toBe("");
     }, 45000);
 
     it("should maintain backward compatibility with existing CLI flags", async () => {
@@ -477,7 +445,6 @@ describe("CLI Subprocess Integration Tests", () => {
 
       expect(rawResult.exitCode).toBe(0);
       expect(rawResult.stdout).toBeTruthy();
-      // In raw mode without debug, stderr is empty
       expect(rawResult.stderr).toBe("");
 
       // Test help flag still works
@@ -502,21 +469,33 @@ describe("CLI Subprocess Integration Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toBeTruthy();
-      // stderr may contain progress dots or JSON logs
-      expect(result.stderr).toBeDefined();
+      expect(result.stderr).toBe("");
 
       const enhancedOutput = result.stdout;
 
-      // Enhanced prompt should be significantly more detailed and different
-      expect(enhancedOutput.length).toBeGreaterThan(vaguePrompt.length * 3);
+      // Enhanced prompt should include more specific guidance
+      const specificityIndicators = [
+        "specific",
+        "requirements",
+        "criteria",
+        "methodology",
+        "deliverables",
+        "format",
+        "structure",
+        "analysis",
+        "implementation",
+        "validation",
+      ];
 
-      // Should be different from the input (not just echoing back)
-      expect(enhancedOutput.toLowerCase()).not.toBe(vaguePrompt.toLowerCase());
-
-      // Should contain some elaboration (more than just a couple words added)
-      expect(enhancedOutput.split(" ").length).toBeGreaterThan(
-        vaguePrompt.split(" ").length + 5,
+      const foundIndicators = specificityIndicators.filter((indicator) =>
+        enhancedOutput.toLowerCase().includes(indicator),
       );
+
+      // Should contain multiple specificity indicators
+      expect(foundIndicators.length).toBeGreaterThanOrEqual(2);
+
+      // Should be significantly more detailed than the original vague prompt
+      expect(enhancedOutput.length).toBeGreaterThan(vaguePrompt.length * 5);
     }, 30000);
 
     it("should handle multiline input with enhanced prompt system", async () => {
@@ -542,8 +521,7 @@ needs better error handling`;
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toBeTruthy();
-      // stderr may contain progress dots or JSON logs
-      expect(result.stderr).toBeDefined();
+      expect(result.stderr).toBe("");
 
       // Should handle multiline input correctly
       expect(result.stdout).toBeTruthy();
@@ -598,8 +576,25 @@ needs better error handling`;
       // stdout should be pure API response - no JSON log entries
       expect(() => JSON.parse(result.stdout)).toThrow(); // Should not be valid JSON log
 
-      // In raw mode without debug flag, stderr should be empty (no progress dots, no logs)
-      expect(result.stderr).toBe("");
+      // All logging should go to stderr, not stdout
+      expect(result.stderr).not.toBe(""); // stderr should contain logs
+
+      // Verify stderr contains structured logs (but stdout doesn't)
+      const stderrLines = result.stderr
+        .split("\n")
+        .filter((line) => line.trim());
+      expect(stderrLines.length).toBeGreaterThan(0);
+
+      // Each stderr line should be valid JSON log entry
+      for (const line of stderrLines) {
+        expect(() => {
+          const logEntry = JSON.parse(line);
+          expect(logEntry).toHaveProperty("timestamp");
+          expect(logEntry).toHaveProperty("level");
+          expect(logEntry).toHaveProperty("message");
+          expect(logEntry).toHaveProperty("metadata");
+        }).not.toThrow();
+      }
     }, 30000);
 
     it("should be fully compatible with shell pipes and redirects", async () => {
@@ -613,7 +608,7 @@ needs better error handling`;
 
       const testPrompt = "create a function";
       const result = await executeCli(
-        ["--raw", "--debug"],
+        ["--raw"],
         {
           GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
         },
@@ -632,7 +627,7 @@ needs better error handling`;
       expect(result.stdout).not.toContain('\n{"timestamp"'); // No JSON logs in stdout
       expect(result.stdout).not.toContain('\n{"level"'); // No JSON logs in stdout
 
-      // stderr should contain all the logging information when debug is enabled
+      // stderr should contain all the logging information
       expect(result.stderr).toContain('"message":"API request started"');
       expect(result.stderr).toContain(
         '"message":"API request completed successfully"',
@@ -651,7 +646,7 @@ needs better error handling`;
       }
 
       const testPrompt = "create a simple function";
-      const result = await executeCli(["--debug", testPrompt], {
+      const result = await executeCli([testPrompt], {
         GEMINI_API_KEY: process.env["GEMINI_API_KEY"],
       });
 
@@ -661,15 +656,17 @@ needs better error handling`;
       expect(result.stderr).toBeTruthy();
       expect(result.stderr.length).toBeGreaterThan(0);
 
-      // Extract JSON logs from stderr, filtering out progress dots
-      const jsonLogs = extractJsonLogs(result.stderr);
-      expect(jsonLogs.length).toBeGreaterThan(0);
+      // Split stderr into individual log lines
+      const logLines = result.stderr.split("\n").filter((line) => line.trim());
+      expect(logLines.length).toBeGreaterThan(0);
 
-      // Each log should have required structured log fields
+      // Each line should be valid JSON with required structured log fields
       let foundStartLog = false;
       let foundCompletionLog = false;
 
-      for (const logEntry of jsonLogs) {
+      for (const line of logLines) {
+        const logEntry = JSON.parse(line); // Should not throw
+
         // Verify required structured log fields
         expect(logEntry).toHaveProperty("timestamp");
         expect(logEntry).toHaveProperty("level");
@@ -708,18 +705,14 @@ needs better error handling`;
         }
       }
 
-      // Verify we found at least the start log (completion may be timing/buffering dependent)
+      // Verify we found the expected lifecycle logs
       expect(foundStartLog).toBe(true);
-
-      // If we have more than 1 log, verify completion log exists too
-      if (jsonLogs.length > 1) {
-        expect(foundCompletionLog).toBe(true);
-      }
+      expect(foundCompletionLog).toBe(true);
     }, 30000);
 
     it("should log API errors with proper structure and context", async () => {
       const testPrompt = "test error logging";
-      const result = await executeCli(["--debug", testPrompt], {
+      const result = await executeCli([testPrompt], {
         // Use invalid API key to trigger error
         GEMINI_API_KEY: "invalid-key-for-testing",
       });
@@ -728,36 +721,48 @@ needs better error handling`;
 
       // stderr should contain structured error logs
       expect(result.stderr).toBeTruthy();
-      const jsonLogs = extractJsonLogs(result.stderr);
+      const logLines = result.stderr.split("\n").filter((line) => line.trim());
 
       let foundErrorLog = false;
 
-      for (const logEntry of jsonLogs) {
-        if (
-          logEntry.level === "error" &&
-          logEntry.message === "API request failed"
-        ) {
-          foundErrorLog = true;
+      for (const line of logLines) {
+        // Skip non-JSON lines (user-facing error messages)
+        if (!line.startsWith("{")) {
+          continue;
+        }
 
-          // Verify error log structure
-          expect(logEntry.metadata).toHaveProperty("component", "api");
-          expect(logEntry.metadata).toHaveProperty(
-            "operation",
-            "elevatePrompt",
-          );
-          expect(logEntry.metadata).toHaveProperty("error");
-          expect(logEntry.metadata).toHaveProperty("promptLength");
-          expect(logEntry.metadata).toHaveProperty("durationMs");
+        try {
+          const logEntry = JSON.parse(line);
 
-          // Verify error message contains meaningful information
-          expect(logEntry.metadata.error).toContain("API error:");
-          expect(typeof logEntry.metadata.promptLength).toBe("number");
-          expect(typeof logEntry.metadata.durationMs).toBe("number");
+          if (
+            logEntry.level === "error" &&
+            logEntry.message === "API request failed"
+          ) {
+            foundErrorLog = true;
 
-          // Should have HTTP status for API errors
-          if (logEntry.metadata.httpStatus) {
-            expect(typeof logEntry.metadata.httpStatus).toBe("number");
+            // Verify error log structure
+            expect(logEntry.metadata).toHaveProperty("component", "api");
+            expect(logEntry.metadata).toHaveProperty(
+              "operation",
+              "elevatePrompt",
+            );
+            expect(logEntry.metadata).toHaveProperty("error");
+            expect(logEntry.metadata).toHaveProperty("promptLength");
+            expect(logEntry.metadata).toHaveProperty("durationMs");
+
+            // Verify error message contains meaningful information
+            expect(logEntry.metadata.error).toContain("API error:");
+            expect(typeof logEntry.metadata.promptLength).toBe("number");
+            expect(typeof logEntry.metadata.durationMs).toBe("number");
+
+            // Should have HTTP status for API errors
+            if (logEntry.metadata.httpStatus) {
+              expect(typeof logEntry.metadata.httpStatus).toBe("number");
+            }
           }
+        } catch (parseError) {
+          // Skip lines that aren't valid JSON (user-facing messages)
+          continue;
         }
       }
 
@@ -775,7 +780,7 @@ needs better error handling`;
 
       const testPrompt = "security test prompt";
       const testApiKey = process.env["GEMINI_API_KEY"];
-      const result = await executeCli(["--debug", testPrompt], {
+      const result = await executeCli([testPrompt], {
         GEMINI_API_KEY: testApiKey,
       });
 
@@ -786,9 +791,11 @@ needs better error handling`;
       expect(result.stderr).not.toContain(testApiKey);
 
       // Parse each log entry to ensure no sensitive data is logged
-      const jsonLogs = extractJsonLogs(result.stderr);
+      const logLines = result.stderr.split("\n").filter((line) => line.trim());
 
-      for (const logEntry of jsonLogs) {
+      for (const line of logLines) {
+        const logEntry = JSON.parse(line);
+
         // Convert entire log entry to string and check for API key
         const logString = JSON.stringify(logEntry);
         expect(logString).not.toContain(testApiKey);

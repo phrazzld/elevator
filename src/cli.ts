@@ -18,6 +18,7 @@ import { EXIT_CODES } from "./utils/constants.js";
  */
 export interface CliArgs {
   raw?: boolean;
+  debug?: boolean;
 }
 
 /**
@@ -31,15 +32,10 @@ export async function processPrompt(
   options: CliArgs,
 ): Promise<void> {
   // Make direct API call (elevatePrompt will handle API key validation)
-  const result = await elevatePrompt(prompt);
+  const result = await elevatePrompt(prompt, options.debug, options.raw);
 
   // Output result
-  if (options.raw) {
-    console.log(result);
-  } else {
-    console.log("✨ Enhanced prompt:");
-    console.log(result);
-  }
+  console.log(result);
 }
 
 /**
@@ -99,7 +95,8 @@ Input modes:
   // Output options
   program
     .option("--raw", "Enable raw output mode (no formatting)")
-    .option("--no-raw", "Disable raw output mode (default)");
+    .option("--no-raw", "Disable raw output mode (default)")
+    .option("--debug", "Enable debug logging (shows JSON logs to stderr)");
 
   return program;
 }

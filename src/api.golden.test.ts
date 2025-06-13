@@ -242,7 +242,7 @@ describe("Golden Test Suite - Phase 1 Prompt Transformations", () => {
       expect(request.headers["x-goog-api-key"]).toBe("test-golden-key");
     });
 
-    it("should include all required CRISP elements in system prompt", async () => {
+    it("should include all required expert prompt elements", async () => {
       await elevatePrompt("test");
 
       expect(capturedCalls).toHaveLength(1);
@@ -252,22 +252,25 @@ describe("Golden Test Suite - Phase 1 Prompt Transformations", () => {
       }
       const systemPrompt = captured.systemPrompt;
 
-      // Verify CRISP structure elements
-      expect(systemPrompt).toContain("<role>");
-      expect(systemPrompt).toContain("<context>");
-      expect(systemPrompt).toContain("<instructions>");
-      expect(systemPrompt).toContain("<examples>");
-      expect(systemPrompt).toContain("<output_constraints>");
+      // Verify expert-focused structure elements
+      expect(systemPrompt).toContain("expert who rearticulates");
+      expect(systemPrompt).toContain("domain-specific precision and expertise");
+      expect(systemPrompt).toContain("identify the domain");
 
-      // Verify key content
-      expect(systemPrompt).toContain("Expert prompt engineer");
-      expect(systemPrompt).toContain("CRISP structure");
-      expect(systemPrompt).toContain("Transform this request:");
+      // Verify key guidelines
+      expect(systemPrompt).toContain("precise technical terminology");
+      expect(systemPrompt).toContain("seasoned professional would use");
+      expect(systemPrompt).toContain("actionable detail");
 
-      // Verify examples are included
-      expect(systemPrompt).toContain('Input: "help with my code"');
-      expect(systemPrompt).toContain('Input: "write about AI"');
-      expect(systemPrompt).toContain('Input: "fix my bug"');
+      // Verify output format instructions
+      expect(systemPrompt).toContain(
+        "Format: Return only the single expert articulation",
+      );
+      expect(systemPrompt).toContain("no explanations or headers");
+      expect(systemPrompt).toContain("Examples:");
+
+      // Verify it ends with prompt instruction
+      expect(systemPrompt).toContain("User request to rearticulate:");
     });
   });
 

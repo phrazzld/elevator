@@ -222,7 +222,7 @@ describe("elevatePrompt", () => {
       });
       vi.stubGlobal("fetch", mockFetch);
 
-      await elevatePrompt("test prompt");
+      await elevatePrompt("test prompt", true); // Enable debug logging
 
       // Verify start log was called
       expect(stderrWriteSpy).toHaveBeenCalled();
@@ -265,7 +265,7 @@ describe("elevatePrompt", () => {
       });
       vi.stubGlobal("fetch", mockFetch);
 
-      await elevatePrompt("test");
+      await elevatePrompt("test", true); // Enable debug logging
 
       // Verify success log was called
       expect(stderrWriteSpy).toHaveBeenCalled();
@@ -303,7 +303,7 @@ describe("elevatePrompt", () => {
       });
       vi.stubGlobal("fetch", mockFetch);
 
-      await expect(elevatePrompt("test")).rejects.toThrow();
+      await expect(elevatePrompt("test", true)).rejects.toThrow(); // Enable debug logging
 
       // Verify error log was called
       expect(stderrWriteSpy).toHaveBeenCalled();
@@ -342,7 +342,7 @@ describe("elevatePrompt", () => {
       });
       vi.stubGlobal("fetch", mockFetch);
 
-      await expect(elevatePrompt("test")).rejects.toThrow();
+      await expect(elevatePrompt("test", true)).rejects.toThrow(); // Enable debug logging
 
       // Verify error log was called
       expect(stderrWriteSpy).toHaveBeenCalled();
@@ -403,15 +403,192 @@ describe("elevatePrompt", () => {
 
       vi.unstubAllGlobals();
     });
+
+    it("should not log when debug is false", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          candidates: [
+            {
+              content: {
+                parts: [{ text: "test response" }],
+              },
+            },
+          ],
+        }),
+      });
+      vi.stubGlobal("fetch", mockFetch);
+
+      // Clear any previous calls
+      stderrWriteSpy.mockClear();
+
+      // Call with debug=false (default)
+      await elevatePrompt("test prompt");
+
+      // Verify no logs were written to stderr
+      expect(stderrWriteSpy).not.toHaveBeenCalled();
+
+      vi.unstubAllGlobals();
+    });
+
+    it("should log when debug is true", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          candidates: [
+            {
+              content: {
+                parts: [{ text: "test response" }],
+              },
+            },
+          ],
+        }),
+      });
+      vi.stubGlobal("fetch", mockFetch);
+
+      // Clear any previous calls
+      stderrWriteSpy.mockClear();
+
+      // Call with debug=true
+      await elevatePrompt("test prompt", true);
+
+      // Verify logs were written to stderr
+      expect(stderrWriteSpy).toHaveBeenCalled();
+
+      // Should have at least 2 calls (start and complete)
+      const logCalls = stderrWriteSpy.mock.calls.filter((call: any) => {
+        try {
+          const logEntry = JSON.parse((call[0] as string).trim());
+          return (
+            logEntry.message === "API request started" ||
+            logEntry.message === "API request completed successfully"
+          );
+        } catch {
+          return false;
+        }
+      });
+
+      expect(logCalls).toHaveLength(2);
+
+      vi.unstubAllGlobals();
+    });
   });
 
-  describe("enhanced CRISP-based prompt construction", () => {
+  describe("progress indicator", () => {
+    let stderrWriteSpy: any;
+    let intervalSpy: any;
+    let clearIntervalSpy: any;
+
+    beforeEach(() => {
+      process.env["GEMINI_API_KEY"] = "test-key";
+
+      // Spy on stderr.write to capture progress dots
+      stderrWriteSpy = vi
+        .spyOn(process.stderr, "write")
+        .mockImplementation(() => true);
+
+      // Mock setInterval and clearInterval
+      intervalSpy = vi.fn().mockReturnValue(123); // Return a mock interval ID
+      clearIntervalSpy = vi.fn().mockReturnValue(undefined);
+      vi.stubGlobal("setInterval", intervalSpy);
+      vi.stubGlobal("clearInterval", clearIntervalSpy);
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    });
+
+    it("should show progress indicator when raw is false (disabled in test env)", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          candidates: [{ content: { parts: [{ text: "test response" }] } }],
+        }),
+      });
+      vi.stubGlobal("fetch", mockFetch);
+
+      // Clear previous calls to interval spy
+      intervalSpy.mockClear();
+      clearIntervalSpy.mockClear();
+
+      await elevatePrompt("test", false, false);
+
+      // Progress is disabled in test environment, so should not start
+      expect(intervalSpy).not.toHaveBeenCalled();
+
+      // Progress cleanup should not be called either
+      expect(clearIntervalSpy).not.toHaveBeenCalled();
+
+      vi.unstubAllGlobals();
+    });
+
+    it("should not show progress indicator when raw is true", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          candidates: [{ content: { parts: [{ text: "test response" }] } }],
+        }),
+      });
+      vi.stubGlobal("fetch", mockFetch);
+
+      // Clear any previous calls
+      stderrWriteSpy.mockClear();
+      intervalSpy.mockClear();
+
+      await elevatePrompt("test", false, true); // raw = true
+
+      // Should not start interval
+      expect(intervalSpy).not.toHaveBeenCalled();
+
+      // Should not write dots
+      const dotCalls = stderrWriteSpy.mock.calls.filter(
+        (call: any) => call[0] === ".",
+      );
+      expect(dotCalls).toHaveLength(0);
+
+      vi.unstubAllGlobals();
+    });
+
+    it("should stop progress indicator on error (disabled in test env)", async () => {
+      const mockFetch = vi.fn().mockRejectedValue(new Error("Network error"));
+      vi.stubGlobal("fetch", mockFetch);
+
+      intervalSpy.mockClear();
+      clearIntervalSpy.mockClear();
+
+      await expect(elevatePrompt("test", false, false)).rejects.toThrow(
+        "Network error",
+      );
+
+      // Progress is disabled in test environment, so should not start
+      expect(intervalSpy).not.toHaveBeenCalled();
+
+      // Progress cleanup should not be called either
+      expect(clearIntervalSpy).not.toHaveBeenCalled();
+
+      vi.unstubAllGlobals();
+    });
+  });
+
+  describe("expert-focused prompt construction", () => {
     beforeEach(() => {
       // Set API key for prompt construction tests
       process.env["GEMINI_API_KEY"] = "test-key";
+
+      // Mock setInterval and clearInterval for progress indicator
+      const intervalSpy = vi.fn().mockReturnValue(123); // Return a mock interval ID
+      const clearIntervalSpy = vi.fn().mockReturnValue(undefined);
+      vi.stubGlobal("setInterval", intervalSpy);
+      vi.stubGlobal("clearInterval", clearIntervalSpy);
     });
 
-    it("should use enhanced prompt structure with CRISP methodology", async () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("should use expert-focused prompt structure", async () => {
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
         json: vi.fn().mockResolvedValue({
@@ -428,23 +605,21 @@ describe("elevatePrompt", () => {
 
       await elevatePrompt("test prompt");
 
-      // Verify fetch was called with enhanced prompt structure
+      // Verify fetch was called with expert prompt structure
       expect(mockFetch).toHaveBeenCalledTimes(1);
       const [, options] = mockFetch.mock.calls[0] as [string, { body: string }];
       const requestBody = JSON.parse(options.body) as GeminiRequestBody;
 
-      // The first content should be the enhanced system prompt
+      // The first content should be the expert system prompt
       const systemPrompt = requestBody.contents[0]?.parts[0]?.text;
 
-      // Verify enhanced prompt contains CRISP structure elements
-      expect(systemPrompt).toContain("<role>Expert prompt engineer");
-      expect(systemPrompt).toContain(
-        "<context>Transform requests using proven CRISP structure",
-      );
-      expect(systemPrompt).toContain("<instructions>");
-      expect(systemPrompt).toContain("<examples>");
-      expect(systemPrompt).toContain("<output_constraints>");
-      expect(systemPrompt).toContain("Transform this request:");
+      // Verify expert prompt contains expected elements
+      expect(systemPrompt).toContain("expert who rearticulates");
+      expect(systemPrompt).toContain("domain-specific precision and expertise");
+      expect(systemPrompt).toContain("identify the domain");
+      expect(systemPrompt).toContain("ONE expert articulation");
+      expect(systemPrompt).toContain("precise technical terminology");
+      expect(systemPrompt).toContain("User request to rearticulate:");
 
       // The second content should be the user prompt
       const userPrompt = requestBody.contents[1]?.parts[0]?.text;
@@ -453,7 +628,7 @@ describe("elevatePrompt", () => {
       vi.unstubAllGlobals();
     });
 
-    it("should include all required CRISP methodology elements", async () => {
+    it("should include all required expert guidance elements", async () => {
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
         json: vi.fn().mockResolvedValue({
@@ -468,27 +643,19 @@ describe("elevatePrompt", () => {
       const requestBody = JSON.parse(options.body) as GeminiRequestBody;
       const systemPrompt = requestBody.contents[0]?.parts[0]?.text;
 
-      // Verify all CRISP elements are present
+      // Verify all expert guidance elements are present
+      expect(systemPrompt).toContain("precise technical terminology");
+      expect(systemPrompt).toContain("concrete methodologies and tools");
+      expect(systemPrompt).toContain("testing and validation approaches");
+      expect(systemPrompt).toContain("industry best practices");
       expect(systemPrompt).toContain(
-        "1. Add specific context and measurable outcomes",
-      );
-      expect(systemPrompt).toContain(
-        "2. Replace vague terms with precise technical language",
-      );
-      expect(systemPrompt).toContain(
-        "3. Structure with clear sections and constraints",
-      );
-      expect(systemPrompt).toContain(
-        "4. Include format specifications when beneficial",
-      );
-      expect(systemPrompt).toContain(
-        "5. Specify success criteria and validation methods",
+        "Format: Return only the single expert articulation",
       );
 
       vi.unstubAllGlobals();
     });
 
-    it("should include high-quality few-shot examples", async () => {
+    it("should include explicit constraints against poor practices", async () => {
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
         json: vi.fn().mockResolvedValue({
@@ -503,15 +670,15 @@ describe("elevatePrompt", () => {
       const requestBody = JSON.parse(options.body) as GeminiRequestBody;
       const systemPrompt = requestBody.contents[0]?.parts[0]?.text;
 
-      // Verify examples are included
-      expect(systemPrompt).toContain('Input: "help with my code"');
+      // Verify key instructions are included
+      expect(systemPrompt).toContain("provide ONE expert articulation");
+      expect(systemPrompt).toContain("seasoned professional would use");
       expect(systemPrompt).toContain(
-        'Output: "Review this [LANGUAGE] codebase',
+        "specific technical language and actionable detail",
       );
-      expect(systemPrompt).toContain('Input: "write about AI"');
-      expect(systemPrompt).toContain('Input: "analyze this data"');
-      expect(systemPrompt).toContain('Input: "fix my bug"');
-      expect(systemPrompt).toContain('Input: "create a design"');
+      expect(systemPrompt).toContain(
+        "Return only the single expert articulation",
+      );
 
       vi.unstubAllGlobals();
     });
@@ -532,8 +699,8 @@ describe("elevatePrompt", () => {
 
       // System prompt should still be complete
       const systemPrompt = requestBody.contents[0]?.parts[0]?.text;
-      expect(systemPrompt).toContain("<role>");
-      expect(systemPrompt).toContain("Transform this request:");
+      expect(systemPrompt).toContain("expert who rearticulates");
+      expect(systemPrompt).toContain("User request to rearticulate:");
 
       // User prompt should be empty string
       const userPrompt = requestBody.contents[1]?.parts[0]?.text;
@@ -559,7 +726,7 @@ describe("elevatePrompt", () => {
 
       // System prompt should be unaffected by input length
       const systemPrompt = requestBody.contents[0]?.parts[0]?.text;
-      expect(systemPrompt).toContain("Transform this request:");
+      expect(systemPrompt).toContain("User request to rearticulate:");
 
       // User prompt should preserve full input
       const userPrompt = requestBody.contents[1]?.parts[0]?.text;

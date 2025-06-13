@@ -33,12 +33,19 @@ export interface LogEntry {
  * @param level - Log level (info or error)
  * @param message - Human-readable log message
  * @param metadata - Additional context data
+ * @param debug - Whether debug logging is enabled (default: false)
  */
 export function logToStderr(
   level: LogLevel,
   message: string,
   metadata: Record<string, unknown> = {},
+  debug: boolean = false,
 ): void {
+  // Only write logs when debug mode is enabled
+  if (!debug) {
+    return;
+  }
+
   const logEntry: LogEntry = {
     timestamp: new Date().toISOString(),
     level,
