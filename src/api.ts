@@ -5,7 +5,6 @@
  * Following radical simplification philosophy.
  */
 
-import { CORE_EXAMPLES } from "./prompting/examples.js";
 import { logToStderr } from "./utils/logger.js";
 
 /**
@@ -24,42 +23,26 @@ function startProgress(): () => void {
 }
 
 /**
- * Build the enhanced CRISP-based elevation prompt dynamically.
- * Uses proven prompt engineering techniques including structured formatting,
- * few-shot examples from the curated library, and explicit output constraints.
+ * Expert prompt for elevating user requests with domain mastery.
+ * Focuses on natural, expert-level rearticulation without corporate jargon.
  */
-function buildElevationPrompt(): string {
-  const examplesSection = CORE_EXAMPLES.map(
-    (example) => `\nInput: "${example.input}"\nOutput: "${example.output}"`,
-  ).join("");
+const ELEVATION_PROMPT =
+  `You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-  return `<role>Expert prompt engineer specializing in technical communication</role>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<examples>${examplesSection}
-</examples>
-
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:`.trim();
-}
-
-/**
- * Enhanced CRISP-based elevation prompt for transforming user requests.
- * Dynamically constructed from curated examples to ensure consistency.
- */
-const ELEVATION_PROMPT = buildElevationPrompt();
+Prompt to enhance:`.trim();
 
 /**
  * Elevate a user prompt using direct Gemini API call.

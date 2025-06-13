@@ -242,7 +242,7 @@ describe("Golden Test Suite - Phase 1 Prompt Transformations", () => {
       expect(request.headers["x-goog-api-key"]).toBe("test-golden-key");
     });
 
-    it("should include all required CRISP elements in system prompt", async () => {
+    it("should include all required expert prompt elements", async () => {
       await elevatePrompt("test");
 
       expect(capturedCalls).toHaveLength(1);
@@ -252,22 +252,27 @@ describe("Golden Test Suite - Phase 1 Prompt Transformations", () => {
       }
       const systemPrompt = captured.systemPrompt;
 
-      // Verify CRISP structure elements
-      expect(systemPrompt).toContain("<role>");
-      expect(systemPrompt).toContain("<context>");
-      expect(systemPrompt).toContain("<instructions>");
-      expect(systemPrompt).toContain("<examples>");
-      expect(systemPrompt).toContain("<output_constraints>");
+      // Verify expert-focused structure elements
+      expect(systemPrompt).toContain("expert assistant");
+      expect(systemPrompt).toContain(
+        "rearticulate prompts with mastery and precision",
+      );
+      expect(systemPrompt).toContain("true expert in that domain");
 
-      // Verify key content
-      expect(systemPrompt).toContain("Expert prompt engineer");
-      expect(systemPrompt).toContain("CRISP structure");
-      expect(systemPrompt).toContain("Transform this request:");
+      // Verify key guidelines
+      expect(systemPrompt).toContain("Use precise, domain-specific language");
+      expect(systemPrompt).toContain("Maintain the original intent and voice");
+      expect(systemPrompt).toContain("Sound natural, not formulaic");
 
-      // Verify examples are included
-      expect(systemPrompt).toContain('Input: "help with my code"');
-      expect(systemPrompt).toContain('Input: "write about AI"');
-      expect(systemPrompt).toContain('Input: "fix my bug"');
+      // Verify constraints
+      expect(systemPrompt).toContain("Do not use placeholder brackets");
+      expect(systemPrompt).toContain("Do not force numbered lists");
+      expect(systemPrompt).toContain(
+        "Do not write corporate requirements documents",
+      );
+
+      // Verify it ends with prompt instruction
+      expect(systemPrompt).toContain("Prompt to enhance:");
     });
   });
 

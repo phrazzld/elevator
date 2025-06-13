@@ -67,7 +67,7 @@
         1. `elevator "test"` outputs only the transformed prompt
 
 ## Improve Prompt Quality
-- [ ] **T021 · Refactor · P0: rewrite system prompt for domain expertise**
+- [x] **T021 · Refactor · P0: rewrite system prompt for domain expertise**
     - **Context:** Current outputs are corporate jargon, need expert-level rearticulation
     - **Action:**
         1. Replace entire ELEVATION_PROMPT with new expert-focused prompt
@@ -99,7 +99,7 @@
         Prompt to enhance:
         ```
 
-- [ ] **T022 · Cleanup · P0: remove buildElevationPrompt function**
+- [x] **T022 · Cleanup · P0: remove buildElevationPrompt function**
     - **Context:** Simplify to single well-crafted prompt string
     - **Action:**
         1. Remove `buildElevationPrompt()` function from `api.ts`
@@ -110,7 +110,7 @@
         2. No function calls to build prompt
     - **Depends‑on:** [T021]
 
-- [ ] **T023 · Cleanup · P0: remove examples.ts and all references**
+- [x] **T023 · Cleanup · P0: remove examples.ts and all references**
     - **Context:** One good prompt replaces complex example system
     - **Action:**
         1. Delete `src/prompting/examples.ts` file

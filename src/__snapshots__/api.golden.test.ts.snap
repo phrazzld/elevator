@@ -1,61 +1,43 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > Prompt Transformation Quality Validation > should maintain consistent system prompt structure across all inputs > canonical_system_prompt 1`] = `
-"<role>Expert prompt engineer specializing in technical communication</role>
+"You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<examples>
-Input: "fix my bug"
-Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
-Input: "help with my code"
-Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
-Input: "write about AI"
-Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
-Input: "analyze this data"
-Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
-Input: "create a design"
-Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
-Input: "improve performance"
-Output: "Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard."
-Input: "write tests"
-Output: "Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration."
-</examples>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:"
+Prompt to enhance:"
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > Regression Detection > should detect changes in prompt structure immediately > regression_detection_structure 1`] = `
 {
-  "hasExamples": true,
-  "hasInstructions": true,
-  "hasRole": true,
+  "hasExamples": false,
+  "hasInstructions": false,
+  "hasRole": false,
   "requestStructure": {
     "contentsLength": 2,
     "hasSystemPrompt": true,
     "hasUserPrompt": true,
   },
-  "systemPromptHash": "-4c8639e8",
-  "systemPromptLength": 2932,
+  "systemPromptHash": "-5c8e7af5",
+  "systemPromptLength": 578,
   "userPrompt": "regression test input",
 }
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: content_creation > content_creation_full_request 1`] = `
 {
-  "body": "{"contents":[{"role":"user","parts":[{"text":"<role>Expert prompt engineer specializing in technical communication</role>\\n\\n<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>\\n\\n<instructions>\\n1. Add specific context and measurable outcomes\\n2. Replace vague terms with precise technical language\\n3. Structure with clear sections and constraints\\n4. Include format specifications when beneficial\\n5. Specify success criteria and validation methods\\n</instructions>\\n\\n<examples>\\nInput: \\"fix my bug\\"\\nOutput: \\"Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases.\\"\\nInput: \\"help with my code\\"\\nOutput: \\"Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets.\\"\\nInput: \\"write about AI\\"\\nOutput: \\"Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies.\\"\\nInput: \\"analyze this data\\"\\nOutput: \\"Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices.\\"\\nInput: \\"create a design\\"\\nOutput: \\"Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation.\\"\\nInput: \\"improve performance\\"\\nOutput: \\"Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard.\\"\\nInput: \\"write tests\\"\\nOutput: \\"Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration.\\"\\n</examples>\\n\\n<output_constraints>\\nOutput ONLY the transformed prompt. No explanations, headers, or meta-commentary.\\n</output_constraints>\\n\\nTransform this request:"}]},{"role":"user","parts":[{"text":"write about AI"}]}]}",
+  "body": "{"contents":[{"role":"user","parts":[{"text":"You are an expert assistant who helps rearticulate prompts with mastery and precision.\\n\\nWhen given a prompt, rewrite it as a true expert in that domain would:\\n- Use precise, domain-specific language\\n- Add only necessary context and clarity\\n- Maintain the original intent and voice\\n- Be concise yet comprehensive\\n- Sound natural, not formulaic\\n\\nDo not use placeholder brackets like [THING].\\nDo not force numbered lists or rigid structures.\\nDo not write corporate requirements documents.\\n\\nSimply rearticulate the prompt as an expert would naturally express it.\\n\\nPrompt to enhance:"}]},{"role":"user","parts":[{"text":"write about AI"}]}]}",
   "headers": {
     "Content-Type": "application/json",
     "x-goog-api-key": "test-golden-key",
@@ -66,45 +48,27 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: content_creation > content_creation_system_prompt 1`] = `
-"<role>Expert prompt engineer specializing in technical communication</role>
+"You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<examples>
-Input: "fix my bug"
-Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
-Input: "help with my code"
-Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
-Input: "write about AI"
-Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
-Input: "analyze this data"
-Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
-Input: "create a design"
-Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
-Input: "improve performance"
-Output: "Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard."
-Input: "write tests"
-Output: "Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration."
-</examples>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:"
+Prompt to enhance:"
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: data_analysis_task > data_analysis_task_full_request 1`] = `
 {
-  "body": "{"contents":[{"role":"user","parts":[{"text":"<role>Expert prompt engineer specializing in technical communication</role>\\n\\n<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>\\n\\n<instructions>\\n1. Add specific context and measurable outcomes\\n2. Replace vague terms with precise technical language\\n3. Structure with clear sections and constraints\\n4. Include format specifications when beneficial\\n5. Specify success criteria and validation methods\\n</instructions>\\n\\n<examples>\\nInput: \\"fix my bug\\"\\nOutput: \\"Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases.\\"\\nInput: \\"help with my code\\"\\nOutput: \\"Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets.\\"\\nInput: \\"write about AI\\"\\nOutput: \\"Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies.\\"\\nInput: \\"analyze this data\\"\\nOutput: \\"Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices.\\"\\nInput: \\"create a design\\"\\nOutput: \\"Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation.\\"\\nInput: \\"improve performance\\"\\nOutput: \\"Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard.\\"\\nInput: \\"write tests\\"\\nOutput: \\"Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration.\\"\\n</examples>\\n\\n<output_constraints>\\nOutput ONLY the transformed prompt. No explanations, headers, or meta-commentary.\\n</output_constraints>\\n\\nTransform this request:"}]},{"role":"user","parts":[{"text":"analyze this data"}]}]}",
+  "body": "{"contents":[{"role":"user","parts":[{"text":"You are an expert assistant who helps rearticulate prompts with mastery and precision.\\n\\nWhen given a prompt, rewrite it as a true expert in that domain would:\\n- Use precise, domain-specific language\\n- Add only necessary context and clarity\\n- Maintain the original intent and voice\\n- Be concise yet comprehensive\\n- Sound natural, not formulaic\\n\\nDo not use placeholder brackets like [THING].\\nDo not force numbered lists or rigid structures.\\nDo not write corporate requirements documents.\\n\\nSimply rearticulate the prompt as an expert would naturally express it.\\n\\nPrompt to enhance:"}]},{"role":"user","parts":[{"text":"analyze this data"}]}]}",
   "headers": {
     "Content-Type": "application/json",
     "x-goog-api-key": "test-golden-key",
@@ -115,45 +79,27 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: data_analysis_task > data_analysis_task_system_prompt 1`] = `
-"<role>Expert prompt engineer specializing in technical communication</role>
+"You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<examples>
-Input: "fix my bug"
-Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
-Input: "help with my code"
-Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
-Input: "write about AI"
-Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
-Input: "analyze this data"
-Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
-Input: "create a design"
-Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
-Input: "improve performance"
-Output: "Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard."
-Input: "write tests"
-Output: "Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration."
-</examples>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:"
+Prompt to enhance:"
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: design_request > design_request_full_request 1`] = `
 {
-  "body": "{"contents":[{"role":"user","parts":[{"text":"<role>Expert prompt engineer specializing in technical communication</role>\\n\\n<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>\\n\\n<instructions>\\n1. Add specific context and measurable outcomes\\n2. Replace vague terms with precise technical language\\n3. Structure with clear sections and constraints\\n4. Include format specifications when beneficial\\n5. Specify success criteria and validation methods\\n</instructions>\\n\\n<examples>\\nInput: \\"fix my bug\\"\\nOutput: \\"Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases.\\"\\nInput: \\"help with my code\\"\\nOutput: \\"Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets.\\"\\nInput: \\"write about AI\\"\\nOutput: \\"Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies.\\"\\nInput: \\"analyze this data\\"\\nOutput: \\"Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices.\\"\\nInput: \\"create a design\\"\\nOutput: \\"Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation.\\"\\nInput: \\"improve performance\\"\\nOutput: \\"Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard.\\"\\nInput: \\"write tests\\"\\nOutput: \\"Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration.\\"\\n</examples>\\n\\n<output_constraints>\\nOutput ONLY the transformed prompt. No explanations, headers, or meta-commentary.\\n</output_constraints>\\n\\nTransform this request:"}]},{"role":"user","parts":[{"text":"create a design"}]}]}",
+  "body": "{"contents":[{"role":"user","parts":[{"text":"You are an expert assistant who helps rearticulate prompts with mastery and precision.\\n\\nWhen given a prompt, rewrite it as a true expert in that domain would:\\n- Use precise, domain-specific language\\n- Add only necessary context and clarity\\n- Maintain the original intent and voice\\n- Be concise yet comprehensive\\n- Sound natural, not formulaic\\n\\nDo not use placeholder brackets like [THING].\\nDo not force numbered lists or rigid structures.\\nDo not write corporate requirements documents.\\n\\nSimply rearticulate the prompt as an expert would naturally express it.\\n\\nPrompt to enhance:"}]},{"role":"user","parts":[{"text":"create a design"}]}]}",
   "headers": {
     "Content-Type": "application/json",
     "x-goog-api-key": "test-golden-key",
@@ -164,45 +110,27 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: design_request > design_request_system_prompt 1`] = `
-"<role>Expert prompt engineer specializing in technical communication</role>
+"You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<examples>
-Input: "fix my bug"
-Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
-Input: "help with my code"
-Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
-Input: "write about AI"
-Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
-Input: "analyze this data"
-Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
-Input: "create a design"
-Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
-Input: "improve performance"
-Output: "Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard."
-Input: "write tests"
-Output: "Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration."
-</examples>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:"
+Prompt to enhance:"
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: empty_input > empty_input_full_request 1`] = `
 {
-  "body": "{"contents":[{"role":"user","parts":[{"text":"<role>Expert prompt engineer specializing in technical communication</role>\\n\\n<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>\\n\\n<instructions>\\n1. Add specific context and measurable outcomes\\n2. Replace vague terms with precise technical language\\n3. Structure with clear sections and constraints\\n4. Include format specifications when beneficial\\n5. Specify success criteria and validation methods\\n</instructions>\\n\\n<examples>\\nInput: \\"fix my bug\\"\\nOutput: \\"Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases.\\"\\nInput: \\"help with my code\\"\\nOutput: \\"Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets.\\"\\nInput: \\"write about AI\\"\\nOutput: \\"Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies.\\"\\nInput: \\"analyze this data\\"\\nOutput: \\"Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices.\\"\\nInput: \\"create a design\\"\\nOutput: \\"Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation.\\"\\nInput: \\"improve performance\\"\\nOutput: \\"Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard.\\"\\nInput: \\"write tests\\"\\nOutput: \\"Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration.\\"\\n</examples>\\n\\n<output_constraints>\\nOutput ONLY the transformed prompt. No explanations, headers, or meta-commentary.\\n</output_constraints>\\n\\nTransform this request:"}]},{"role":"user","parts":[{"text":""}]}]}",
+  "body": "{"contents":[{"role":"user","parts":[{"text":"You are an expert assistant who helps rearticulate prompts with mastery and precision.\\n\\nWhen given a prompt, rewrite it as a true expert in that domain would:\\n- Use precise, domain-specific language\\n- Add only necessary context and clarity\\n- Maintain the original intent and voice\\n- Be concise yet comprehensive\\n- Sound natural, not formulaic\\n\\nDo not use placeholder brackets like [THING].\\nDo not force numbered lists or rigid structures.\\nDo not write corporate requirements documents.\\n\\nSimply rearticulate the prompt as an expert would naturally express it.\\n\\nPrompt to enhance:"}]},{"role":"user","parts":[{"text":""}]}]}",
   "headers": {
     "Content-Type": "application/json",
     "x-goog-api-key": "test-golden-key",
@@ -213,45 +141,27 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: empty_input > empty_input_system_prompt 1`] = `
-"<role>Expert prompt engineer specializing in technical communication</role>
+"You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<examples>
-Input: "fix my bug"
-Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
-Input: "help with my code"
-Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
-Input: "write about AI"
-Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
-Input: "analyze this data"
-Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
-Input: "create a design"
-Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
-Input: "improve performance"
-Output: "Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard."
-Input: "write tests"
-Output: "Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration."
-</examples>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:"
+Prompt to enhance:"
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: long_detailed_request > long_detailed_request_full_request 1`] = `
 {
-  "body": "{"contents":[{"role":"user","parts":[{"text":"<role>Expert prompt engineer specializing in technical communication</role>\\n\\n<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>\\n\\n<instructions>\\n1. Add specific context and measurable outcomes\\n2. Replace vague terms with precise technical language\\n3. Structure with clear sections and constraints\\n4. Include format specifications when beneficial\\n5. Specify success criteria and validation methods\\n</instructions>\\n\\n<examples>\\nInput: \\"fix my bug\\"\\nOutput: \\"Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases.\\"\\nInput: \\"help with my code\\"\\nOutput: \\"Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets.\\"\\nInput: \\"write about AI\\"\\nOutput: \\"Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies.\\"\\nInput: \\"analyze this data\\"\\nOutput: \\"Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices.\\"\\nInput: \\"create a design\\"\\nOutput: \\"Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation.\\"\\nInput: \\"improve performance\\"\\nOutput: \\"Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard.\\"\\nInput: \\"write tests\\"\\nOutput: \\"Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration.\\"\\n</examples>\\n\\n<output_constraints>\\nOutput ONLY the transformed prompt. No explanations, headers, or meta-commentary.\\n</output_constraints>\\n\\nTransform this request:"}]},{"role":"user","parts":[{"text":"I need help creating a comprehensive testing strategy for my React application that includes unit tests, integration tests, and end-to-end tests, with proper mocking strategies and coverage reporting"}]}]}",
+  "body": "{"contents":[{"role":"user","parts":[{"text":"You are an expert assistant who helps rearticulate prompts with mastery and precision.\\n\\nWhen given a prompt, rewrite it as a true expert in that domain would:\\n- Use precise, domain-specific language\\n- Add only necessary context and clarity\\n- Maintain the original intent and voice\\n- Be concise yet comprehensive\\n- Sound natural, not formulaic\\n\\nDo not use placeholder brackets like [THING].\\nDo not force numbered lists or rigid structures.\\nDo not write corporate requirements documents.\\n\\nSimply rearticulate the prompt as an expert would naturally express it.\\n\\nPrompt to enhance:"}]},{"role":"user","parts":[{"text":"I need help creating a comprehensive testing strategy for my React application that includes unit tests, integration tests, and end-to-end tests, with proper mocking strategies and coverage reporting"}]}]}",
   "headers": {
     "Content-Type": "application/json",
     "x-goog-api-key": "test-golden-key",
@@ -262,45 +172,27 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: long_detailed_request > long_detailed_request_system_prompt 1`] = `
-"<role>Expert prompt engineer specializing in technical communication</role>
+"You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<examples>
-Input: "fix my bug"
-Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
-Input: "help with my code"
-Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
-Input: "write about AI"
-Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
-Input: "analyze this data"
-Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
-Input: "create a design"
-Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
-Input: "improve performance"
-Output: "Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard."
-Input: "write tests"
-Output: "Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration."
-</examples>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:"
+Prompt to enhance:"
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: performance_optimization > performance_optimization_full_request 1`] = `
 {
-  "body": "{"contents":[{"role":"user","parts":[{"text":"<role>Expert prompt engineer specializing in technical communication</role>\\n\\n<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>\\n\\n<instructions>\\n1. Add specific context and measurable outcomes\\n2. Replace vague terms with precise technical language\\n3. Structure with clear sections and constraints\\n4. Include format specifications when beneficial\\n5. Specify success criteria and validation methods\\n</instructions>\\n\\n<examples>\\nInput: \\"fix my bug\\"\\nOutput: \\"Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases.\\"\\nInput: \\"help with my code\\"\\nOutput: \\"Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets.\\"\\nInput: \\"write about AI\\"\\nOutput: \\"Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies.\\"\\nInput: \\"analyze this data\\"\\nOutput: \\"Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices.\\"\\nInput: \\"create a design\\"\\nOutput: \\"Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation.\\"\\nInput: \\"improve performance\\"\\nOutput: \\"Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard.\\"\\nInput: \\"write tests\\"\\nOutput: \\"Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration.\\"\\n</examples>\\n\\n<output_constraints>\\nOutput ONLY the transformed prompt. No explanations, headers, or meta-commentary.\\n</output_constraints>\\n\\nTransform this request:"}]},{"role":"user","parts":[{"text":"make my app faster"}]}]}",
+  "body": "{"contents":[{"role":"user","parts":[{"text":"You are an expert assistant who helps rearticulate prompts with mastery and precision.\\n\\nWhen given a prompt, rewrite it as a true expert in that domain would:\\n- Use precise, domain-specific language\\n- Add only necessary context and clarity\\n- Maintain the original intent and voice\\n- Be concise yet comprehensive\\n- Sound natural, not formulaic\\n\\nDo not use placeholder brackets like [THING].\\nDo not force numbered lists or rigid structures.\\nDo not write corporate requirements documents.\\n\\nSimply rearticulate the prompt as an expert would naturally express it.\\n\\nPrompt to enhance:"}]},{"role":"user","parts":[{"text":"make my app faster"}]}]}",
   "headers": {
     "Content-Type": "application/json",
     "x-goog-api-key": "test-golden-key",
@@ -311,45 +203,27 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: performance_optimization > performance_optimization_system_prompt 1`] = `
-"<role>Expert prompt engineer specializing in technical communication</role>
+"You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<examples>
-Input: "fix my bug"
-Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
-Input: "help with my code"
-Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
-Input: "write about AI"
-Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
-Input: "analyze this data"
-Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
-Input: "create a design"
-Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
-Input: "improve performance"
-Output: "Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard."
-Input: "write tests"
-Output: "Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration."
-</examples>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:"
+Prompt to enhance:"
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: simple_code_request > simple_code_request_full_request 1`] = `
 {
-  "body": "{"contents":[{"role":"user","parts":[{"text":"<role>Expert prompt engineer specializing in technical communication</role>\\n\\n<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>\\n\\n<instructions>\\n1. Add specific context and measurable outcomes\\n2. Replace vague terms with precise technical language\\n3. Structure with clear sections and constraints\\n4. Include format specifications when beneficial\\n5. Specify success criteria and validation methods\\n</instructions>\\n\\n<examples>\\nInput: \\"fix my bug\\"\\nOutput: \\"Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases.\\"\\nInput: \\"help with my code\\"\\nOutput: \\"Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets.\\"\\nInput: \\"write about AI\\"\\nOutput: \\"Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies.\\"\\nInput: \\"analyze this data\\"\\nOutput: \\"Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices.\\"\\nInput: \\"create a design\\"\\nOutput: \\"Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation.\\"\\nInput: \\"improve performance\\"\\nOutput: \\"Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard.\\"\\nInput: \\"write tests\\"\\nOutput: \\"Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration.\\"\\n</examples>\\n\\n<output_constraints>\\nOutput ONLY the transformed prompt. No explanations, headers, or meta-commentary.\\n</output_constraints>\\n\\nTransform this request:"}]},{"role":"user","parts":[{"text":"help with my code"}]}]}",
+  "body": "{"contents":[{"role":"user","parts":[{"text":"You are an expert assistant who helps rearticulate prompts with mastery and precision.\\n\\nWhen given a prompt, rewrite it as a true expert in that domain would:\\n- Use precise, domain-specific language\\n- Add only necessary context and clarity\\n- Maintain the original intent and voice\\n- Be concise yet comprehensive\\n- Sound natural, not formulaic\\n\\nDo not use placeholder brackets like [THING].\\nDo not force numbered lists or rigid structures.\\nDo not write corporate requirements documents.\\n\\nSimply rearticulate the prompt as an expert would naturally express it.\\n\\nPrompt to enhance:"}]},{"role":"user","parts":[{"text":"help with my code"}]}]}",
   "headers": {
     "Content-Type": "application/json",
     "x-goog-api-key": "test-golden-key",
@@ -360,45 +234,27 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: simple_code_request > simple_code_request_system_prompt 1`] = `
-"<role>Expert prompt engineer specializing in technical communication</role>
+"You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<examples>
-Input: "fix my bug"
-Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
-Input: "help with my code"
-Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
-Input: "write about AI"
-Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
-Input: "analyze this data"
-Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
-Input: "create a design"
-Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
-Input: "improve performance"
-Output: "Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard."
-Input: "write tests"
-Output: "Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration."
-</examples>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:"
+Prompt to enhance:"
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: single_word_request > single_word_request_full_request 1`] = `
 {
-  "body": "{"contents":[{"role":"user","parts":[{"text":"<role>Expert prompt engineer specializing in technical communication</role>\\n\\n<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>\\n\\n<instructions>\\n1. Add specific context and measurable outcomes\\n2. Replace vague terms with precise technical language\\n3. Structure with clear sections and constraints\\n4. Include format specifications when beneficial\\n5. Specify success criteria and validation methods\\n</instructions>\\n\\n<examples>\\nInput: \\"fix my bug\\"\\nOutput: \\"Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases.\\"\\nInput: \\"help with my code\\"\\nOutput: \\"Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets.\\"\\nInput: \\"write about AI\\"\\nOutput: \\"Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies.\\"\\nInput: \\"analyze this data\\"\\nOutput: \\"Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices.\\"\\nInput: \\"create a design\\"\\nOutput: \\"Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation.\\"\\nInput: \\"improve performance\\"\\nOutput: \\"Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard.\\"\\nInput: \\"write tests\\"\\nOutput: \\"Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration.\\"\\n</examples>\\n\\n<output_constraints>\\nOutput ONLY the transformed prompt. No explanations, headers, or meta-commentary.\\n</output_constraints>\\n\\nTransform this request:"}]},{"role":"user","parts":[{"text":"refactor"}]}]}",
+  "body": "{"contents":[{"role":"user","parts":[{"text":"You are an expert assistant who helps rearticulate prompts with mastery and precision.\\n\\nWhen given a prompt, rewrite it as a true expert in that domain would:\\n- Use precise, domain-specific language\\n- Add only necessary context and clarity\\n- Maintain the original intent and voice\\n- Be concise yet comprehensive\\n- Sound natural, not formulaic\\n\\nDo not use placeholder brackets like [THING].\\nDo not force numbered lists or rigid structures.\\nDo not write corporate requirements documents.\\n\\nSimply rearticulate the prompt as an expert would naturally express it.\\n\\nPrompt to enhance:"}]},{"role":"user","parts":[{"text":"refactor"}]}]}",
   "headers": {
     "Content-Type": "application/json",
     "x-goog-api-key": "test-golden-key",
@@ -409,45 +265,27 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: single_word_request > single_word_request_system_prompt 1`] = `
-"<role>Expert prompt engineer specializing in technical communication</role>
+"You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<examples>
-Input: "fix my bug"
-Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
-Input: "help with my code"
-Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
-Input: "write about AI"
-Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
-Input: "analyze this data"
-Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
-Input: "create a design"
-Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
-Input: "improve performance"
-Output: "Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard."
-Input: "write tests"
-Output: "Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration."
-</examples>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:"
+Prompt to enhance:"
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: special_characters_unicode > special_characters_unicode_full_request 1`] = `
 {
-  "body": "{"contents":[{"role":"user","parts":[{"text":"<role>Expert prompt engineer specializing in technical communication</role>\\n\\n<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>\\n\\n<instructions>\\n1. Add specific context and measurable outcomes\\n2. Replace vague terms with precise technical language\\n3. Structure with clear sections and constraints\\n4. Include format specifications when beneficial\\n5. Specify success criteria and validation methods\\n</instructions>\\n\\n<examples>\\nInput: \\"fix my bug\\"\\nOutput: \\"Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases.\\"\\nInput: \\"help with my code\\"\\nOutput: \\"Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets.\\"\\nInput: \\"write about AI\\"\\nOutput: \\"Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies.\\"\\nInput: \\"analyze this data\\"\\nOutput: \\"Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices.\\"\\nInput: \\"create a design\\"\\nOutput: \\"Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation.\\"\\nInput: \\"improve performance\\"\\nOutput: \\"Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard.\\"\\nInput: \\"write tests\\"\\nOutput: \\"Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration.\\"\\n</examples>\\n\\n<output_constraints>\\nOutput ONLY the transformed prompt. No explanations, headers, or meta-commentary.\\n</output_constraints>\\n\\nTransform this request:"}]},{"role":"user","parts":[{"text":"Help me debug this: console.log('Hello 🌟 World'); // Why doesn't this work?"}]}]}",
+  "body": "{"contents":[{"role":"user","parts":[{"text":"You are an expert assistant who helps rearticulate prompts with mastery and precision.\\n\\nWhen given a prompt, rewrite it as a true expert in that domain would:\\n- Use precise, domain-specific language\\n- Add only necessary context and clarity\\n- Maintain the original intent and voice\\n- Be concise yet comprehensive\\n- Sound natural, not formulaic\\n\\nDo not use placeholder brackets like [THING].\\nDo not force numbered lists or rigid structures.\\nDo not write corporate requirements documents.\\n\\nSimply rearticulate the prompt as an expert would naturally express it.\\n\\nPrompt to enhance:"}]},{"role":"user","parts":[{"text":"Help me debug this: console.log('Hello 🌟 World'); // Why doesn't this work?"}]}]}",
   "headers": {
     "Content-Type": "application/json",
     "x-goog-api-key": "test-golden-key",
@@ -458,45 +296,27 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: special_characters_unicode > special_characters_unicode_system_prompt 1`] = `
-"<role>Expert prompt engineer specializing in technical communication</role>
+"You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<examples>
-Input: "fix my bug"
-Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
-Input: "help with my code"
-Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
-Input: "write about AI"
-Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
-Input: "analyze this data"
-Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
-Input: "create a design"
-Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
-Input: "improve performance"
-Output: "Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard."
-Input: "write tests"
-Output: "Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration."
-</examples>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:"
+Prompt to enhance:"
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: vague_bug_fix > vague_bug_fix_full_request 1`] = `
 {
-  "body": "{"contents":[{"role":"user","parts":[{"text":"<role>Expert prompt engineer specializing in technical communication</role>\\n\\n<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>\\n\\n<instructions>\\n1. Add specific context and measurable outcomes\\n2. Replace vague terms with precise technical language\\n3. Structure with clear sections and constraints\\n4. Include format specifications when beneficial\\n5. Specify success criteria and validation methods\\n</instructions>\\n\\n<examples>\\nInput: \\"fix my bug\\"\\nOutput: \\"Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases.\\"\\nInput: \\"help with my code\\"\\nOutput: \\"Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets.\\"\\nInput: \\"write about AI\\"\\nOutput: \\"Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies.\\"\\nInput: \\"analyze this data\\"\\nOutput: \\"Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices.\\"\\nInput: \\"create a design\\"\\nOutput: \\"Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation.\\"\\nInput: \\"improve performance\\"\\nOutput: \\"Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard.\\"\\nInput: \\"write tests\\"\\nOutput: \\"Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration.\\"\\n</examples>\\n\\n<output_constraints>\\nOutput ONLY the transformed prompt. No explanations, headers, or meta-commentary.\\n</output_constraints>\\n\\nTransform this request:"}]},{"role":"user","parts":[{"text":"fix my bug"}]}]}",
+  "body": "{"contents":[{"role":"user","parts":[{"text":"You are an expert assistant who helps rearticulate prompts with mastery and precision.\\n\\nWhen given a prompt, rewrite it as a true expert in that domain would:\\n- Use precise, domain-specific language\\n- Add only necessary context and clarity\\n- Maintain the original intent and voice\\n- Be concise yet comprehensive\\n- Sound natural, not formulaic\\n\\nDo not use placeholder brackets like [THING].\\nDo not force numbered lists or rigid structures.\\nDo not write corporate requirements documents.\\n\\nSimply rearticulate the prompt as an expert would naturally express it.\\n\\nPrompt to enhance:"}]},{"role":"user","parts":[{"text":"fix my bug"}]}]}",
   "headers": {
     "Content-Type": "application/json",
     "x-goog-api-key": "test-golden-key",
@@ -507,38 +327,20 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
 `;
 
 exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce consistent prompt transformation for: vague_bug_fix > vague_bug_fix_system_prompt 1`] = `
-"<role>Expert prompt engineer specializing in technical communication</role>
+"You are an expert assistant who helps rearticulate prompts with mastery and precision.
 
-<context>Transform requests using proven CRISP structure (Context, Role, Instructions, Specifics, Parameters)</context>
+When given a prompt, rewrite it as a true expert in that domain would:
+- Use precise, domain-specific language
+- Add only necessary context and clarity
+- Maintain the original intent and voice
+- Be concise yet comprehensive
+- Sound natural, not formulaic
 
-<instructions>
-1. Add specific context and measurable outcomes
-2. Replace vague terms with precise technical language
-3. Structure with clear sections and constraints
-4. Include format specifications when beneficial
-5. Specify success criteria and validation methods
-</instructions>
+Do not use placeholder brackets like [THING].
+Do not force numbered lists or rigid structures.
+Do not write corporate requirements documents.
 
-<examples>
-Input: "fix my bug"
-Output: "Debug [ERROR_TYPE] in [COMPONENT] (line X). Reproduce steps: [STEPS]. Expected vs actual behavior: [COMPARISON]. Provide: 1) Root cause analysis, 2) Fix with explanation, 3) Prevention strategy, 4) Test cases."
-Input: "help with my code"
-Output: "Review this [LANGUAGE] codebase for performance bottlenecks. Focus on: 1) Inefficient algorithms (O(n²)+), 2) Memory leaks, 3) Unnecessary operations. Provide specific line numbers and optimization suggestions. Format: Markdown with code snippets."
-Input: "write about AI"
-Output: "Create a 1200-word technical analysis of AI applications in [DOMAIN]. Structure: Executive summary (200w), Current state (400w), Emerging trends (400w), Implementation considerations (200w). Target audience: Technical decision-makers. Include 3+ case studies."
-Input: "analyze this data"
-Output: "Perform statistical analysis on [DATA_TYPE] dataset. Methodology: 1) Descriptive statistics with outlier detection, 2) Trend analysis using [METHOD], 3) Correlation matrix for key variables. Deliverables: Executive summary, detailed findings with visualizations, recommendations with confidence intervals. Format: PDF report with appendices."
-Input: "create a design"
-Output: "Design [ARTIFACT] for [AUDIENCE]. Requirements: [SPECIFICATIONS]. Constraints: [TECHNICAL/BUSINESS_LIMITS]. Deliverables: 1) Wireframes/mockups, 2) Technical specifications, 3) Implementation timeline, 4) Success metrics. Format: Design system with documentation."
-Input: "improve performance"
-Output: "Optimize [SYSTEM/APPLICATION] performance for [SPECIFIC_METRICS]. Baseline: Current performance measurements. Target: [QUANTIFIED_GOALS]. Approach: 1) Performance profiling and bottleneck identification, 2) Implementation of optimizations, 3) A/B testing with statistical significance. Deliverables: Performance report, optimized code, monitoring dashboard."
-Input: "write tests"
-Output: "Develop comprehensive test suite for [COMPONENT/FEATURE]. Coverage: 1) Unit tests for individual functions (>95% coverage), 2) Integration tests for component interactions, 3) End-to-end tests for user workflows, 4) Performance tests for critical paths. Framework: [TEST_FRAMEWORK]. Include test data setup, teardown procedures, and CI/CD integration."
-</examples>
+Simply rearticulate the prompt as an expert would naturally express it.
 
-<output_constraints>
-Output ONLY the transformed prompt. No explanations, headers, or meta-commentary.
-</output_constraints>
-
-Transform this request:"
+Prompt to enhance:"
 `;
