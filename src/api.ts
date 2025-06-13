@@ -9,6 +9,21 @@ import { CORE_EXAMPLES } from "./prompting/examples.js";
 import { logToStderr } from "./utils/logger.js";
 
 /**
+ * Start a simple progress indicator that writes dots to stderr.
+ *
+ * @returns Cleanup function to stop the progress indicator
+ */
+function startProgress(): () => void {
+  const interval = globalThis.setInterval(() => {
+    process.stderr.write(".");
+  }, 500);
+
+  return () => {
+    globalThis.clearInterval(interval);
+  };
+}
+
+/**
  * Build the enhanced CRISP-based elevation prompt dynamically.
  * Uses proven prompt engineering techniques including structured formatting,
  * few-shot examples from the curated library, and explicit output constraints.
@@ -50,10 +65,16 @@ const ELEVATION_PROMPT = buildElevationPrompt();
  * Elevate a user prompt using direct Gemini API call.
  *
  * @param prompt The user's input prompt to elevate
+ * @param debug Whether debug logging is enabled
+ * @param raw Whether raw output mode is enabled (suppresses progress indicator)
  * @returns Promise resolving to the elevated prompt
  * @throws Error if API key is missing or API call fails
  */
-export async function elevatePrompt(prompt: string): Promise<string> {
+export async function elevatePrompt(
+  prompt: string,
+  debug: boolean = false,
+  raw: boolean = false,
+): Promise<string> {
   // Validate API key
   const apiKey = process.env["GEMINI_API_KEY"];
   if (!apiKey) {
@@ -68,11 +89,19 @@ export async function elevatePrompt(prompt: string): Promise<string> {
   const startTime = globalThis.performance.now();
 
   // Log API request start
-  logToStderr("info", "API request started", {
-    component: "api",
-    operation: "elevatePrompt",
-    promptLength: prompt.length,
-  });
+  logToStderr(
+    "info",
+    "API request started",
+    {
+      component: "api",
+      operation: "elevatePrompt",
+      promptLength: prompt.length,
+    },
+    debug,
+  );
+
+  // Start progress indicator (only in non-raw mode)
+  const stopProgress = raw ? () => {} : startProgress();
 
   try {
     // Make direct API call with 30-second timeout
@@ -122,15 +151,21 @@ export async function elevatePrompt(prompt: string): Promise<string> {
           break;
       }
 
-      logToStderr("error", "API request failed", {
-        component: "api",
-        operation: "elevatePrompt",
-        error: errorMessage,
-        httpStatus: response.status,
-        promptLength: prompt.length,
-        durationMs: globalThis.performance.now() - startTime,
-      });
+      logToStderr(
+        "error",
+        "API request failed",
+        {
+          component: "api",
+          operation: "elevatePrompt",
+          error: errorMessage,
+          httpStatus: response.status,
+          promptLength: prompt.length,
+          durationMs: globalThis.performance.now() - startTime,
+        },
+        debug,
+      );
 
+      stopProgress();
       throw new Error(errorMessage);
     }
 
@@ -158,26 +193,38 @@ export async function elevatePrompt(prompt: string): Promise<string> {
     } catch {
       const errorMessage =
         "Invalid JSON response from API - response may be corrupted";
-      logToStderr("error", "API request failed", {
-        component: "api",
-        operation: "elevatePrompt",
-        error: errorMessage,
-        promptLength: prompt.length,
-        durationMs: globalThis.performance.now() - startTime,
-      });
+      logToStderr(
+        "error",
+        "API request failed",
+        {
+          component: "api",
+          operation: "elevatePrompt",
+          error: errorMessage,
+          promptLength: prompt.length,
+          durationMs: globalThis.performance.now() - startTime,
+        },
+        debug,
+      );
+      stopProgress();
       throw new Error(errorMessage);
     }
 
     // Extract generated content
     if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
       const errorMessage = "Invalid API response structure";
-      logToStderr("error", "API request failed", {
-        component: "api",
-        operation: "elevatePrompt",
-        error: errorMessage,
-        promptLength: prompt.length,
-        durationMs: globalThis.performance.now() - startTime,
-      });
+      logToStderr(
+        "error",
+        "API request failed",
+        {
+          component: "api",
+          operation: "elevatePrompt",
+          error: errorMessage,
+          promptLength: prompt.length,
+          durationMs: globalThis.performance.now() - startTime,
+        },
+        debug,
+      );
+      stopProgress();
       throw new Error(errorMessage);
     }
 
@@ -185,14 +232,20 @@ export async function elevatePrompt(prompt: string): Promise<string> {
 
     // Log successful completion with performance metrics
     const durationMs = globalThis.performance.now() - startTime;
-    logToStderr("info", "API request completed successfully", {
-      component: "api",
-      operation: "elevatePrompt",
-      promptLength: prompt.length,
-      responseLength: result.length,
-      durationMs,
-    });
+    logToStderr(
+      "info",
+      "API request completed successfully",
+      {
+        component: "api",
+        operation: "elevatePrompt",
+        promptLength: prompt.length,
+        responseLength: result.length,
+        durationMs,
+      },
+      debug,
+    );
 
+    stopProgress();
     return result;
   } catch (error) {
     // Handle other errors (network errors, etc.) - only log if not already logged
@@ -203,27 +256,39 @@ export async function elevatePrompt(prompt: string): Promise<string> {
         !error.message.includes("Invalid JSON response") &&
         !error.message.includes("Invalid API response structure")
       ) {
-        logToStderr("error", "API request failed", {
-          component: "api",
-          operation: "elevatePrompt",
-          error: error.message,
-          errorType: "network",
-          promptLength: prompt.length,
-          durationMs: globalThis.performance.now() - startTime,
-        });
+        logToStderr(
+          "error",
+          "API request failed",
+          {
+            component: "api",
+            operation: "elevatePrompt",
+            error: error.message,
+            errorType: "network",
+            promptLength: prompt.length,
+            durationMs: globalThis.performance.now() - startTime,
+          },
+          debug,
+        );
       }
+      stopProgress();
       throw error;
     }
 
     const errorMessage = `Unexpected error: ${String(error)}`;
-    logToStderr("error", "API request failed", {
-      component: "api",
-      operation: "elevatePrompt",
-      error: errorMessage,
-      errorType: "unexpected",
-      promptLength: prompt.length,
-      durationMs: globalThis.performance.now() - startTime,
-    });
+    logToStderr(
+      "error",
+      "API request failed",
+      {
+        component: "api",
+        operation: "elevatePrompt",
+        error: errorMessage,
+        errorType: "unexpected",
+        promptLength: prompt.length,
+        durationMs: globalThis.performance.now() - startTime,
+      },
+      debug,
+    );
+    stopProgress();
     throw new Error(errorMessage);
   }
 }
