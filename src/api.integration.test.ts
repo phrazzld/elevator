@@ -85,17 +85,23 @@ describe("elevatePrompt - Integration Tests", () => {
       expect(result).not.toContain("[SPECIFIC]");
     }, 20000);
 
-    it("should produce reasonably sized expert responses (not over-engineered)", async () => {
+    it("should produce single expert articulation with high quality", async () => {
       if (!process.env["GEMINI_API_KEY"]) return;
 
-      // Test with simple request that shouldn't become massive
+      // Test with simple request that should generate one expert response
       const simplePrompt = "fix the bug";
       const result = await elevatePrompt(simplePrompt);
 
-      // Should be enhanced but not excessively long (avoid 10x expansion)
-      const lengthRatio = result.length / simplePrompt.length;
-      expect(lengthRatio).toBeLessThan(10); // Reasonable enhancement, not over-engineering
-      expect(lengthRatio).toBeGreaterThan(2); // But should be meaningfully enhanced
+      // Should generate a single expert response (not numbered list)
+      const numberedItems = result.match(/^\s*\d+\./gm) || [];
+      expect(numberedItems.length).toBeLessThanOrEqual(1); // At most one numbered item
+
+      // Response should be meaningful and substantially enhanced
+      expect(result.split(" ").length).toBeGreaterThan(
+        simplePrompt.split(" ").length * 2,
+      );
+      expect(result.length).toBeGreaterThan(simplePrompt.length * 3);
+      expect(result).not.toBe(simplePrompt); // Should be transformed
     }, 20000);
 
     it("should sound like domain expert wrote it, not corporate requirements", async () => {
@@ -117,18 +123,18 @@ describe("elevatePrompt - Integration Tests", () => {
       expect(result).not.toBe(businessPrompt); // Should be transformed
     }, 20000);
 
-    it("should maintain natural language flow without forced rigid structures", async () => {
+    it("should provide single expert articulation without corporate templates", async () => {
       if (!process.env["GEMINI_API_KEY"]) return;
 
-      // Test that would have triggered numbered lists in old system
+      // Test that should generate single expert articulation
       const structuredPrompt = "create a web application";
       const result = await elevatePrompt(structuredPrompt);
 
-      // Should not force rigid numbered structure unless naturally appropriate
+      // Should provide single expert articulation (not multiple numbered alternatives)
       const numberedMatches = result.match(/^\s*\d+\./gm) || [];
-      expect(numberedMatches.length).toBeLessThan(5); // Some structure OK, but not excessive
+      expect(numberedMatches.length).toBeLessThanOrEqual(1); // Should have at most one numbered item
 
-      // Should not force templated section headers
+      // Should not use corporate template headers
       expect(result).not.toMatch(
         /^#+\s*(Context|Role|Instructions|Specifics|Parameters)/im,
       );

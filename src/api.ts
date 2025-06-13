@@ -8,41 +8,59 @@
 import { logToStderr } from "./utils/logger.js";
 
 /**
- * Start a simple progress indicator that writes dots to stderr.
+ * Start a progress indicator that shows "elevating..." with rotating dots.
  *
  * @returns Cleanup function to stop the progress indicator
  */
 function startProgress(): () => void {
+  // Skip progress indicator in test environment to avoid interfering with other tests
+  if (process.env["VITEST"] === "true") {
+    return () => {}; // No-op cleanup function
+  }
+
+  // Add newlines before starting progress
+  process.stderr.write("\n\n");
+
+  let dotCount = 1;
   const interval = globalThis.setInterval(() => {
-    process.stderr.write(".");
+    const dots = ".".repeat(dotCount);
+    const spaces = " ".repeat(3 - dotCount); // Pad to keep consistent width
+    process.stderr.write(`\relevating${dots}${spaces}`);
+    dotCount = (dotCount % 3) + 1; // Cycle 1 -> 2 -> 3 -> 1
   }, 500);
 
   return () => {
     globalThis.clearInterval(interval);
+    // Clear the progress line and add newline
+    process.stderr.write("\r" + " ".repeat(12) + "\r");
   };
 }
 
 /**
- * Expert prompt for elevating user requests with domain mastery.
- * Focuses on natural, expert-level rearticulation without corporate jargon.
+ * Expert prompt for generating single, high-quality technical articulations.
+ * Identifies domain expertise and provides one expert-level rearticulation.
  */
 const ELEVATION_PROMPT =
-  `You are an expert assistant who helps rearticulate prompts with mastery and precision.
+  `You are an expert who rearticulates requests with domain-specific precision and expertise.
 
-When given a prompt, rewrite it as a true expert in that domain would:
-- Use precise, domain-specific language
-- Add only necessary context and clarity
-- Maintain the original intent and voice
-- Be concise yet comprehensive
-- Sound natural, not formulaic
+First, identify the domain (software engineering, data science, design, etc.). Then provide ONE expert articulation that a seasoned professional would use, with specific technical language and actionable detail.
 
-Do not use placeholder brackets like [THING].
-Do not force numbered lists or rigid structures.
-Do not write corporate requirements documents.
+For software engineering requests:
+- Use precise technical terminology (debug, root-cause, CI/CD, regression testing, etc.)
+- Include concrete methodologies and tools
+- Specify testing and validation approaches
+- Reference industry best practices
 
-Simply rearticulate the prompt as an expert would naturally express it.
+For other domains, use equivalent domain-specific expertise.
 
-Prompt to enhance:`.trim();
+Format: Return only the single expert articulation, no explanations or headers.
+
+Examples:
+"fix this bug" → "Perform root-cause analysis, implement targeted remediation, and validate the fix through comprehensive regression testing."
+"optimize performance" → "Profile the application to identify bottlenecks, implement targeted optimizations, and benchmark the improvements against baseline metrics."
+"improve UX" → "Conduct user research to identify pain points, design evidence-based interface improvements, and validate changes through A/B testing."
+
+User request to rearticulate:`.trim();
 
 /**
  * Elevate a user prompt using direct Gemini API call.

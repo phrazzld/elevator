@@ -253,26 +253,24 @@ describe("Golden Test Suite - Phase 1 Prompt Transformations", () => {
       const systemPrompt = captured.systemPrompt;
 
       // Verify expert-focused structure elements
-      expect(systemPrompt).toContain("expert assistant");
-      expect(systemPrompt).toContain(
-        "rearticulate prompts with mastery and precision",
-      );
-      expect(systemPrompt).toContain("true expert in that domain");
+      expect(systemPrompt).toContain("expert who rearticulates");
+      expect(systemPrompt).toContain("domain-specific precision and expertise");
+      expect(systemPrompt).toContain("identify the domain");
 
       // Verify key guidelines
-      expect(systemPrompt).toContain("Use precise, domain-specific language");
-      expect(systemPrompt).toContain("Maintain the original intent and voice");
-      expect(systemPrompt).toContain("Sound natural, not formulaic");
+      expect(systemPrompt).toContain("precise technical terminology");
+      expect(systemPrompt).toContain("seasoned professional would use");
+      expect(systemPrompt).toContain("actionable detail");
 
-      // Verify constraints
-      expect(systemPrompt).toContain("Do not use placeholder brackets");
-      expect(systemPrompt).toContain("Do not force numbered lists");
+      // Verify output format instructions
       expect(systemPrompt).toContain(
-        "Do not write corporate requirements documents",
+        "Format: Return only the single expert articulation",
       );
+      expect(systemPrompt).toContain("no explanations or headers");
+      expect(systemPrompt).toContain("Examples:");
 
       // Verify it ends with prompt instruction
-      expect(systemPrompt).toContain("Prompt to enhance:");
+      expect(systemPrompt).toContain("User request to rearticulate:");
     });
   });
 

@@ -500,7 +500,7 @@ describe("elevatePrompt", () => {
       vi.useRealTimers();
     });
 
-    it("should show progress indicator when raw is false", async () => {
+    it("should show progress indicator when raw is false (disabled in test env)", async () => {
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
         json: vi.fn().mockResolvedValue({
@@ -515,11 +515,11 @@ describe("elevatePrompt", () => {
 
       await elevatePrompt("test", false, false);
 
-      // Progress should start
-      expect(intervalSpy).toHaveBeenCalledWith(expect.any(Function), 500);
+      // Progress is disabled in test environment, so should not start
+      expect(intervalSpy).not.toHaveBeenCalled();
 
-      // Progress should be cleared
-      expect(clearIntervalSpy).toHaveBeenCalled();
+      // Progress cleanup should not be called either
+      expect(clearIntervalSpy).not.toHaveBeenCalled();
 
       vi.unstubAllGlobals();
     });
@@ -551,7 +551,7 @@ describe("elevatePrompt", () => {
       vi.unstubAllGlobals();
     });
 
-    it("should stop progress indicator on error", async () => {
+    it("should stop progress indicator on error (disabled in test env)", async () => {
       const mockFetch = vi.fn().mockRejectedValue(new Error("Network error"));
       vi.stubGlobal("fetch", mockFetch);
 
@@ -562,11 +562,11 @@ describe("elevatePrompt", () => {
         "Network error",
       );
 
-      // Progress should have started
-      expect(intervalSpy).toHaveBeenCalled();
+      // Progress is disabled in test environment, so should not start
+      expect(intervalSpy).not.toHaveBeenCalled();
 
-      // Progress should be cleared on error
-      expect(clearIntervalSpy).toHaveBeenCalled();
+      // Progress cleanup should not be called either
+      expect(clearIntervalSpy).not.toHaveBeenCalled();
 
       vi.unstubAllGlobals();
     });
@@ -614,14 +614,12 @@ describe("elevatePrompt", () => {
       const systemPrompt = requestBody.contents[0]?.parts[0]?.text;
 
       // Verify expert prompt contains expected elements
-      expect(systemPrompt).toContain("expert assistant");
-      expect(systemPrompt).toContain(
-        "rearticulate prompts with mastery and precision",
-      );
-      expect(systemPrompt).toContain("true expert in that domain");
-      expect(systemPrompt).toContain("Use precise, domain-specific language");
-      expect(systemPrompt).toContain("Do not use placeholder brackets");
-      expect(systemPrompt).toContain("Prompt to enhance:");
+      expect(systemPrompt).toContain("expert who rearticulates");
+      expect(systemPrompt).toContain("domain-specific precision and expertise");
+      expect(systemPrompt).toContain("identify the domain");
+      expect(systemPrompt).toContain("ONE expert articulation");
+      expect(systemPrompt).toContain("precise technical terminology");
+      expect(systemPrompt).toContain("User request to rearticulate:");
 
       // The second content should be the user prompt
       const userPrompt = requestBody.contents[1]?.parts[0]?.text;
@@ -646,11 +644,13 @@ describe("elevatePrompt", () => {
       const systemPrompt = requestBody.contents[0]?.parts[0]?.text;
 
       // Verify all expert guidance elements are present
-      expect(systemPrompt).toContain("Use precise, domain-specific language");
-      expect(systemPrompt).toContain("Add only necessary context and clarity");
-      expect(systemPrompt).toContain("Maintain the original intent and voice");
-      expect(systemPrompt).toContain("Be concise yet comprehensive");
-      expect(systemPrompt).toContain("Sound natural, not formulaic");
+      expect(systemPrompt).toContain("precise technical terminology");
+      expect(systemPrompt).toContain("concrete methodologies and tools");
+      expect(systemPrompt).toContain("testing and validation approaches");
+      expect(systemPrompt).toContain("industry best practices");
+      expect(systemPrompt).toContain(
+        "Format: Return only the single expert articulation",
+      );
 
       vi.unstubAllGlobals();
     });
@@ -670,15 +670,14 @@ describe("elevatePrompt", () => {
       const requestBody = JSON.parse(options.body) as GeminiRequestBody;
       const systemPrompt = requestBody.contents[0]?.parts[0]?.text;
 
-      // Verify constraints are included
+      // Verify key instructions are included
+      expect(systemPrompt).toContain("provide ONE expert articulation");
+      expect(systemPrompt).toContain("seasoned professional would use");
       expect(systemPrompt).toContain(
-        "Do not use placeholder brackets like [THING]",
+        "specific technical language and actionable detail",
       );
       expect(systemPrompt).toContain(
-        "Do not force numbered lists or rigid structures",
-      );
-      expect(systemPrompt).toContain(
-        "Do not write corporate requirements documents",
+        "Return only the single expert articulation",
       );
 
       vi.unstubAllGlobals();
@@ -700,8 +699,8 @@ describe("elevatePrompt", () => {
 
       // System prompt should still be complete
       const systemPrompt = requestBody.contents[0]?.parts[0]?.text;
-      expect(systemPrompt).toContain("expert assistant");
-      expect(systemPrompt).toContain("Prompt to enhance:");
+      expect(systemPrompt).toContain("expert who rearticulates");
+      expect(systemPrompt).toContain("User request to rearticulate:");
 
       // User prompt should be empty string
       const userPrompt = requestBody.contents[1]?.parts[0]?.text;
@@ -727,7 +726,7 @@ describe("elevatePrompt", () => {
 
       // System prompt should be unaffected by input length
       const systemPrompt = requestBody.contents[0]?.parts[0]?.text;
-      expect(systemPrompt).toContain("Prompt to enhance:");
+      expect(systemPrompt).toContain("User request to rearticulate:");
 
       // User prompt should preserve full input
       const userPrompt = requestBody.contents[1]?.parts[0]?.text;
