@@ -148,7 +148,7 @@
     - **Depends‑on:** [T021]
 
 ## Documentation Updates
-- [ ] **T026 · Docs · P2: update README with new behavior**
+- [x] **T026 · Docs · P2: update README with new behavior**
     - **Context:** Document removal of decoration and debug flag
     - **Action:**
         1. Add --debug flag to usage examples
@@ -169,9 +169,9 @@
 4. **Phase 4 - Documentation (T026)**: Update docs
 
 ### Success Metrics
-- [ ] No JSON logs visible by default
-- [ ] Progress indicator shows during API calls
-- [ ] Output is clean, undecorated enhanced prompt
-- [ ] Prompts read like domain expert wrote them
-- [ ] No placeholder brackets in output
-- [ ] Simple, maintainable codebase
+- [x] No JSON logs visible by default
+- [x] Progress indicator shows during API calls
+- [x] Output is clean, undecorated enhanced prompt
+- [x] Prompts read like domain expert wrote them
+- [x] No placeholder brackets in output
+- [x] Simple, maintainable codebase
