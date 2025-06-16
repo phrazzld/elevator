@@ -1,11 +1,10 @@
 ---
 id: continuous-refactoring
-last_modified: "2025-06-02"
-version: "0.1.0"
+last_modified: '2025-06-02'
+version: '0.1.0'
 derived_from: fix-broken-windows
-enforced_by: "Development practices, code review processes, refactoring guidelines"
+enforced_by: 'Development practices, code review processes, refactoring guidelines'
 ---
-
 # Binding: Practice Continuous Code Improvement and Refactoring
 
 Integrate ongoing code improvement into regular development workflows rather than deferring refactoring to separate initiatives. Make incremental quality improvements a standard part of feature development and maintenance work.
@@ -35,7 +34,6 @@ Continuous refactoring must establish these improvement principles:
 - **Risk-Managed Approach**: Assess and manage the risks of refactoring activities, prioritizing low-risk, high-value improvements while carefully planning more significant restructuring.
 
 **Refactoring Categories:**
-
 - Code quality improvements (simplification, clarity, duplication removal)
 - Design pattern application (improving structure and maintainability)
 - Performance optimizations (addressing bottlenecks and inefficiencies)
@@ -44,7 +42,6 @@ Continuous refactoring must establish these improvement principles:
 - Architecture evolution (gradual migration to better patterns)
 
 **Integration Strategies:**
-
 - Boy Scout Rule: Leave code better than you found it
 - Scheduled refactoring time in each sprint
 - Refactoring as part of feature development
@@ -71,13 +68,13 @@ class OrderProcessor {
   // TODO: Refactor this method - it's getting too complex
   async processOrder(order: Order): Promise<void> {
     // Over 50 lines of complex, nested logic
-    if (order.type === "standard") {
-      if (order.priority === "high") {
+    if (order.type === 'standard') {
+      if (order.priority === 'high') {
         if (order.customer.isPremium) {
           // Nested logic continues...
           // Copy-pasted validation from another method
           if (!order.paymentMethod || order.paymentMethod.expired) {
-            throw new Error("Invalid payment method");
+            throw new Error('Invalid payment method');
           }
 
           // More nested conditions...
@@ -89,7 +86,7 @@ class OrderProcessor {
         // Even more nested conditions
         // FIXME: This doesn't handle edge cases properly
       }
-    } else if (order.type === "express") {
+    } else if (order.type === 'express') {
       // Copy-pasted logic with minor variations
       // TODO: Extract common processing logic
     }
@@ -134,19 +131,19 @@ class OrderValidator {
     const errors: string[] = [];
 
     if (!paymentMethod) {
-      errors.push("Payment method is required");
+      errors.push('Payment method is required');
     } else {
       if (paymentMethod.expired) {
-        errors.push("Payment method has expired");
+        errors.push('Payment method has expired');
       }
       if (!paymentMethod.isActive) {
-        errors.push("Payment method is not active");
+        errors.push('Payment method is not active');
       }
     }
 
     return {
       isValid: errors.length === 0,
-      errors,
+      errors
     };
   }
 
@@ -156,15 +153,15 @@ class OrderValidator {
 
     // Centralized validation logic
     if (!order.customer) {
-      errors.push("Customer information is required");
+      errors.push('Customer information is required');
     }
 
     if (!order.items || order.items.length === 0) {
-      errors.push("Order must contain at least one item");
+      errors.push('Order must contain at least one item');
     }
 
-    if (order.type === "express" && !order.deliveryAddress) {
-      errors.push("Express orders require delivery address");
+    if (order.type === 'express' && !order.deliveryAddress) {
+      errors.push('Express orders require delivery address');
     }
 
     const paymentValidation = this.validatePaymentMethod(order.paymentMethod);
@@ -173,7 +170,7 @@ class OrderValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings,
+      warnings
     };
   }
 }
@@ -182,15 +179,10 @@ class OrderValidator {
 abstract class OrderProcessingStrategy {
   abstract processOrder(order: Order, validator: OrderValidator): Promise<void>;
 
-  protected async validateOrder(
-    order: Order,
-    validator: OrderValidator,
-  ): Promise<void> {
+  protected async validateOrder(order: Order, validator: OrderValidator): Promise<void> {
     const validation = validator.validateOrderData(order);
     if (!validation.isValid) {
-      throw new Error(
-        `Order validation failed: ${validation.errors.join(", ")}`,
-      );
+      throw new Error(`Order validation failed: ${validation.errors.join(', ')}`);
     }
   }
 }
@@ -272,9 +264,9 @@ class RefactoredOrderProcessor {
   constructor() {
     this.validator = new OrderValidator();
     this.processors = new Map([
-      ["standard", new StandardOrderProcessor()],
-      ["express", new ExpressOrderProcessor()],
-      ["premium", new PremiumOrderProcessor()],
+      ['standard', new StandardOrderProcessor()],
+      ['express', new ExpressOrderProcessor()],
+      ['premium', new PremiumOrderProcessor()]
     ]);
   }
 
@@ -296,7 +288,7 @@ class RefactoredOrderProcessor {
 }
 
 // Step 4: Comprehensive test coverage protecting refactoring
-describe("RefactoredOrderProcessor", () => {
+describe('RefactoredOrderProcessor', () => {
   let processor: RefactoredOrderProcessor;
   let mockOrder: Order;
 
@@ -305,46 +297,46 @@ describe("RefactoredOrderProcessor", () => {
     mockOrder = createMockOrder();
   });
 
-  describe("order validation", () => {
-    it("should reject orders without payment method", async () => {
+  describe('order validation', () => {
+    it('should reject orders without payment method', async () => {
       mockOrder.paymentMethod = null;
 
-      await expect(processor.processOrder(mockOrder)).rejects.toThrow(
-        "Payment method is required",
-      );
+      await expect(processor.processOrder(mockOrder))
+        .rejects.toThrow('Payment method is required');
     });
 
-    it("should reject orders with expired payment method", async () => {
+    it('should reject orders with expired payment method', async () => {
       mockOrder.paymentMethod.expired = true;
 
-      await expect(processor.processOrder(mockOrder)).rejects.toThrow(
-        "Payment method has expired",
-      );
+      await expect(processor.processOrder(mockOrder))
+        .rejects.toThrow('Payment method has expired');
     });
   });
 
-  describe("order processing strategies", () => {
-    it("should process standard orders correctly", async () => {
-      mockOrder.type = "standard";
+  describe('order processing strategies', () => {
+    it('should process standard orders correctly', async () => {
+      mockOrder.type = 'standard';
 
-      await expect(processor.processOrder(mockOrder)).resolves.not.toThrow();
+      await expect(processor.processOrder(mockOrder))
+        .resolves.not.toThrow();
     });
 
-    it("should process express orders correctly", async () => {
-      mockOrder.type = "express";
+    it('should process express orders correctly', async () => {
+      mockOrder.type = 'express';
       mockOrder.deliveryAddress = createMockAddress();
 
-      await expect(processor.processOrder(mockOrder)).resolves.not.toThrow();
+      await expect(processor.processOrder(mockOrder))
+        .resolves.not.toThrow();
     });
   });
 
-  describe("supported order types", () => {
-    it("should return all supported order types", () => {
+  describe('supported order types', () => {
+    it('should return all supported order types', () => {
       const types = processor.getSupportedOrderTypes();
 
-      expect(types).toContain("standard");
-      expect(types).toContain("express");
-      expect(types).toContain("premium");
+      expect(types).toContain('standard');
+      expect(types).toContain('express');
+      expect(types).toContain('premium');
     });
   });
 });
@@ -356,23 +348,16 @@ class RefactoringTracker {
   recordRefactoring(refactoring: RefactoringMetrics): void {
     this.metrics.push(refactoring);
     console.log(`✅ Refactoring completed: ${refactoring.description}`);
-    console.log(
-      `  📈 Complexity: ${refactoring.before.complexity} → ${refactoring.after.complexity}`,
-    );
-    console.log(
-      `  📊 Duplication: ${refactoring.before.duplication}% → ${refactoring.after.duplication}%`,
-    );
-    console.log(
-      `  🧪 Test coverage: ${refactoring.before.testCoverage}% → ${refactoring.after.testCoverage}%`,
-    );
+    console.log(`  📈 Complexity: ${refactoring.before.complexity} → ${refactoring.after.complexity}`);
+    console.log(`  📊 Duplication: ${refactoring.before.duplication}% → ${refactoring.after.duplication}%`);
+    console.log(`  🧪 Test coverage: ${refactoring.before.testCoverage}% → ${refactoring.after.testCoverage}%`);
   }
 
   generateRefactoringReport(): RefactoringReport {
     const totalRefactorings = this.metrics.length;
-    const complexityReduction = this.calculateAverageReduction("complexity");
-    const duplicationReduction = this.calculateAverageReduction("duplication");
-    const coverageImprovement =
-      this.calculateAverageImprovement("testCoverage");
+    const complexityReduction = this.calculateAverageReduction('complexity');
+    const duplicationReduction = this.calculateAverageReduction('duplication');
+    const coverageImprovement = this.calculateAverageImprovement('testCoverage');
 
     return {
       totalRefactorings,
@@ -380,44 +365,34 @@ class RefactoringTracker {
       duplicationReduction,
       coverageImprovement,
       lastMonthRefactorings: this.getLastMonthCount(),
-      trend: this.calculateTrend(),
+      trend: this.calculateTrend()
     };
   }
 
   private calculateAverageReduction(metric: keyof CodeMetrics): number {
     if (this.metrics.length === 0) return 0;
 
-    const reductions = this.metrics.map(
-      (m) => m.before[metric] - m.after[metric],
-    );
-    return (
-      reductions.reduce((sum, reduction) => sum + reduction, 0) /
-      reductions.length
-    );
+    const reductions = this.metrics.map(m => m.before[metric] - m.after[metric]);
+    return reductions.reduce((sum, reduction) => sum + reduction, 0) / reductions.length;
   }
 
   private calculateAverageImprovement(metric: keyof CodeMetrics): number {
     if (this.metrics.length === 0) return 0;
 
-    const improvements = this.metrics.map(
-      (m) => m.after[metric] - m.before[metric],
-    );
-    return (
-      improvements.reduce((sum, improvement) => sum + improvement, 0) /
-      improvements.length
-    );
+    const improvements = this.metrics.map(m => m.after[metric] - m.before[metric]);
+    return improvements.reduce((sum, improvement) => sum + improvement, 0) / improvements.length;
   }
 
   private getLastMonthCount(): number {
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
-    return this.metrics.filter((m) => m.date > oneMonthAgo).length;
+    return this.metrics.filter(m => m.date > oneMonthAgo).length;
   }
 
-  private calculateTrend(): "improving" | "stable" | "declining" {
+  private calculateTrend(): 'improving' | 'stable' | 'declining' {
     const lastMonth = this.getLastMonthCount();
-    const previousMonth = this.metrics.filter((m) => {
+    const previousMonth = this.metrics.filter(m => {
       const twoMonthsAgo = new Date();
       twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
       const oneMonthAgo = new Date();
@@ -426,9 +401,9 @@ class RefactoringTracker {
       return m.date > twoMonthsAgo && m.date <= oneMonthAgo;
     }).length;
 
-    if (lastMonth > previousMonth * 1.2) return "improving";
-    if (lastMonth < previousMonth * 0.8) return "declining";
-    return "stable";
+    if (lastMonth > previousMonth * 1.2) return 'improving';
+    if (lastMonth < previousMonth * 0.8) return 'declining';
+    return 'stable';
   }
 }
 
@@ -454,31 +429,29 @@ interface RefactoringReport {
   duplicationReduction: number;
   coverageImprovement: number;
   lastMonthRefactorings: number;
-  trend: "improving" | "stable" | "declining";
+  trend: 'improving' | 'stable' | 'declining';
 }
 
 // Usage: Recording the refactoring we just completed
 const refactoringTracker = new RefactoringTracker();
 
 refactoringTracker.recordRefactoring({
-  description:
-    "Extracted OrderValidator and applied Strategy pattern to OrderProcessor",
+  description: 'Extracted OrderValidator and applied Strategy pattern to OrderProcessor',
   date: new Date(),
   before: {
     complexity: 15, // High cyclomatic complexity in single method
     duplication: 35, // 35% code duplication across methods
     testCoverage: 45, // Poor test coverage
-    linesOfCode: 200,
+    linesOfCode: 200
   },
   after: {
     complexity: 4, // Much lower complexity with focused methods
     duplication: 5, // Eliminated duplication through extraction
     testCoverage: 95, // Comprehensive test coverage
-    linesOfCode: 300, // More lines but much better organized
+    linesOfCode: 300 // More lines but much better organized
   },
   timeInvested: 6, // 6 hours of refactoring
-  businessValue:
-    "Reduced maintenance overhead, improved testability, easier feature development",
+  businessValue: 'Reduced maintenance overhead, improved testability, easier feature development'
 });
 ```
 

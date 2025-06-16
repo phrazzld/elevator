@@ -2,10 +2,9 @@
 derived_from: simplicity
 enforced_by: dependency scanners & code review
 id: dependency-management
-last_modified: "2025-05-14"
-version: "0.1.0"
+last_modified: '2025-05-14'
+version: '0.1.0'
 ---
-
 # Binding: Minimize and Maintain Dependencies Deliberately
 
 Choose third-party dependencies deliberately, preferring minimal solutions that solve
@@ -237,23 +236,23 @@ maintainable alternatives.
    // Example: Consider replacing a large date library with native functionality
 
    // ❌ BAD: Using a heavy library for simple date formatting
-   import * as moment from "moment"; // Adds ~300KB to your bundle
+   import * as moment from 'moment'; // Adds ~300KB to your bundle
 
    function formatDate(date) {
-     return moment(date).format("YYYY-MM-DD");
+     return moment(date).format('YYYY-MM-DD');
    }
 
    // ✅ GOOD: Using native functionality or smaller alternative
    function formatDate(date) {
      const d = new Date(date);
-     return d.toISOString().split("T")[0]; // No additional dependencies
+     return d.toISOString().split('T')[0]; // No additional dependencies
    }
 
    // Or with a more focused library if native isn't sufficient
-   import { format } from "date-fns"; // Modular, tree-shakable, ~6KB for this function
+   import { format } from 'date-fns'; // Modular, tree-shakable, ~6KB for this function
 
    function formatDate(date) {
-     return format(new Date(date), "yyyy-MM-dd");
+     return format(new Date(date), 'yyyy-MM-dd');
    }
    ```
 
@@ -295,11 +294,11 @@ function processValues(values) {
 
 function processValues(values) {
   // Using native JavaScript functionality
-  const numbers = values.filter((v) => typeof v === "number" && !isNaN(v));
-  const oddNumbers = numbers.filter((n) => n % 2 !== 0);
+  const numbers = values.filter(v => typeof v === 'number' && !isNaN(v));
+  const oddNumbers = numbers.filter(n => n % 2 !== 0);
   const uniqueOddNumbers = [...new Set(oddNumbers)];
 
-  return uniqueOddNumbers.map((n) => n.toString().padStart(5, "0"));
+  return uniqueOddNumbers.map(n => n.toString().padStart(5, '0'));
 }
 ```
 

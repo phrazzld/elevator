@@ -1,11 +1,10 @@
 ---
 id: flexible-architecture-patterns
-last_modified: "2025-06-02"
-version: "0.1.0"
+last_modified: '2025-06-02'
+version: '0.1.0'
 derived_from: adaptability-and-reversibility
-enforced_by: "Architectural review, design patterns, refactoring practices"
+enforced_by: 'Architectural review, design patterns, refactoring practices'
 ---
-
 # Binding: Design Architecture for Change and Reversibility
 
 Implement architectural patterns that enable easy modification, extension, and reversal of design decisions. Design systems that can adapt to changing requirements without requiring fundamental restructuring or breaking existing functionality.
@@ -35,7 +34,6 @@ Flexible architecture must implement these design principles:
 - **Configuration-Driven Behavior**: Externalize as much behavior as possible to configuration, allowing changes without code deployment.
 
 **Architectural Patterns:**
-
 - Plugin/Extension architectures for adding new functionality
 - Adapter patterns for integrating with external systems
 - Chain of responsibility for configurable processing pipelines
@@ -43,7 +41,6 @@ Flexible architecture must implement these design principles:
 - Factory patterns for flexible object creation
 
 **Design Considerations:**
-
 - Minimize assumptions about future requirements
 - Prefer composition over inheritance for flexibility
 - Design APIs that can be extended without breaking existing clients
@@ -95,10 +92,7 @@ class OrderProcessor {
 // ✅ GOOD: Flexible architecture with dependency injection and strategy patterns
 // Define interfaces for flexibility
 interface PaymentProcessor {
-  processPayment(
-    amount: number,
-    paymentMethod: PaymentMethod,
-  ): Promise<PaymentResult>;
+  processPayment(amount: number, paymentMethod: PaymentMethod): Promise<PaymentResult>;
 }
 
 interface InventoryService {
@@ -115,22 +109,16 @@ interface AnalyticsService {
 
 // Strategy pattern implementations can be swapped easily
 class StripePaymentProcessor implements PaymentProcessor {
-  async processPayment(
-    amount: number,
-    paymentMethod: PaymentMethod,
-  ): Promise<PaymentResult> {
+  async processPayment(amount: number, paymentMethod: PaymentMethod): Promise<PaymentResult> {
     // Stripe-specific implementation
-    return { success: true, transactionId: "stripe_tx_123" };
+    return { success: true, transactionId: 'stripe_tx_123' };
   }
 }
 
 class PayPalPaymentProcessor implements PaymentProcessor {
-  async processPayment(
-    amount: number,
-    paymentMethod: PaymentMethod,
-  ): Promise<PaymentResult> {
+  async processPayment(amount: number, paymentMethod: PaymentMethod): Promise<PaymentResult> {
     // PayPal-specific implementation
-    return { success: true, transactionId: "paypal_tx_456" };
+    return { success: true, transactionId: 'paypal_tx_456' };
   }
 }
 
@@ -146,14 +134,14 @@ class EmailNotificationPlugin extends NotificationPlugin {
   }
 
   getType(): string {
-    return "email";
+    return 'email';
   }
 
   async sendNotification(notification: OrderNotification): Promise<void> {
     await this.emailService.send({
       to: notification.recipient,
       subject: notification.subject,
-      body: notification.content,
+      body: notification.content
     });
   }
 }
@@ -164,13 +152,13 @@ class SMSNotificationPlugin extends NotificationPlugin {
   }
 
   getType(): string {
-    return "sms";
+    return 'sms';
   }
 
   async sendNotification(notification: OrderNotification): Promise<void> {
     await this.smsService.send({
       to: notification.recipient,
-      message: notification.content,
+      message: notification.content
     });
   }
 }
@@ -183,14 +171,11 @@ class NotificationManager {
     this.plugins.set(plugin.getType(), plugin);
   }
 
-  async sendNotifications(
-    notification: OrderNotification,
-    enabledTypes: string[],
-  ): Promise<void> {
+  async sendNotifications(notification: OrderNotification, enabledTypes: string[]): Promise<void> {
     const promises = enabledTypes
-      .map((type) => this.plugins.get(type))
-      .filter((plugin) => plugin !== undefined)
-      .map((plugin) => plugin!.sendNotification(notification));
+      .map(type => this.plugins.get(type))
+      .filter(plugin => plugin !== undefined)
+      .map(plugin => plugin!.sendNotification(notification));
 
     await Promise.all(promises);
   }
@@ -203,7 +188,7 @@ class FlexibleOrderProcessor {
     private inventoryService: InventoryService,
     private notificationManager: NotificationManager,
     private analyticsService: AnalyticsService,
-    private config: OrderProcessingConfig,
+    private config: OrderProcessingConfig
   ) {}
 
   async processOrder(order: Order): Promise<OrderResult> {
@@ -211,11 +196,11 @@ class FlexibleOrderProcessor {
       // Payment processing - implementation can be swapped
       const paymentResult = await this.paymentProcessor.processPayment(
         order.amount,
-        order.paymentMethod,
+        order.paymentMethod
       );
 
       if (!paymentResult.success) {
-        return { success: false, error: "Payment failed" };
+        return { success: false, error: 'Payment failed' };
       }
 
       // Inventory update - implementation can be swapped
@@ -225,15 +210,15 @@ class FlexibleOrderProcessor {
       const notification = this.createOrderNotification(order);
       await this.notificationManager.sendNotifications(
         notification,
-        this.config.enabledNotificationTypes,
+        this.config.enabledNotificationTypes
       );
 
       // Analytics - implementation can be swapped
       if (this.config.enableAnalytics) {
         await this.analyticsService.trackEvent({
-          type: "order_completed",
+          type: 'order_completed',
           orderId: order.id,
-          amount: order.amount,
+          amount: order.amount
         });
       }
 
@@ -247,8 +232,8 @@ class FlexibleOrderProcessor {
   private createOrderNotification(order: Order): OrderNotification {
     return {
       recipient: order.customerEmail,
-      subject: "Order Confirmation",
-      content: `Your order ${order.id} has been confirmed.`,
+      subject: 'Order Confirmation',
+      content: `Your order ${order.id} has been confirmed.`
     };
   }
 }
@@ -257,47 +242,41 @@ class FlexibleOrderProcessor {
 class OrderProcessorFactory {
   static create(config: SystemConfiguration): FlexibleOrderProcessor {
     // Payment processor selection based on configuration
-    const paymentProcessor = this.createPaymentProcessor(
-      config.paymentProvider,
-    );
+    const paymentProcessor = this.createPaymentProcessor(config.paymentProvider);
 
     // Inventory service selection based on configuration
-    const inventoryService = this.createInventoryService(
-      config.inventoryProvider,
-    );
+    const inventoryService = this.createInventoryService(config.inventoryProvider);
 
     // Notification manager with configurable plugins
     const notificationManager = new NotificationManager();
     if (config.enableEmailNotifications) {
       notificationManager.registerPlugin(
-        new EmailNotificationPlugin(new EmailService(config.emailConfig)),
+        new EmailNotificationPlugin(new EmailService(config.emailConfig))
       );
     }
     if (config.enableSMSNotifications) {
       notificationManager.registerPlugin(
-        new SMSNotificationPlugin(new SMSService(config.smsConfig)),
+        new SMSNotificationPlugin(new SMSService(config.smsConfig))
       );
     }
 
     // Analytics service selection
-    const analyticsService = this.createAnalyticsService(
-      config.analyticsProvider,
-    );
+    const analyticsService = this.createAnalyticsService(config.analyticsProvider);
 
     return new FlexibleOrderProcessor(
       paymentProcessor,
       inventoryService,
       notificationManager,
       analyticsService,
-      config.orderProcessing,
+      config.orderProcessing
     );
   }
 
   private static createPaymentProcessor(provider: string): PaymentProcessor {
     switch (provider) {
-      case "stripe":
+      case 'stripe':
         return new StripePaymentProcessor();
-      case "paypal":
+      case 'paypal':
         return new PayPalPaymentProcessor();
       default:
         throw new Error(`Unknown payment provider: ${provider}`);

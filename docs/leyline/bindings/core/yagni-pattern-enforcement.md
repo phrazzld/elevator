@@ -1,11 +1,10 @@
 ---
 id: yagni-pattern-enforcement
-last_modified: "2025-06-03"
-version: "0.1.0"
+last_modified: '2025-06-03'
+version: '0.1.0'
 derived_from: simplicity
-enforced_by: "code review & feature specification validation"
+enforced_by: 'code review & feature specification validation'
 ---
-
 # Binding: Apply YAGNI to Prevent Speculative Development
 
 Rigorously apply "You Aren't Gonna Need It" principles by only implementing features that solve immediate, demonstrated needs. Reject any functionality added "just in case" or for imagined future requirements without concrete evidence or user demand.
@@ -23,14 +22,12 @@ The challenge with YAGNI isn't understanding the principle; it's recognizing whe
 This binding establishes strict criteria for when new functionality should be implemented and clear procedures for preventing speculative development:
 
 - **Demonstrated Need Requirements**: All new features must meet at least one of these criteria:
-
   - **Current User Request**: Direct feedback from actual users experiencing a specific problem
   - **Business Requirement**: Explicit business case with measurable success criteria
   - **Technical Debt Remediation**: Addressing proven maintainability or performance issues
   - **Regulatory/Security Compliance**: Legal or security requirements with specific deadlines
 
 - **Prohibited Speculative Patterns**:
-
   - Features justified with "we might need this later"
   - Overly generic solutions "for future extensibility"
   - Complex configuration systems without proven variability needs
@@ -38,14 +35,12 @@ This binding establishes strict criteria for when new functionality should be im
   - Performance optimizations without measured bottlenecks
 
 - **Evidence Standards**: For any proposed feature, you must provide:
-
   - Specific use cases from real users or stakeholder requests
   - Clear success metrics that define when the feature has succeeded
   - Timeline constraints that justify implementation now rather than later
   - Cost analysis showing the problem's impact without the feature
 
 - **Evaluation Questions**: Before implementing any functionality, ask:
-
   - "Do we have concrete evidence this is needed now?"
   - "What happens if we defer this for six months?"
   - "Are we solving a real problem or an imagined one?"
@@ -90,7 +85,7 @@ interface DatabaseConfig {
     max: number;
     timeout: number;
     retryAttempts: number;
-    backoffStrategy: "linear" | "exponential";
+    backoffStrategy: 'linear' | 'exponential';
     healthCheckInterval: number;
   };
 
@@ -104,7 +99,7 @@ interface DatabaseConfig {
 
   // Speculative: No current sharding requirements
   sharding?: {
-    strategy: "hash" | "range" | "directory";
+    strategy: 'hash' | 'range' | 'directory';
     shardKey: string;
     shardCount: number;
     rebalanceThreshold: number;
@@ -195,9 +190,9 @@ class APIClient {
     // Speculative: No current need for complex retry logic
     this.retryConfig = config.retry || {
       attempts: 3,
-      backoff: "exponential",
+      backoff: 'exponential',
       jitter: true,
-      retryCondition: (error) => error.status >= 500,
+      retryCondition: (error) => error.status >= 500
     };
 
     // Speculative: No current caching requirements
@@ -205,7 +200,7 @@ class APIClient {
     this.cacheConfig = config.cache || {
       ttl: 300000,
       maxSize: 1000,
-      strategy: "lru",
+      strategy: 'lru'
     };
 
     // Speculative: No current need for request transformation
@@ -216,7 +211,7 @@ class APIClient {
     this.batchQueue = [];
     this.batchConfig = config.batch || {
       maxSize: 10,
-      timeout: 100,
+      timeout: 100
     };
   }
 
@@ -245,10 +240,10 @@ class APIClient {
     const response = await fetch(url, {
       ...options,
       headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+        ...options.headers
+      }
     });
 
     if (!response.ok) {
@@ -259,13 +254,13 @@ class APIClient {
   }
 
   async get(endpoint) {
-    return this.request(endpoint, { method: "GET" });
+    return this.request(endpoint, { method: 'GET' });
   }
 
   async post(endpoint, data) {
     return this.request(endpoint, {
-      method: "POST",
-      body: JSON.stringify(data),
+      method: 'POST',
+      body: JSON.stringify(data)
     });
   }
 }
@@ -284,3 +279,5 @@ class APIClient {
 - [pure-functions](../../docs/bindings/core/pure-functions.md): Pure functions align perfectly with YAGNI principles because they naturally resist over-engineering. When you focus on pure functions that solve immediate problems, you avoid the complexity of side effects and global state management that often drives speculative development. Pure functions make it easier to add functionality incrementally when it's actually needed.
 
 - [no-internal-mocking](../../docs/bindings/core/no-internal-mocking.md): YAGNI principles help avoid the over-engineering that often leads to complex mocking scenarios. When you build only what's immediately needed, your components tend to be simpler and more focused, making them naturally easier to test without elaborate mock setups. Both bindings encourage starting simple and adding complexity only when justified by real requirements.
+
+- [value-driven-prioritization](../../docs/bindings/core/value-driven-prioritization.md): Value-driven prioritization extends YAGNI principles by requiring explicit user value justification for all development work. While YAGNI focuses on avoiding speculative features, value-driven prioritization ensures that all work—including technical improvements—serves demonstrable user needs. Together, they create a comprehensive framework for preventing both feature bloat and technical overengineering.
