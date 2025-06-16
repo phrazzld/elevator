@@ -1,0 +1,164 @@
+# Test Fixture: Edge Case Formatting Examples
+
+This file contains edge cases and boundary conditions for format preservation testing.
+
+## Edge Case 1: Adjacent Code Blocks
+
+Use `console.log()` and `JSON.stringify()` together for debugging complex objects.
+
+```javascript
+const data = { users: [1, 2, 3] };
+console.log(JSON.stringify(data, null, 2));
+```
+
+```json
+{
+  "users": [1, 2, 3],
+  "metadata": {
+    "count": 3
+  }
+}
+```
+
+> Note: Always format JSON output for better readability.
+
+## Edge Case 2: Code Blocks at Start and End
+
+```bash
+#!/bin/bash
+echo "Script starting..."
+```
+
+Process the data using the above script, then verify the output format.
+
+> Important: Check exit codes for error handling.
+
+```bash
+echo "Script completed successfully"
+exit 0
+```
+
+## Edge Case 3: Multiple Inline Code in Single Line
+
+Configure `NODE_ENV=production`, set `PORT=3000`, and enable `DEBUG=false` in your environment.
+
+> Remember: Environment variables should be documented in the README.
+
+## Edge Case 4: Empty and Minimal Content
+
+```
+
+```
+
+> An empty code block above should be preserved exactly.
+
+Single character: `x`
+
+> Short inline code should work too.
+
+```x
+y
+```
+
+## Edge Case 5: Special Characters and Unicode
+
+Use `régex` patterns with `émojis` 🚀 for internationalization.
+
+```javascript
+const message = "Hello 世界! 🌍";
+const pattern = /[^\u0000-\u007F]+/g; // Non-ASCII characters
+console.log(message.match(pattern)); // ['世界! 🌍']
+```
+
+> Unicode support: Essential for global applications.
+
+## Edge Case 6: Malformed Code Blocks
+
+This has an unclosed code block:
+```javascript
+function incomplete() {
+  return "missing closing backticks";
+
+> This quote comes after unclosed code block.
+
+And this continues with normal text.
+
+## Edge Case 7: Deeply Nested Quotes
+
+> Level 1 quote
+>> Level 2 nested quote  
+>>> Level 3 deeply nested quote
+>>>> Level 4 extremely nested quote
+
+Normal text between nested sections.
+
+> Back to level 1
+>> And level 2 again
+
+## Edge Case 8: Mixed Indentation and Whitespace
+
+    Use `spaced()` function with proper indentation.
+
+```python
+    def indented_function():
+        """Function with leading spaces in code block."""
+        return "    indented content"
+```
+
+>     Indented quote with spaces
+>         Even more indented quote
+
+## Edge Case 9: Long Single Line
+
+Use `verylongfunctionnamethatshouldstillbepreservedcorrectly()` with `anotherlongfunctionnameforcompletetesting()` and `yetanotherlongfunctiontomakesurewehandlelonglinesproperlyinallscenarios()` for comprehensive testing.
+
+> This is a very long quote that should be elevated while preserving any inline code like `process.env.VERY_LONG_ENVIRONMENT_VARIABLE_NAME_THAT_SHOULD_BE_PRESERVED` within the quote text itself.
+
+## Edge Case 10: Mixed Languages in Sequence
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+```
+
+```yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+```
+
+```sql
+SELECT u.name, p.title 
+FROM users u 
+JOIN posts p ON u.id = p.user_id 
+WHERE p.published = true;
+```
+
+> Multi-language projects require careful configuration management.
+
+## Edge Case 11: Code Blocks with Quotes Inside
+
+```bash
+echo "This is a 'quoted string' inside a code block"
+grep 'pattern with "nested quotes"' file.txt
+curl -d '{"message": "Hello \"world\""}' api.endpoint
+```
+
+> Code blocks should preserve internal quotes exactly as written.
+
+## Edge Case 12: Minimal Example from Issue #38
+
+Fix this bug:
+
+```javascript
+console.log('test');
+```
+
+> This should work correctly.

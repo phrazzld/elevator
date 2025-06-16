@@ -1,0 +1,330 @@
+# Test Fixture: Complex Mixed Formatting Examples
+
+This file contains realistic examples of mixed formatting that should preserve code blocks while elevating quotes and plain text.
+
+## Example 1: Bug Report with Code Snippet
+
+I found a bug in the user authentication system. When calling `validateUser()` with an invalid email, the function throws an unhandled exception.
+
+```javascript
+function validateUser(email, password) {
+  if (!email.includes('@')) {
+    throw new Error('Invalid email format'); // This should be caught
+  }
+  return authenticateUser(email, password);
+}
+```
+
+> Important: This breaks the entire login flow and needs immediate attention.
+
+The issue occurs because we're not properly handling validation errors in the middleware.
+
+## Example 2: Technical Documentation
+
+Use the `console.log()` method for basic debugging, but consider structured logging for production applications.
+
+> Remember: Never log sensitive information like passwords or API keys.
+
+For structured logging, implement a logger utility:
+
+```typescript
+interface LogEntry {
+  timestamp: Date;
+  level: 'info' | 'warn' | 'error';
+  message: string;
+  metadata?: Record<string, unknown>;
+}
+
+export function logToStderr(entry: LogEntry): void {
+  process.stderr.write(JSON.stringify(entry) + '\n');
+}
+```
+
+> Best practice: Always log to stderr for application logs to keep stdout clean for data output.
+
+## Example 3: Development Notes with Mixed Languages
+
+Need to implement API rate limiting. The current approach uses `Redis` for storing request counts.
+
+```python
+import redis
+import time
+from typing import Optional
+
+class RateLimiter:
+    def __init__(self, redis_client: redis.Redis):
+        self.redis = redis_client
+    
+    def is_allowed(self, key: str, limit: int, window: int) -> bool:
+        """Check if request is within rate limit."""
+        current = self.redis.get(key)
+        if current is None:
+            self.redis.setex(key, window, 1)
+            return True
+        return int(current) < limit
+```
+
+> Note: Consider implementing exponential backoff for rejected requests.
+
+The configuration should be stored in JSON format:
+
+```json
+{
+  "rateLimiting": {
+    "defaultLimit": 100,
+    "windowSeconds": 3600,
+    "endpoints": {
+      "/api/upload": {
+        "limit": 10,
+        "window": 60
+      }
+    }
+  }
+}
+```
+
+## Example 4: Performance Optimization Notes
+
+Optimize the data processing pipeline to handle large datasets more efficiently.
+
+> Current performance: Processing 1M records takes ~45 seconds, target is <10 seconds.
+
+The bottleneck is in the `transformData()` function:
+
+```javascript
+// Current slow implementation
+function transformData(records) {
+  return records.map(record => {
+    const transformed = expensiveTransformation(record);
+    validateTransformed(transformed); // This validation is expensive
+    return transformed;
+  });
+}
+```
+
+> Proposed solution: Batch the validation calls and use worker threads for parallel processing.
+
+Improved implementation with batching:
+
+```javascript
+// Optimized implementation
+async function transformDataBatch(records, batchSize = 1000) {
+  const results = [];
+  
+  for (let i = 0; i < records.length; i += batchSize) {
+    const batch = records.slice(i, i + batchSize);
+    const transformed = await Promise.all(
+      batch.map(record => expensiveTransformation(record))
+    );
+    
+    // Batch validation
+    await validateTransformedBatch(transformed);
+    results.push(...transformed);
+  }
+  
+  return results;
+}
+```
+
+## Example 5: Edge Cases and Special Characters
+
+Handle special characters in code blocks and quotes properly.
+
+Use `$('#my-element')` for jQuery selections, and `process.env.NODE_ENV` for environment variables.
+
+```bash
+# Script with special characters
+export API_KEY="sk-1234567890abcdef"
+curl -H "Authorization: Bearer $API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{"query": "SELECT * FROM users WHERE email = '\''user@example.com'\''"}' \
+     https://api.example.com/query
+```
+
+> Warning: Be careful with shell escaping when handling user input in scripts.
+
+Empty code blocks should also be preserved:
+
+```
+
+```
+
+And code blocks without language specifiers:
+
+```
+function simpleExample() {
+  return "no language specified";
+}
+```
+
+> Note: Always specify language for better syntax highlighting and processing.
+
+## Example 6: Nested Quotes and Complex Formatting
+
+Fix the database connection issue that's causing intermittent failures.
+
+> The root cause appears to be connection pool exhaustion.
+>> Nested observation: This happens during peak traffic hours.
+>>> Deep dive: Connection timeout is set too low at 5 seconds.
+
+The connection configuration needs updating:
+
+```sql
+-- Current database settings
+SET max_connections = 100;
+SET connect_timeout = 5;
+SET wait_timeout = 28800;
+
+-- Proposed optimized settings  
+SET max_connections = 200;
+SET connect_timeout = 10;
+SET wait_timeout = 3600;
+```
+
+> Critical: Test these changes in staging before production deployment.
+
+Also update the application connection pool:
+
+```javascript
+const pool = mysql.createPool({
+  connectionLimit: 50,
+  acquireTimeout: 10000,
+  timeout: 60000,
+  reconnect: true,
+  charset: 'utf8mb4'
+});
+```
+
+## Example 7: Large Code Block Simulation
+
+Document the complex algorithm implementation for future reference.
+
+```python
+class ComplexAlgorithm:
+    """
+    Implementation of a complex data processing algorithm.
+    This is a longer code block to test handling of substantial code content.
+    """
+    
+    def __init__(self, config):
+        self.config = config
+        self.cache = {}
+        self.metrics = {
+            'processed': 0,
+            'errors': 0,
+            'cache_hits': 0
+        }
+    
+    def process_data(self, input_data):
+        """Process input data through multiple transformation stages."""
+        try:
+            # Stage 1: Validation and preprocessing
+            validated_data = self._validate_input(input_data)
+            if not validated_data:
+                self.metrics['errors'] += 1
+                return None
+            
+            # Stage 2: Check cache for existing results
+            cache_key = self._generate_cache_key(validated_data)
+            if cache_key in self.cache:
+                self.metrics['cache_hits'] += 1
+                return self.cache[cache_key]
+            
+            # Stage 3: Apply transformation pipeline
+            transformed = self._apply_transformations(validated_data)
+            
+            # Stage 4: Post-processing and optimization
+            result = self._optimize_result(transformed)
+            
+            # Stage 5: Update cache and metrics
+            self.cache[cache_key] = result
+            self.metrics['processed'] += 1
+            
+            return result
+            
+        except Exception as e:
+            self.metrics['errors'] += 1
+            raise ProcessingError(f"Failed to process data: {e}") from e
+    
+    def _validate_input(self, data):
+        """Validate input data meets required schema."""
+        required_fields = self.config.get('required_fields', [])
+        for field in required_fields:
+            if field not in data:
+                return None
+        return data
+    
+    def _generate_cache_key(self, data):
+        """Generate a unique cache key for the input data."""
+        import hashlib
+        import json
+        serialized = json.dumps(data, sort_keys=True)
+        return hashlib.md5(serialized.encode()).hexdigest()
+    
+    def _apply_transformations(self, data):
+        """Apply configured transformation pipeline."""
+        result = data.copy()
+        for transform in self.config.get('transformations', []):
+            result = transform(result)
+        return result
+    
+    def _optimize_result(self, data):
+        """Apply final optimizations to the result."""
+        if self.config.get('compress_output', False):
+            return self._compress_data(data)
+        return data
+    
+    def _compress_data(self, data):
+        """Compress data if optimization is enabled."""
+        # Implementation would depend on data type and requirements
+        return data
+    
+    def get_metrics(self):
+        """Return current processing metrics."""
+        return self.metrics.copy()
+    
+    def reset_cache(self):
+        """Clear the internal cache."""
+        self.cache.clear()
+        
+    def reset_metrics(self):
+        """Reset processing metrics."""
+        self.metrics = {
+            'processed': 0,
+            'errors': 0,
+            'cache_hits': 0
+        }
+
+
+class ProcessingError(Exception):
+    """Custom exception for processing errors."""
+    pass
+
+
+# Usage example
+if __name__ == "__main__":
+    config = {
+        'required_fields': ['id', 'data'],
+        'transformations': [
+            lambda x: {**x, 'processed_at': time.time()},
+            lambda x: {**x, 'normalized': True}
+        ],
+        'compress_output': True
+    }
+    
+    processor = ComplexAlgorithm(config)
+    
+    sample_data = {
+        'id': '12345',
+        'data': {'values': [1, 2, 3, 4, 5]},
+        'metadata': {'source': 'api'}
+    }
+    
+    result = processor.process_data(sample_data)
+    print(f"Processing result: {result}")
+    print(f"Metrics: {processor.get_metrics()}")
+```
+
+> Performance note: This algorithm processes ~10K records per second on modern hardware.
+
+The implementation handles edge cases and provides comprehensive error reporting for production use.
