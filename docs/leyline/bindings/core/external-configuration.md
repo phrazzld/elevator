@@ -1,11 +1,10 @@
 ---
 derived_from: no-secret-suppression
 id: external-configuration
-last_modified: "2025-05-14"
-version: "0.1.0"
+last_modified: '2025-05-14'
+version: '0.1.0'
 enforced_by: code review & style guides
 ---
-
 # Binding: Never Hardcode Configuration
 
 Never embed configuration values in your source code. Keep all environment-specific
@@ -109,7 +108,7 @@ To implement external configuration effectively in your systems:
 
    // Usage in business logic
    const configService = new ConfigService();
-   const databaseUrl = configService.get<string>("DATABASE_URL");
+   const databaseUrl = configService.get<string>('DATABASE_URL');
    ```
 
 1. **Implement Strong Validation**: Validate configuration values at application
@@ -186,9 +185,7 @@ To implement external configuration effectively in your systems:
    async function getSecrets() {
      // For AWS environments
      const secretsManager = new AWS.SecretsManager();
-     const result = await secretsManager
-       .getSecretValue({ SecretId: "my-service/production" })
-       .promise();
+     const result = await secretsManager.getSecretValue({ SecretId: 'my-service/production' }).promise();
      return JSON.parse(result.SecretString);
 
      // For Kubernetes environments
@@ -283,9 +280,9 @@ function sendAnalytics(eventData) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-API-Key": apiKey,
+      "X-API-Key": apiKey
     },
-    body: JSON.stringify(eventData),
+    body: JSON.stringify(eventData)
   });
 }
 ```
@@ -319,9 +316,9 @@ class AnalyticsService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-API-Key": this.apiKey,
+        "X-API-Key": this.apiKey
       },
-      body: JSON.stringify(eventData),
+      body: JSON.stringify(eventData)
     });
   }
 }
@@ -331,7 +328,7 @@ const analyticsService = new AnalyticsService({
   endpoint: process.env.ANALYTICS_ENDPOINT,
   apiKey: process.env.ANALYTICS_API_KEY,
   batchSize: parseInt(process.env.ANALYTICS_BATCH_SIZE || "10"),
-  retryCount: parseInt(process.env.ANALYTICS_RETRY_COUNT || "3"),
+  retryCount: parseInt(process.env.ANALYTICS_RETRY_COUNT || "3")
 });
 ```
 
@@ -393,3 +390,5 @@ def process_image(image_data, config):
   logic. Configuration becomes an infrastructure concern that's kept at the boundaries
   of your application, allowing your domain code to remain focused on the business
   problem rather than implementation details.
+
+- [secrets-management-practices](../../docs/bindings/categories/security/secrets-management-practices.md): Secrets management builds upon external configuration principles by ensuring that sensitive configuration is not only externalized but also properly secured, encrypted, and managed throughout its lifecycle. Both bindings work together to eliminate hardcoded values while adding security-specific protections for sensitive data.

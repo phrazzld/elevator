@@ -1,11 +1,10 @@
 ---
 derived_from: simplicity
 id: hex-domain-purity
-last_modified: "2025-05-14"
-version: "0.1.0"
+last_modified: '2025-05-14'
+version: '0.1.0'
 enforced_by: code review & style guides
 ---
-
 # Binding: Keep Business Logic Pure and Infrastructure-Free
 
 Your core business logic (domain layer) must remain completely free from infrastructure
@@ -333,9 +332,9 @@ public class HttpPaymentGateway implements PaymentGateway {
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { IsEmail, Length } from "class-validator";
 
-@Entity("users")
+@Entity('users')
 export class User {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
@@ -384,12 +383,7 @@ export class User {
   private email: EmailAddress;
   private passwordHash: PasswordHash;
 
-  constructor(
-    id: UserId,
-    name: string,
-    email: EmailAddress,
-    passwordHash: PasswordHash,
-  ) {
+  constructor(id: UserId, name: string, email: EmailAddress, passwordHash: PasswordHash) {
     this.id = id;
     this.setName(name);
     this.email = email;
@@ -414,9 +408,9 @@ export class User {
 import { User, UserId, EmailAddress } from "../domain/user";
 
 // TypeORM entity
-@Entity("users")
+@Entity('users')
 class UserRecord {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
@@ -436,7 +430,7 @@ class UserMapper {
       new UserId(record.id),
       record.name,
       new EmailAddress(record.email),
-      new PasswordHash(record.passwordHash),
+      new PasswordHash(record.passwordHash)
     );
   }
 

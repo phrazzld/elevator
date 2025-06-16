@@ -1,11 +1,10 @@
 ---
 id: type-safe-state-management
-last_modified: "2025-06-02"
-version: "0.1.0"
+last_modified: '2025-06-02'
+version: '0.1.0'
 derived_from: orthogonality
-enforced_by: "TypeScript compiler, state management libraries, code review"
+enforced_by: 'TypeScript compiler, state management libraries, code review'
 ---
-
 # Binding: Implement Type-Safe State Management with Isolated State Boundaries
 
 Design state management systems using TypeScript's type system to enforce clear boundaries between different domains of application state. Use discriminated unions, immutable patterns, and type guards to prevent state contamination and ensure predictable state transitions.
@@ -35,7 +34,6 @@ Type-safe state management must establish these TypeScript-specific patterns:
 - **Error State Modeling**: Model error states explicitly as part of the state type system rather than relying on implicit error handling patterns.
 
 **State Domain Categories:**
-
 - UI state (form data, modal visibility, loading states)
 - Business entity state (users, orders, products)
 - Application state (authentication, routing, preferences)
@@ -43,7 +41,6 @@ Type-safe state management must establish these TypeScript-specific patterns:
 - Transient state (async operations, optimistic updates)
 
 **Type Safety Mechanisms:**
-
 - Strict state interfaces with readonly properties
 - Discriminated unions for actions and state variants
 - Type guards for state validation and narrowing
@@ -118,28 +115,28 @@ Type-safe state management must establish these TypeScript-specific patterns:
 
    // User actions
    type UserAction =
-     | { type: "USER_LOAD_PROFILE_START" }
-     | { type: "USER_LOAD_PROFILE_SUCCESS"; payload: UserProfile }
-     | { type: "USER_LOAD_PROFILE_FAILURE"; payload: string }
-     | { type: "USER_UPDATE_PREFERENCES"; payload: Partial<UserPreferences> }
-     | { type: "USER_LOGOUT" };
+     | { type: 'USER_LOAD_PROFILE_START' }
+     | { type: 'USER_LOAD_PROFILE_SUCCESS'; payload: UserProfile }
+     | { type: 'USER_LOAD_PROFILE_FAILURE'; payload: string }
+     | { type: 'USER_UPDATE_PREFERENCES'; payload: Partial<UserPreferences> }
+     | { type: 'USER_LOGOUT' };
 
    // Order actions
    type OrderAction =
-     | { type: "ORDER_LOAD_LIST_START" }
-     | { type: "ORDER_LOAD_LIST_SUCCESS"; payload: ReadonlyArray<Order> }
-     | { type: "ORDER_LOAD_LIST_FAILURE"; payload: string }
-     | { type: "ORDER_SELECT"; payload: { orderId: string } }
-     | { type: "ORDER_SUBMIT_START" }
-     | { type: "ORDER_SUBMIT_SUCCESS"; payload: Order }
-     | { type: "ORDER_SUBMIT_FAILURE"; payload: string };
+     | { type: 'ORDER_LOAD_LIST_START' }
+     | { type: 'ORDER_LOAD_LIST_SUCCESS'; payload: ReadonlyArray<Order> }
+     | { type: 'ORDER_LOAD_LIST_FAILURE'; payload: string }
+     | { type: 'ORDER_SELECT'; payload: { orderId: string } }
+     | { type: 'ORDER_SUBMIT_START' }
+     | { type: 'ORDER_SUBMIT_SUCCESS'; payload: Order }
+     | { type: 'ORDER_SUBMIT_FAILURE'; payload: string };
 
    // UI actions
    type UIAction =
-     | { type: "UI_SHOW_MODAL"; payload: { modalType: ModalType } }
-     | { type: "UI_HIDE_MODAL"; payload: { modalType: ModalType } }
-     | { type: "UI_SHOW_NOTIFICATION"; payload: Notification }
-     | { type: "UI_DISMISS_NOTIFICATION"; payload: { id: string } };
+     | { type: 'UI_SHOW_MODAL'; payload: { modalType: ModalType } }
+     | { type: 'UI_HIDE_MODAL'; payload: { modalType: ModalType } }
+     | { type: 'UI_SHOW_NOTIFICATION'; payload: Notification }
+     | { type: 'UI_DISMISS_NOTIFICATION'; payload: { id: string } };
 
    // Combined action type
    type AppAction = UserAction | OrderAction | UIAction;
@@ -147,39 +144,39 @@ Type-safe state management must establish these TypeScript-specific patterns:
    // Type-safe reducer with exhaustive checking
    function userReducer(state: UserState, action: UserAction): UserState {
      switch (action.type) {
-       case "USER_LOAD_PROFILE_START":
+       case 'USER_LOAD_PROFILE_START':
          return {
            ...state,
            loading: { ...state.loading, profile: true },
-           errors: { ...state.errors, profile: null },
+           errors: { ...state.errors, profile: null }
          };
 
-       case "USER_LOAD_PROFILE_SUCCESS":
+       case 'USER_LOAD_PROFILE_SUCCESS':
          return {
            ...state,
            profile: action.payload,
-           loading: { ...state.loading, profile: false },
+           loading: { ...state.loading, profile: false }
          };
 
-       case "USER_LOAD_PROFILE_FAILURE":
+       case 'USER_LOAD_PROFILE_FAILURE':
          return {
            ...state,
            loading: { ...state.loading, profile: false },
-           errors: { ...state.errors, profile: action.payload },
+           errors: { ...state.errors, profile: action.payload }
          };
 
-       case "USER_UPDATE_PREFERENCES":
+       case 'USER_UPDATE_PREFERENCES':
          return {
            ...state,
-           preferences: { ...state.preferences, ...action.payload },
+           preferences: { ...state.preferences, ...action.payload }
          };
 
-       case "USER_LOGOUT":
+       case 'USER_LOGOUT':
          return {
            ...state,
            currentUser: null,
            profile: null,
-           preferences: createDefaultPreferences(),
+           preferences: createDefaultPreferences()
          };
 
        default:
@@ -200,20 +197,16 @@ Type-safe state management must establish these TypeScript-specific patterns:
    type AppSelector<TResult> = Selector<AppState, TResult>;
 
    // User selectors
-   const selectCurrentUser: AppSelector<User | null> = (state) =>
-     state.user.currentUser;
+   const selectCurrentUser: AppSelector<User | null> = (state) => state.user.currentUser;
 
-   const selectUserProfile: AppSelector<UserProfile | null> = (state) =>
-     state.user.profile;
+   const selectUserProfile: AppSelector<UserProfile | null> = (state) => state.user.profile;
 
    const selectIsUserLoading: AppSelector<boolean> = (state) =>
      state.user.loading.profile || state.user.loading.preferences;
 
    const selectUserErrors: AppSelector<string[]> = (state) => {
      const errors = state.user.errors;
-     return Object.values(errors).filter(
-       (error): error is string => error !== null,
-     );
+     return Object.values(errors).filter((error): error is string => error !== null);
    };
 
    // Computed selectors with memoization
@@ -221,23 +214,18 @@ Type-safe state management must establish these TypeScript-specific patterns:
      [selectCurrentUser, selectUserProfile],
      (user, profile) => {
        if (profile?.displayName) return profile.displayName;
-       if (user?.firstName && user?.lastName)
-         return `${user.firstName} ${user.lastName}`;
+       if (user?.firstName && user?.lastName) return `${user.firstName} ${user.lastName}`;
        if (user?.email) return user.email;
-       return "Anonymous User";
-     },
+       return 'Anonymous User';
+     }
    );
 
    // Order selectors with type safety
-   const selectOrderById =
-     (orderId: string): AppSelector<Order | undefined> =>
-     (state) =>
-       state.orders.orders.find((order) => order.id === orderId);
+   const selectOrderById = (orderId: string): AppSelector<Order | undefined> =>
+     (state) => state.orders.orders.find(order => order.id === orderId);
 
-   const selectOrdersByStatus =
-     (status: OrderStatus): AppSelector<ReadonlyArray<Order>> =>
-     (state) =>
-       state.orders.orders.filter((order) => order.status === status);
+   const selectOrdersByStatus = (status: OrderStatus): AppSelector<ReadonlyArray<Order>> =>
+     (state) => state.orders.orders.filter(order => order.status === status);
 
    // Complex selectors with error handling
    const selectOrderSummary: AppSelector<OrderSummary | null> = createSelector(
@@ -245,23 +233,17 @@ Type-safe state management must establish these TypeScript-specific patterns:
      (user, orders): OrderSummary | null => {
        if (!user) return null;
 
-       const userOrders = orders.filter((order) => order.userId === user.id);
-       const totalSpent = userOrders.reduce(
-         (sum, order) => sum + order.total,
-         0,
-       );
-       const completedOrders = userOrders.filter(
-         (order) => order.status === "completed",
-       );
+       const userOrders = orders.filter(order => order.userId === user.id);
+       const totalSpent = userOrders.reduce((sum, order) => sum + order.total, 0);
+       const completedOrders = userOrders.filter(order => order.status === 'completed');
 
        return {
          totalOrders: userOrders.length,
          completedOrders: completedOrders.length,
          totalSpent,
-         averageOrderValue:
-           userOrders.length > 0 ? totalSpent / userOrders.length : 0,
+         averageOrderValue: userOrders.length > 0 ? totalSpent / userOrders.length : 0
        };
-     },
+     }
    );
    ```
 
@@ -349,12 +331,7 @@ Type-safe state management must establish these TypeScript-specific patterns:
    }
 
    interface ResourceError {
-     readonly type:
-       | "network"
-       | "validation"
-       | "authorization"
-       | "server"
-       | "unknown";
+     readonly type: 'network' | 'validation' | 'authorization' | 'server' | 'unknown';
      readonly message: string;
      readonly code?: string;
      readonly retryable: boolean;
@@ -376,7 +353,7 @@ Type-safe state management must establish these TypeScript-specific patterns:
 
    // Operations state with detailed error context
    interface OperationState<TRequest, TResponse> {
-     readonly status: "idle" | "pending" | "success" | "error";
+     readonly status: 'idle' | 'pending' | 'success' | 'error';
      readonly request: TRequest | null;
      readonly response: TResponse | null;
      readonly error: OperationError | null;
@@ -396,21 +373,21 @@ Type-safe state management must establish these TypeScript-specific patterns:
    function createResourceReducer<T>() {
      return function resourceReducer(
        state: ResourceState<T>,
-       action: ResourceAction<T>,
+       action: ResourceAction<T>
      ): ResourceState<T> {
        switch (action.type) {
-         case "RESOURCE_FETCH_START":
+         case 'RESOURCE_FETCH_START':
            return {
              ...state,
              meta: {
                ...state.meta,
                isLoading: true,
-               hasError: false,
+               hasError: false
              },
-             error: null,
+             error: null
            };
 
-         case "RESOURCE_FETCH_SUCCESS":
+         case 'RESOURCE_FETCH_SUCCESS':
            return {
              ...state,
              data: action.payload,
@@ -418,26 +395,26 @@ Type-safe state management must establish these TypeScript-specific patterns:
                ...state.meta,
                isLoading: false,
                lastFetch: new Date(),
-               hasError: false,
+               hasError: false
              },
-             error: null,
+             error: null
            };
 
-         case "RESOURCE_FETCH_ERROR":
+         case 'RESOURCE_FETCH_ERROR':
            return {
              ...state,
              meta: {
                ...state.meta,
                isLoading: false,
-               hasError: true,
+               hasError: true
              },
              error: {
                type: action.payload.type,
                message: action.payload.message,
                code: action.payload.code,
                retryable: action.payload.retryable,
-               timestamp: new Date(),
-             },
+               timestamp: new Date()
+             }
            };
 
          default:
@@ -470,18 +447,18 @@ Type-safe state management must establish these TypeScript-specific patterns:
    module.exports = {
      rules: {
        // Prevent state mutation
-       "no-param-reassign": ["error", { props: true }],
-       "prefer-const": "error",
+       'no-param-reassign': ['error', { props: true }],
+       'prefer-const': 'error',
 
        // TypeScript-specific rules
-       "@typescript-eslint/no-explicit-any": "error",
-       "@typescript-eslint/prefer-readonly": "error",
-       "@typescript-eslint/prefer-readonly-parameter-types": "warn",
+       '@typescript-eslint/no-explicit-any': 'error',
+       '@typescript-eslint/prefer-readonly': 'error',
+       '@typescript-eslint/prefer-readonly-parameter-types': 'warn',
 
        // Redux-specific rules (if using Redux)
-       "redux-saga/no-unhandled-errors": "error",
-       "redux-saga/yield-effects": "error",
-     },
+       'redux-saga/no-unhandled-errors': 'error',
+       'redux-saga/yield-effects': 'error'
+     }
    };
    ```
 
@@ -506,9 +483,9 @@ type Action = {
 
 function appReducer(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case "SET_USER":
+    case 'SET_USER':
       return { ...state, user: action.payload };
-    case "SET_LOADING":
+    case 'SET_LOADING':
       return { ...state, loading: action.payload };
     // No compile-time checking for action types or payload shapes
     default:
@@ -555,33 +532,33 @@ interface AppState {
 
 // Type-safe actions with discriminated unions
 type UserAction =
-  | { type: "USER_SET_CURRENT"; payload: User }
-  | { type: "USER_PROFILE_FETCH_START" }
-  | { type: "USER_PROFILE_FETCH_SUCCESS"; payload: UserProfile }
-  | { type: "USER_PROFILE_FETCH_ERROR"; payload: ResourceError };
+  | { type: 'USER_SET_CURRENT'; payload: User }
+  | { type: 'USER_PROFILE_FETCH_START' }
+  | { type: 'USER_PROFILE_FETCH_SUCCESS'; payload: UserProfile }
+  | { type: 'USER_PROFILE_FETCH_ERROR'; payload: ResourceError };
 
 // Domain-specific reducer with exhaustive checking
 function userReducer(state: UserDomain, action: UserAction): UserDomain {
   switch (action.type) {
-    case "USER_SET_CURRENT":
+    case 'USER_SET_CURRENT':
       return { ...state, currentUser: action.payload };
 
-    case "USER_PROFILE_FETCH_START":
+    case 'USER_PROFILE_FETCH_START':
       return {
         ...state,
-        profile: { status: "loading" },
+        profile: { status: 'loading' }
       };
 
-    case "USER_PROFILE_FETCH_SUCCESS":
+    case 'USER_PROFILE_FETCH_SUCCESS':
       return {
         ...state,
-        profile: { status: "success", data: action.payload },
+        profile: { status: 'success', data: action.payload }
       };
 
-    case "USER_PROFILE_FETCH_ERROR":
+    case 'USER_PROFILE_FETCH_ERROR':
       return {
         ...state,
-        profile: { status: "error", error: action.payload.message },
+        profile: { status: 'error', error: action.payload.message }
       };
 
     default:
@@ -644,12 +621,12 @@ function UserHeader() {
 // ❌ BAD: Mutating state directly and losing type safety
 function badReducer(state: any, action: any) {
   switch (action.type) {
-    case "ADD_ORDER":
+    case 'ADD_ORDER':
       state.orders.push(action.payload); // Direct mutation
       state.loading = false;
       return state;
 
-    case "UPDATE_USER":
+    case 'UPDATE_USER':
       state.user.profile.name = action.payload.name; // Nested mutation
       return state;
   }
@@ -660,33 +637,30 @@ function badReducer(state: any, action: any) {
 // ✅ GOOD: Immutable updates with type safety
 function orderReducer(state: OrderDomain, action: OrderAction): OrderDomain {
   switch (action.type) {
-    case "ORDER_ADD_SUCCESS":
+    case 'ORDER_ADD_SUCCESS':
       return {
         ...state,
         list: isSuccessState(state.list)
           ? {
-              status: "success" as const,
-              data: [...state.list.data, action.payload],
+              status: 'success' as const,
+              data: [...state.list.data, action.payload]
             }
           : state.list,
-        submission: { status: "success", response: action.payload },
+        submission: { status: 'success', response: action.payload }
       };
 
-    case "ORDER_UPDATE_SUCCESS":
+    case 'ORDER_UPDATE_SUCCESS':
       return {
         ...state,
         list: isSuccessState(state.list)
           ? {
-              status: "success" as const,
-              data: state.list.data.map((order) =>
-                order.id === action.payload.id ? action.payload : order,
-              ),
+              status: 'success' as const,
+              data: state.list.data.map(order =>
+                order.id === action.payload.id ? action.payload : order
+              )
             }
           : state.list,
-        current:
-          state.current?.id === action.payload.id
-            ? action.payload
-            : state.current,
+        current: state.current?.id === action.payload.id ? action.payload : state.current
       };
 
     default:

@@ -2,10 +2,9 @@
 derived_from: testability
 enforced_by: code review & architecture analysis
 id: dependency-inversion
-last_modified: "2025-05-14"
-version: "0.1.0"
+last_modified: '2025-05-14'
+version: '0.1.0'
 ---
-
 # Binding: Design Against Abstractions, Not Implementations
 
 High-level modules containing your business logic should never depend on low-level
@@ -113,7 +112,7 @@ To effectively implement dependency inversion in your projects:
 
    ```typescript
    // Infrastructure layer
-   import { UserRepository, User } from "../domain/user";
+   import { UserRepository, User } from '../domain/user';
 
    export class MongoUserRepository implements UserRepository {
      constructor(private mongoClient: MongoClient) {}
@@ -139,8 +138,8 @@ To effectively implement dependency inversion in your projects:
 
    ```typescript
    // Composition root (application entry point)
-   import { UserService } from "./domain/user";
-   import { MongoUserRepository } from "./infrastructure/persistence";
+   import { UserService } from './domain/user';
+   import { MongoUserRepository } from './infrastructure/persistence';
 
    function bootstrap() {
      const mongoClient = new MongoClient(config.dbUri);
@@ -161,32 +160,26 @@ To effectively implement dependency inversion in your projects:
 
 ```typescript
 // ❌ BAD: Domain directly depends on infrastructure
-import { MongoClient } from "mongodb";
+import { MongoClient } from 'mongodb';
 
 export class UserService {
   private db: MongoClient;
 
   constructor() {
     // Domain creates and depends directly on infrastructure
-    this.db = new MongoClient("mongodb://localhost:27017");
+    this.db = new MongoClient('mongodb://localhost:27017');
   }
 
   async getUser(id: string) {
     await this.db.connect();
-    const user = await this.db
-      .db("users")
-      .collection("users")
-      .findOne({ _id: id });
+    const user = await this.db.db('users').collection('users').findOne({ _id: id });
     return user;
   }
 
   // Business logic mixed with MongoDB-specific code
   async createUser(userData: any) {
     await this.db.connect();
-    const result = await this.db
-      .db("users")
-      .collection("users")
-      .insertOne(userData);
+    const result = await this.db.db('users').collection('users').insertOne(userData);
     return result.insertedId;
   }
 }
@@ -204,7 +197,7 @@ export class User {
   constructor(
     public id: string,
     public name: string,
-    public email: string,
+    public email: string
   ) {}
 
   updateEmail(newEmail: string): void {
@@ -231,30 +224,24 @@ export class UserService {
 }
 
 // Infrastructure implements domain interfaces
-import { UserRepository, User } from "../domain/user";
-import { MongoClient } from "mongodb";
+import { UserRepository, User } from '../domain/user';
+import { MongoClient } from 'mongodb';
 
 export class MongoUserRepository implements UserRepository {
   constructor(private client: MongoClient) {}
 
   async findById(id: string): Promise<User | null> {
-    const data = await this.client
-      .db("users")
-      .collection("users")
-      .findOne({ _id: id });
+    const data = await this.client.db('users').collection('users').findOne({ _id: id });
     if (!data) return null;
     return new User(data._id, data.name, data.email);
   }
 
   async save(user: User): Promise<void> {
-    await this.client
-      .db("users")
-      .collection("users")
-      .updateOne(
-        { _id: user.id },
-        { $set: { name: user.name, email: user.email } },
-        { upsert: true },
-      );
+    await this.client.db('users').collection('users').updateOne(
+      { _id: user.id },
+      { $set: { name: user.name, email: user.email } },
+      { upsert: true }
+    );
   }
 }
 ```

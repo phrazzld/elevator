@@ -2,10 +2,9 @@
 derived_from: explicit-over-implicit
 enforced_by: eslint("@typescript-eslint/no-explicit-any") & tsconfig("noImplicitAny")
 id: no-any
-last_modified: "2025-05-14"
-version: "0.1.0"
+last_modified: '2025-05-14'
+version: '0.1.0'
 ---
-
 # Binding: Make Types Explicit, Never Use `any`
 
 Never use the `any` type in TypeScript code. Instead, always create proper type
@@ -87,17 +86,15 @@ Instead, you must use precise types like:
 
    ```typescript
    // Instead of:
-   function process(data: any): void {
-     /* ... */
-   }
+   function process(data: any): void { /* ... */ }
 
    // Use:
    function process(data: unknown): void {
      // Must verify type before using
-     if (typeof data === "string") {
+     if (typeof data === 'string') {
        console.log(data.toUpperCase());
      } else if (Array.isArray(data)) {
-       data.forEach((item) => console.log(item));
+       data.forEach(item => console.log(item));
      }
    }
    ```
@@ -106,9 +103,7 @@ Instead, you must use precise types like:
 
    ```typescript
    // Instead of:
-   function processUser(user: any): void {
-     /* ... */
-   }
+   function processUser(user: any): void { /* ... */ }
 
    // Use:
    interface User {
@@ -117,18 +112,14 @@ Instead, you must use precise types like:
      email?: string;
    }
 
-   function processUser(user: User): void {
-     /* ... */
-   }
+   function processUser(user: User): void { /* ... */ }
    ```
 
 1. **Use union types for values that could be one of several types**:
 
    ```typescript
    // Instead of:
-   function getLength(value: any): number {
-     /* ... */
-   }
+   function getLength(value: any): number { /* ... */ }
 
    // Use:
    function getLength(value: string | Array<unknown>): number {
@@ -140,9 +131,7 @@ Instead, you must use precise types like:
 
    ```typescript
    // Instead of:
-   function getProperty(obj: any, key: string): any {
-     /* ... */
-   }
+   function getProperty(obj: any, key: string): any { /* ... */ }
 
    // Use:
    function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
@@ -155,20 +144,17 @@ Instead, you must use precise types like:
 
    ```typescript
    // Instead of:
-   import * as untyped from "untyped-library";
+   import * as untyped from 'untyped-library';
    const result = untyped.someFunction() as any;
 
    // Create types:
-   declare module "untyped-library" {
+   declare module 'untyped-library' {
      export function someFunction(): SomeReturnType;
    }
 
    // Or use type assertions scoped to the minimum needed interface:
-   import * as untyped from "untyped-library";
-   interface SomeReturnType {
-     id: string;
-     value: number;
-   }
+   import * as untyped from 'untyped-library';
+   interface SomeReturnType { id: string; value: number; }
    const result = untyped.someFunction() as SomeReturnType;
    ```
 
@@ -214,7 +200,7 @@ const total: number = result + 10; // Total = 20, type safe
 ```typescript
 // ❌ BAD: Using 'any' for API responses
 async function fetchUserData(): Promise<any> {
-  const response = await fetch("/api/user");
+  const response = await fetch('/api/user');
   return response.json();
 }
 
@@ -232,7 +218,7 @@ interface User {
 }
 
 async function fetchUserData(): Promise<User> {
-  const response = await fetch("/api/user");
+  const response = await fetch('/api/user');
   return response.json() as User;
 }
 
@@ -256,10 +242,10 @@ function handleEvent(event: unknown) {
   // Type guard to check what kind of event this is
   if (isMouseEvent(event)) {
     event.stopPropagation();
-    console.log("Mouse position:", event.clientX, event.clientY);
+    console.log('Mouse position:', event.clientX, event.clientY);
   } else if (isKeyboardEvent(event)) {
     event.stopPropagation();
-    console.log("Key pressed:", event.key);
+    console.log('Key pressed:', event.key);
   }
 }
 
@@ -311,11 +297,14 @@ processUserInput({ isvalid: true, userData: { name: "User" } });
 
 ## Related Bindings
 
-- [external-configuration](../../docs/bindings/core/external-configuration.md) - Type safety extends to
+- [external-configuration](../../core/external-configuration.md) - Type safety extends to
   configuration, preventing undefined configuration values from causing runtime failures
-- [immutable-by-default](../../docs/bindings/core/immutable-by-default.md) - Type safety works best with
+- [immutable-by-default](../../core/immutable-by-default.md) - Type safety works best with
   immutable data, creating a stronger guarantee of correctness
-- [no-lint-suppression](../../docs/bindings/core/no-lint-suppression.md) - Enforces that developers don't
+- [no-lint-suppression](../../core/no-lint-suppression.md) - Enforces that developers don't
   suppress TypeScript type errors or linter warnings without documented justification
-- [hex-domain-purity](../../docs/bindings/core/hex-domain-purity.md) - Well-typed domain code ensures business
+- [hex-domain-purity](../../core/hex-domain-purity.md) - Well-typed domain code ensures business
   logic operates on valid, properly structured data
+
+### Language-Specific Analogies
+- [type-hinting](../python/type-hinting.md) - Python equivalent: using explicit type hints instead of dynamic typing

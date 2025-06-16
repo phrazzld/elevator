@@ -2,10 +2,9 @@
 derived_from: testability
 enforced_by: code review & linters
 id: no-internal-mocking
-last_modified: "2025-05-14"
-version: "0.1.0"
+last_modified: '2025-05-14'
+version: '0.1.0'
 ---
-
 # Binding: Mock External Systems Only, Never Internal Components
 
 Never mock, stub, or fake components that live within your application's boundaries.
@@ -288,37 +287,31 @@ mocks:
 it("should calculate order total", () => {
   // Mocking internal services
   const mockPriceCalculator = {
-    calculateItemPrice: jest.fn().mockReturnValue(10.0),
+    calculateItemPrice: jest.fn().mockReturnValue(10.00)
   };
   const mockDiscountService = {
-    applyDiscount: jest.fn().mockReturnValue(2.0),
+    applyDiscount: jest.fn().mockReturnValue(2.00)
   };
   const mockTaxService = {
-    calculateTax: jest.fn().mockReturnValue(0.8),
+    calculateTax: jest.fn().mockReturnValue(0.80)
   };
 
   const orderService = new OrderService(
     mockPriceCalculator,
     mockDiscountService,
-    mockTaxService,
+    mockTaxService
   );
 
   const total = orderService.calculateTotal({
     items: [{ id: "item1", quantity: 1 }],
-    customerId: "customer1",
+    customerId: "customer1"
   });
 
   // Testing implementation details, not behavior
-  expect(mockPriceCalculator.calculateItemPrice).toHaveBeenCalledWith(
-    "item1",
-    1,
-  );
-  expect(mockDiscountService.applyDiscount).toHaveBeenCalledWith(
-    10.0,
-    "customer1",
-  );
-  expect(mockTaxService.calculateTax).toHaveBeenCalledWith(8.0);
-  expect(total).toBe(8.8);
+  expect(mockPriceCalculator.calculateItemPrice).toHaveBeenCalledWith("item1", 1);
+  expect(mockDiscountService.applyDiscount).toHaveBeenCalledWith(10.00, "customer1");
+  expect(mockTaxService.calculateTax).toHaveBeenCalledWith(8.00);
+  expect(total).toBe(8.80);
 });
 
 // ✅ GOOD: Using real internal components
@@ -330,23 +323,23 @@ it("should calculate order total", () => {
 
   // Only mock the external database dependency
   const mockDatabase = new InMemoryDatabase();
-  mockDatabase.addProduct({ id: "item1", price: 10.0 });
+  mockDatabase.addProduct({ id: "item1", price: 10.00 });
   mockDatabase.addCustomer({ id: "customer1", discountTier: "gold" });
 
   const orderService = new OrderService(
     priceCalculator,
     discountService,
     taxService,
-    mockDatabase, // External dependency
+    mockDatabase // External dependency
   );
 
   const total = orderService.calculateTotal({
     items: [{ id: "item1", quantity: 1 }],
-    customerId: "customer1",
+    customerId: "customer1"
   });
 
   // Testing observable behavior, not implementation
-  expect(total).toBe(8.8);
+  expect(total).toBe(8.80);
 });
 ```
 
