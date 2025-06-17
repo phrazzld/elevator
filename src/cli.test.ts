@@ -5,7 +5,15 @@
  * while integration tests in cli.integration.test.ts cover the full CLI workflow.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
 import { processPrompt, createProgram, main, CliArgs } from "./cli.js";
 
 // Mock external dependencies
@@ -25,14 +33,12 @@ vi.mock("./utils/constants.js", () => ({
   },
 }));
 
-interface ConsoleSpy {
-  log: ReturnType<typeof vi.spyOn>;
-  error: ReturnType<typeof vi.spyOn>;
-}
-
 describe("CLI Module - Unit Tests", () => {
-  let consoleSpy: ConsoleSpy;
-  let processExitSpy: ReturnType<typeof vi.spyOn>;
+  let consoleSpy: {
+    log: MockInstance;
+    error: MockInstance;
+  };
+  let processExitSpy: MockInstance;
   let originalRequireMain: typeof require.main;
   let originalArgv: string[];
 
