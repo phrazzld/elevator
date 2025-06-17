@@ -267,6 +267,9 @@ export async function elevatePrompt(
       debug,
     );
 
+    // Start progress indicator for format preservation pipeline (unless in raw mode)
+    const stopProgress = raw ? () => {} : startProgress();
+
     try {
       // Detect formatting in the text
       const formatting = detectFormatting(prompt);
@@ -343,6 +346,8 @@ export async function elevatePrompt(
         debug,
       );
 
+      // Stop progress indicator for successful completion
+      stopProgress();
       return result;
     } catch (error) {
       // Log format preservation error and fall back to original
@@ -358,6 +363,8 @@ export async function elevatePrompt(
         debug,
       );
 
+      // Stop progress indicator before falling back
+      stopProgress();
       // Fall through to original behavior
     }
   }
