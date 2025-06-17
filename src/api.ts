@@ -372,7 +372,7 @@ export async function elevatePrompt(
   // Original behavior for plain text or fallback
   // Gemini API endpoint
   const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent";
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
   // Log API request start for original behavior
   logToStderr(

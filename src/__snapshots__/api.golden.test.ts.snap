@@ -49,7 +49,7 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
     "x-goog-api-key": "test-golden-key",
   },
   "method": "POST",
-  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent",
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
 }
 `;
 
@@ -86,7 +86,7 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
     "x-goog-api-key": "test-golden-key",
   },
   "method": "POST",
-  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent",
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
 }
 `;
 
@@ -123,7 +123,7 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
     "x-goog-api-key": "test-golden-key",
   },
   "method": "POST",
-  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent",
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
 }
 `;
 
@@ -160,7 +160,7 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
     "x-goog-api-key": "test-golden-key",
   },
   "method": "POST",
-  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent",
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
 }
 `;
 
@@ -197,7 +197,7 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
     "x-goog-api-key": "test-golden-key",
   },
   "method": "POST",
-  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent",
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
 }
 `;
 
@@ -234,7 +234,7 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
     "x-goog-api-key": "test-golden-key",
   },
   "method": "POST",
-  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent",
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
 }
 `;
 
@@ -271,7 +271,7 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
     "x-goog-api-key": "test-golden-key",
   },
   "method": "POST",
-  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent",
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
 }
 `;
 
@@ -308,7 +308,7 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
     "x-goog-api-key": "test-golden-key",
   },
   "method": "POST",
-  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent",
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
 }
 `;
 
@@ -345,7 +345,7 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
     "x-goog-api-key": "test-golden-key",
   },
   "method": "POST",
-  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent",
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
 }
 `;
 
@@ -382,7 +382,7 @@ exports[`Golden Test Suite - Phase 1 Prompt Transformations > should produce con
     "x-goog-api-key": "test-golden-key",
   },
   "method": "POST",
-  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent",
+  "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
 }
 `;
 
