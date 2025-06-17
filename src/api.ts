@@ -69,11 +69,12 @@ export async function elevateSegments(
             );
           }
 
-          // Use the existing elevatePrompt logic but in raw mode to avoid progress indicator
+          // Use the existing elevatePrompt logic but skip format preservation to avoid infinite recursion
           const elevated = await elevatePrompt(
             segment.formatting.content,
             debug,
             true,
+            true, // skipFormatPreservation to prevent infinite recursion
           );
 
           return {
@@ -189,6 +190,7 @@ User request to rearticulate:`.trim();
  * @param prompt The user's input prompt to elevate
  * @param debug Whether debug logging is enabled
  * @param raw Whether raw output mode is enabled (suppresses progress indicator)
+ * @param skipFormatPreservation Whether to bypass format preservation (used internally to prevent infinite recursion)
  * @returns Promise resolving to the elevated prompt
  * @throws Error if API key is missing or API call fails
  */
@@ -196,6 +198,7 @@ export async function elevatePrompt(
   prompt: string,
   debug: boolean = false,
   raw: boolean = false,
+  skipFormatPreservation: boolean = false,
 ): Promise<string> {
   // Validate API key
   const apiKey = process.env["GEMINI_API_KEY"];
@@ -220,7 +223,8 @@ export async function elevatePrompt(
     );
   }
 
-  const needsFormatPreservation = shouldUseFormatPreservation(prompt);
+  const needsFormatPreservation =
+    !skipFormatPreservation && shouldUseFormatPreservation(prompt);
 
   if (debug) {
     // Get detailed formatting information for debug logging
