@@ -26,15 +26,23 @@ export function reconstructText(segments: FormattedSegment[]): string {
 
     result.push(reconstructedSegment);
 
-    // Add newline between elevated text and code blocks for proper formatting
-    if (
-      nextSegment &&
-      segment.elevated !== undefined && // Current segment was elevated
-      nextSegment.formatting.type === "codeblock" && // Next segment is a code block
-      !reconstructedSegment.endsWith("\n")
-    ) {
-      // Current doesn't end with newline
-      result.push("\n");
+    // Add newline spacing for proper formatting between different segment types
+    if (nextSegment) {
+      const needsNewline =
+        // Case 1: Elevated text before code block (not inline code)
+        (segment.elevated !== undefined &&
+          nextSegment.formatting.type === "codeblock" &&
+          nextSegment.formatting.marker === "```" &&
+          !reconstructedSegment.endsWith("\n")) ||
+        // Case 2: Code block (not inline code) before text that IS elevated
+        (segment.formatting.type === "codeblock" &&
+          segment.formatting.marker === "```" &&
+          nextSegment.elevated !== undefined &&
+          !reconstructedSegment.endsWith("\n"));
+
+      if (needsNewline) {
+        result.push("\n");
+      }
     }
   }
 
