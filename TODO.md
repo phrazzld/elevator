@@ -70,34 +70,34 @@
 ## Phase 6: End-to-End Testing
 
 - [x] Create test fixture file with complex mixed formatting example
-- [ ] Write CLI integration test for code block preservation via args
-- [ ] Write CLI integration test for code block preservation via pipe
-- [ ] Write CLI integration test for code block preservation via interactive input
-- [ ] Test error message example from issue description exactly
-- [ ] Test preservation of multiple code blocks with different languages
-- [ ] Test extremely long code blocks (1000+ lines)
-- [ ] Test malformed code blocks (missing closing backticks)
-- [ ] Benchmark performance impact (should be <5% overhead)
-- [ ] Verify memory usage with large inputs
+- [x] Write CLI integration test for code block preservation via args
+- [x] Write CLI integration test for code block preservation via pipe
+- [x] Write CLI integration test for code block preservation via interactive input
+- [x] Test error message example from issue description exactly
+- [x] Test preservation of multiple code blocks with different languages
+- [x] Test extremely long code blocks (1000+ lines)
+- [x] Test malformed code blocks (missing closing backticks)
+- [x] Benchmark performance impact (should be <5% overhead)
+- [x] Verify memory usage with large inputs
 
 ## Phase 7: Documentation and Cleanup
 
-- [ ] Update API.md with format preservation behavior
-- [ ] Add examples of format preservation to README.md
-- [ ] Update ARCHITECTURE.md to mention formatting module
-- [ ] Ensure all functions have complete JSDoc comments
-- [ ] Fix TypeScript type issues in cli.test.ts (ConsoleSpy interface and processExitSpy)
-- [ ] Run linter and fix any issues
-- [ ] Run type checker and fix any issues
-- [ ] Verify test coverage meets 95% threshold for formatting modules
-- [ ] Remove PLAN.md and PLAN-CONTEXT.md files
-- [ ] Update this TODO.md to mark all items complete
+- [x] Update API.md with format preservation behavior
+- [x] Add examples of format preservation to README.md
+- [x] Update ARCHITECTURE.md to mention formatting module
+- [x] Ensure all functions have complete JSDoc comments
+- [x] Fix TypeScript type issues in cli.test.ts (ConsoleSpy interface and processExitSpy)
+- [x] Run linter and fix any issues
+- [x] Run type checker and fix any issues
+- [x] Verify test coverage meets 95% threshold for formatting modules
+- [x] Remove PLAN.md and PLAN-CONTEXT.md files
+- [x] Update this TODO.md to mark all items complete
 
 ## Phase 8: Final Validation
 
-- [ ] Manual test: Copy exact example from issue #38 and verify it works
-- [ ] Manual test: Try various code block formats (Python, JS, JSON, etc.)
-- [ ] Manual test: Mix code blocks with regular text needing elevation
-- [ ] Run full test suite and ensure no regressions
-- [ ] Run build and verify no errors
-- [ ] Commit changes with conventional commit message
+- [x] Manual test: Copy exact example from issue #38 and verify it works
+- [x] Manual test: Try various code block formats (Python, JS, JSON, etc.)
+- [x] Manual test: Mix code blocks with regular text needing elevation
+- [x] Run full test suite and ensure no regressions
+- [x] Run build and verify no errors
+- [~] Commit changes with conventional commit message

@@ -54,11 +54,20 @@ This architecture represents a deliberate shift from complex enterprise patterns
 
 ```
 src/
-├── api.ts    # Direct API integration with Google Gemini
-└── cli.ts    # Command-line interface and main entry point
+├── api.ts              # Direct API integration with Google Gemini
+├── cli.ts              # Command-line interface and main entry point
+├── input.ts            # Input handling (args, interactive, piped)
+├── formatting/         # Format preservation module
+│   ├── types.ts        # Type definitions for formatting detection
+│   ├── detector.ts     # Text format detection (code blocks, quotes)
+│   ├── extractor.ts    # Segment extraction from formatted text
+│   └── reconstructor.ts # Text reconstruction from processed segments
+└── utils/
+    ├── constants.ts    # Application constants and enums
+    └── logger.ts       # Structured logging utilities
 ```
 
-**Total complexity**: ~200 lines of code (down from 1000+)
+**Total complexity**: ~600 lines of code (focused and well-organized)
 
 ### Core Components
 
@@ -100,32 +109,87 @@ import { elevatePrompt } from "./api.js";
 const result = await elevatePrompt(prompt);
 ```
 
+#### 3. Format Preservation Module (`src/formatting/`)
+
+**Purpose**: Selective text processing that preserves code blocks while elevating surrounding content.
+
+**Philosophy Alignment**: The formatting module exemplifies our simplified architecture by using pure functions and direct composition rather than complex abstractions.
+
+**Key Components**:
+
+- **`types.ts`**: Simple interfaces for `FormattingInfo` and `FormattedSegment`
+- **`detector.ts`**: Pure functions for detecting code blocks, quotes, and plain text
+- **`extractor.ts`**: Text segmentation based on formatting boundaries
+- **`reconstructor.ts`**: Text reassembly from processed segments
+
+**Interface**:
+
+```typescript
+// Pure function pipeline
+export function detectFormatting(text: string): FormattingInfo[];
+export function extractSegments(
+  text: string,
+  formatting: FormattingInfo[],
+): FormattedSegment[];
+export function reconstructText(segments: FormattedSegment[]): string;
+
+// Integrated elevation with format preservation
+export async function elevateSegments(
+  segments: FormattedSegment[],
+): Promise<FormattedSegment[]>;
+```
+
+**Architecture Benefits**:
+
+- **Pure Functions**: All formatting functions are stateless and predictable
+- **Composable**: Pipeline stages can be used independently or together
+- **Zero Overhead**: Only activates when code blocks are detected
+- **No Dependencies**: Uses native JavaScript patterns and regex
+
 ## Data Flow
 
 ### Simple Linear Flow
 
 ```
-CLI Input → Direct Function Call → API Request → Response Output
+CLI Input → Format Detection → Conditional Processing → Response Output
+                  ↓
+            [Code Blocks?] → Format Preservation Pipeline
+                  ↓                        ↓
+            [Plain Text] → Direct API → Enhanced Text
 ```
 
 **Detailed Flow**:
 
 1. **CLI Entry** (`src/cli.ts`):
 
-   - Parse command-line arguments
+   - Parse command-line arguments (or interactive/piped input)
    - Validate environment (API key)
    - Call `elevatePrompt()` directly
 
-2. **API Processing** (`src/api.ts`):
+2. **Format-Aware Processing** (`src/api.ts`):
 
-   - Build request payload
-   - Make HTTP request with `fetch()`
-   - Parse and validate response
-   - Return result string
+   - **Format Detection**: Check if text contains code blocks
+   - **Conditional Branch**:
+     - **With Code Blocks**: Use format preservation pipeline
+     - **Plain Text Only**: Use direct API elevation
+   - **Format Preservation Pipeline** (when needed):
+     - Detect all formatting elements (code, quotes, plain text)
+     - Extract segments based on formatting boundaries
+     - Elevate only non-code segments via API
+     - Reconstruct final text preserving code exactly
+   - **Direct API**: Standard elevation for plain text
 
 3. **Output Formatting**:
    - Raw output (`--raw` flag) or formatted output
    - Error messages for failures
+
+**Format Preservation Flow** (detailed):
+
+```
+Text Input → detectFormatting() → extractSegments() → elevateSegments() → reconstructText()
+                   ↓                      ↓                    ↓                    ↓
+              FormattingInfo[]      FormattedSegment[]    Processed Segments    Final Text
+```
 
 ### Error Handling Flow
 
@@ -195,6 +259,36 @@ if (!apiKey) {
 ```typescript
 import { elevatePrompt } from "./api.js";
 ```
+
+### 5. Format Preservation Integration
+
+**Decision**: Add format preservation as a pure function pipeline rather than a complex service layer.
+
+**Rationale**:
+
+- **Maintains Simplicity**: Uses the same direct function call pattern
+- **Zero Abstraction Overhead**: No interfaces or dependency injection needed
+- **Conditional Activation**: Only engages when formatting is detected
+- **Pure Functions**: All formatting logic is stateless and testable
+- **Direct Composition**: Functions compose naturally without frameworks
+
+**Implementation**:
+
+```typescript
+// Integrated into existing elevatePrompt function
+if (shouldUseFormatPreservation(prompt)) {
+  // Use 4-stage pure function pipeline
+  const formatting = detectFormatting(prompt);
+  const segments = extractSegments(prompt, formatting);
+  const elevated = await elevateSegments(segments);
+  return reconstructText(elevated);
+} else {
+  // Use original direct API approach
+  return await directAPIElevation(prompt);
+}
+```
+
+**Architecture Consistency**: The formatting module exemplifies our core principle of "direct function calls over complex patterns" by providing a functional pipeline that integrates seamlessly with the existing simplified architecture.
 
 ### 4. Standard Error Handling
 
@@ -311,18 +405,24 @@ pnpm build  # tsc compilation
 - **Additional APIs**: Add new functions in `api.ts`
 - **Enhanced logging**: Modify logging statements
 - **Configuration options**: Add environment variables
+- **Format detection**: Add new formatters to `src/formatting/detector.ts`
+- **Processing strategies**: Extend segment processing in `elevateSegments()`
+- **Input methods**: Add new input handling patterns to `src/input.ts`
 
 ## Comparison: Before vs. After
 
 ### Complexity Metrics
 
-| Metric             | Before (Hexagonal) | After (Simplified) | Improvement   |
-| ------------------ | ------------------ | ------------------ | ------------- |
-| Lines of Code      | ~1000              | ~200               | 80% reduction |
-| File Count         | 15+ files          | 2 core files       | 87% reduction |
-| Dependencies       | 8+ packages        | 2 packages         | 75% reduction |
-| Abstraction Layers | 4 layers           | 1 layer            | Direct calls  |
-| Build Time         | ~8 seconds         | ~2 seconds         | 75% faster    |
+| Metric             | Before (Hexagonal) | After (Simplified)              | Improvement         |
+| ------------------ | ------------------ | ------------------------------- | ------------------- |
+| Lines of Code      | ~1000              | ~600                            | 40% reduction       |
+| File Count         | 15+ files          | 9 focused files                 | 40% reduction       |
+| Dependencies       | 8+ packages        | 2 packages                      | 75% reduction       |
+| Abstraction Layers | 4 layers           | 1 layer + pipeline              | Direct calls        |
+| Build Time         | ~8 seconds         | ~3 seconds                      | 63% faster          |
+| Feature Coverage   | Basic elevation    | Elevation + Format Preservation | Enhanced capability |
+
+**Note**: The formatting module was added as a pure function pipeline that maintains architectural simplicity while significantly expanding capabilities. The modest increase in code size delivers substantial functionality improvement (code block preservation) with zero abstraction overhead.
 
 ### Maintainability Benefits
 

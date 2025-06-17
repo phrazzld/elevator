@@ -6,6 +6,7 @@ A lightweight CLI that transforms natural-language prompts into expert-level, do
 
 - ⚡ **Direct API Integration**: Simple, fast prompt elevation using native fetch
 - 🎯 **Expert-Level Enhancement**: Transforms casual prompts into sophisticated, domain-specific articulations
+- 🛡️ **Code Block Preservation**: Automatically preserves code snippets, configuration files, and technical content while elevating surrounding text
 - 📝 **Multiline Input Support**: Interactive mode with Ctrl+D termination for complex prompts
 - 🔄 **Flexible Input Methods**: Command-line arguments, piped input, file input, and interactive mode
 - 🔒 **Security First**: Environment-based API key management
@@ -392,6 +393,155 @@ echo "Add dark mode to the dashboard" | node dist/cli.js --raw
 cat api-endpoints.txt | node dist/cli.js > technical-documentation.md
 ```
 
+### Code Block Preservation Examples
+
+elevator automatically detects and preserves code blocks while elevating surrounding text, making it perfect for technical documentation and development workflows.
+
+**JavaScript Function Enhancement:**
+
+````bash
+node dist/cli.js << 'EOF'
+Fix this function:
+
+```javascript
+function processUsers(users) {
+  return users.map(user => ({
+    id: user.id,
+    name: user.name,
+    email: user.email
+  }));
+}
+````
+
+This needs error handling and validation.
+EOF
+
+```
+
+**Output:**
+```
+
+Implement comprehensive error handling and input validation for this data processing function:
+
+```javascript
+function processUsers(users) {
+  return users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+  }));
+}
+```
+
+Add null checks, input sanitization, error boundaries, and comprehensive data validation to ensure robust operation with malformed or missing user data.
+
+````
+
+**Database Query Optimization:**
+
+```bash
+node dist/cli.js "Optimize this SQL query:
+
+```sql
+SELECT u.name, p.title, COUNT(c.id) as comment_count
+FROM users u
+JOIN posts p ON u.id = p.user_id
+LEFT JOIN comments c ON p.id = c.post_id
+WHERE u.created_at > NOW() - INTERVAL '30 days'
+GROUP BY u.id, p.id
+ORDER BY comment_count DESC
+LIMIT 10;
+````
+
+Performance is slow on large datasets."
+
+```
+
+**Output (code block preserved exactly):**
+```
+
+Enhance database query performance through strategic optimization techniques for this analytics query:
+
+```sql
+SELECT u.name, p.title, COUNT(c.id) as comment_count
+FROM users u
+JOIN posts p ON u.id = p.user_id
+LEFT JOIN comments c ON p.id = c.post_id
+WHERE u.created_at > NOW() - INTERVAL '30 days'
+GROUP BY u.id, p.id
+ORDER BY comment_count DESC
+LIMIT 10;
+```
+
+Implement composite indexes on (created_at, id), analyze execution plans with EXPLAIN ANALYZE, consider query result caching, evaluate denormalization strategies, and implement proper connection pooling to resolve performance bottlenecks with large datasets.
+
+````
+
+**Configuration File Documentation:**
+
+```bash
+echo "Document this configuration:
+
+\`\`\`yaml
+database:
+  host: localhost
+  port: 5432
+  name: myapp
+  ssl: true
+
+redis:
+  url: redis://localhost:6379
+  ttl: 3600
+\`\`\`
+
+Explain the purpose and requirements." | node dist/cli.js
+````
+
+**Multi-Language Code Review:**
+
+````bash
+node dist/cli.js << 'EOF'
+Review this API implementation:
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+async function getUser(id: number): Promise<User | null> {
+  const response = await fetch(`/api/users/${id}`);
+  return response.json();
+}
+````
+
+```python
+def process_user_data(user_dict):
+    return {
+        'id': user_dict['id'],
+        'display_name': user_dict['name'].title(),
+        'contact': user_dict['email'].lower()
+    }
+```
+
+Focus on error handling and type safety.
+EOF
+
+````
+
+**Inline Code Preservation:**
+
+```bash
+node dist/cli.js "Fix the console.log statement: Use \`console.error()\` for error messages and \`console.warn()\` for warnings instead of \`console.log()\`. The debugging output needs better categorization."
+````
+
+**Output (inline code preserved):**
+
+```
+Implement proper logging hierarchy and categorization for debugging output: Use `console.error()` for error messages and `console.warn()` for warnings instead of `console.log()`. Establish structured logging with appropriate severity levels, implement log filtering capabilities, and consider integrating a comprehensive logging framework for enhanced debugging and monitoring capabilities.
+```
+
 ## Troubleshooting
 
 ### Common Issues
@@ -473,6 +623,8 @@ API error: 429 Too Many Requests - Rate limit exceeded. Please try again later
 
 **Working with Code Blocks:**
 
+elevator automatically preserves code blocks while enhancing surrounding text:
+
 ````bash
 node dist/cli.js
 # Enter your prompt (press Ctrl+D when done):
@@ -483,8 +635,20 @@ node dist/cli.js
 #   return data.someProperty;
 # }
 # ```
+#
+# The function should be type-safe.
 # ^D
 ````
+
+**Output:** The TypeScript code will be preserved exactly, while "Fix this TypeScript error" and "The function should be type-safe" will be elevated to more technical language.
+
+**Format Preservation Features:**
+
+- ✅ **Code blocks** (`language...`) are preserved exactly
+- ✅ **Inline code** (`code`) is preserved exactly
+- ✅ **Surrounding text** is elevated for technical precision
+- ✅ **Multiple languages** supported (JavaScript, Python, SQL, YAML, etc.)
+- ✅ **Automatic detection** - no special flags needed
 
 **Best Practices:**
 
