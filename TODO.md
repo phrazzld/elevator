@@ -100,4 +100,4 @@
 - [x] Manual test: Mix code blocks with regular text needing elevation
 - [x] Run full test suite and ensure no regressions
 - [x] Run build and verify no errors
-- [~] Commit changes with conventional commit message
+- [x] Commit changes with conventional commit message
