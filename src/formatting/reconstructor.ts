@@ -7,7 +7,7 @@ import type { FormattedSegment } from "./types.js";
 /**
  * Reconstruct text from formatted segments.
  *
- * @param _segments - Array of formatted segments with optional elevated content
+ * @param segments - Array of formatted segments with optional elevated content
  * @returns Reconstructed text with preserved formatting
  */
 export function reconstructText(segments: FormattedSegment[]): string {
@@ -16,8 +16,29 @@ export function reconstructText(segments: FormattedSegment[]): string {
     return "";
   }
 
-  // Reconstruct each segment and join them
-  return segments.map((segment) => reconstructSegment(segment)).join("");
+  // Intelligently reconstruct segments with proper spacing
+  const result: string[] = [];
+
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i]!; // Safe because i < segments.length
+    const nextSegment = segments[i + 1];
+    const reconstructedSegment = reconstructSegment(segment);
+
+    result.push(reconstructedSegment);
+
+    // Add newline between elevated text and code blocks for proper formatting
+    if (
+      nextSegment &&
+      segment.elevated !== undefined && // Current segment was elevated
+      nextSegment.formatting.type === "codeblock" && // Next segment is a code block
+      !reconstructedSegment.endsWith("\n")
+    ) {
+      // Current doesn't end with newline
+      result.push("\n");
+    }
+  }
+
+  return result.join("");
 }
 
 /**
